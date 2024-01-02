@@ -1,11 +1,12 @@
 #[cfg(test)]
 mod tests {
-    use crate::helpers::CwTemplateContract;
-    use crate::msg::InstantiateMsg;
+    use crate::helpers::BurnContract;
+    use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
     use cosmwasm_std::{Addr, Coin, Empty, Uint128};
     use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
 
-    pub fn contract_template() -> Box<dyn Contract<Empty>> {
+    // Define a function that returns the contract wrapper for your burn contract.
+    pub fn contract_burn() -> Box<dyn Contract<Empty>> {
         let contract = ContractWrapper::new(
             crate::contract::execute,
             crate::contract::instantiate,
@@ -16,8 +17,9 @@ mod tests {
 
     const USER: &str = "USER";
     const ADMIN: &str = "ADMIN";
-    const NATIVE_DENOM: &str = "denom";
+    const NATIVE_DENOM: &str = "uusd"; // Change to your token's denom.
 
+    // Set up a mock app environment.
     fn mock_app() -> App {
         AppBuilder::new().build(|router, _, storage| {
             router
@@ -27,45 +29,62 @@ mod tests {
                     &Addr::unchecked(USER),
                     vec![Coin {
                         denom: NATIVE_DENOM.to_string(),
-                        amount: Uint128::new(1),
+                        amount: Uint128::new(1_000_000), // Set an initial amount.
                     }],
                 )
                 .unwrap();
         })
     }
 
-    fn proper_instantiate() -> (App, CwTemplateContract) {
+    // Function to properly instantiate your contract in the mock app.
+    fn proper_instantiate() -> (App, BurnContract) {
         let mut app = mock_app();
-        let cw_template_id = app.store_code(contract_template());
+        let contract_burn_id = app.store_code(contract_burn());
 
-        let msg = InstantiateMsg { count: 1i32 };
-        let cw_template_contract_addr = app
+        let instantiate_msg = InstantiateMsg {};
+        let contract_addr = app
             .instantiate_contract(
-                cw_template_id,
+                contract_burn_id,
                 Addr::unchecked(ADMIN),
-                &msg,
+                &instantiate_msg,
                 &[],
-                "test",
+                "Burn Contract",
                 None,
             )
             .unwrap();
 
-        let cw_template_contract = CwTemplateContract(cw_template_contract_addr);
-
-        (app, cw_template_contract)
+        (app, BurnContract(contract_addr))
     }
 
-    mod count {
+    mod burn {
         use super::*;
-        use crate::msg::ExecuteMsg;
 
         #[test]
-        fn count() {
-            let (mut app, cw_template_contract) = proper_instantiate();
+        fn burn_tokens() {
+            let (mut app, burn_contract) = proper_instantiate();
 
-            let msg = ExecuteMsg::Increment {};
-            let cosmos_msg = cw_template_contract.call(msg).unwrap();
+            // Try to burn some tokens.
+            let burn_amount = Uint128::new(100); // Set the burn amount.
+            let msg = ExecuteMsg::BurnTokens {
+                amount: burn_amount,
+            };
+            let cosmos_msg = burn_contract.call(msg).unwrap();
             app.execute(Addr::unchecked(USER), cosmos_msg).unwrap();
+
+            // Query the burn info after burning tokens.
+            let query_res: crate::msg::GetBurnInfoResponse = app
+                .wrap()
+                .query_wasm_smart(
+                    burn_contract.addr(),
+                    &QueryMsg::GetBurnInfo {
+                        address: USER.to_string(),
+                    },
+                )
+                .unwrap();
+
+            // Perform assertions based on the expected state after burning tokens.
+            assert_eq!(query_res.burned, burn_amount);
+            // Add more assertions as needed.
         }
     }
 }
