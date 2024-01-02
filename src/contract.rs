@@ -6,7 +6,8 @@ use std::collections::HashMap;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::states::config::Config;
+use crate::states::state::{State, STATE};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -17,7 +18,7 @@ pub fn instantiate(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    msg: InstantiateMsg,
+    _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     let state = State {
         owner: info.sender.clone(),
@@ -40,6 +41,17 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::BurnTokens { amount } => burn_uusd(deps, env, info, amount),
+
+        ExecuteMsg::UpdateSlotSize { slot_size } => {
+            // Ensure only the owner can update the slot size.
+            let config = Config::load(deps.storage)?;
+            if info.sender != config.owner {
+                return Err(ContractError::Unauthorized {});
+            }
+
+            Config::update_slot_size(deps.storage, slot_size)?;
+            Ok(Response::new().add_attribute("method", "update_slot_size"))
+        }
     }
 }
 

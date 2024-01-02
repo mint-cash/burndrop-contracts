@@ -7,7 +7,6 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct State {
-
     pub owner: Addr,
     pub user_caps: HashMap<String, (Uint128, Uint128)>,
 }
