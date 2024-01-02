@@ -22,7 +22,7 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     let config = Config {
         owner: info.sender.clone(),
-        slot_size: Uint128::from(1000),
+        slot_size: Uint128::from(1000u128),
     };
     config.save(deps.storage)?;
 
@@ -49,12 +49,12 @@ pub fn execute(
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {
             // Ensure only the owner can update the slot size.
-            let config = Config::load(deps.storage)?;
+            let mut config = Config::load(deps.storage)?;
             if info.sender != config.owner {
                 return Err(ContractError::Unauthorized {});
             }
 
-            Config::update_slot_size(deps.storage, slot_size)?;
+            config.update_slot_size(deps.storage, slot_size)?;
             Ok(Response::new().add_attribute("method", "update_slot_size"))
         }
     }
