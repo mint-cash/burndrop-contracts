@@ -3,6 +3,7 @@ use cosmwasm_std::Uint128;
 
 #[cw_serde]
 pub struct InstantiateMsg {
+    pub initial_slot_size: Uint128,
 }
 
 #[cw_serde(rename_all = "snake_case")]

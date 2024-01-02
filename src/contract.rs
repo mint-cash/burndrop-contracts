@@ -18,11 +18,11 @@ pub fn instantiate(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    _msg: InstantiateMsg,
+    msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     let config = Config {
         owner: info.sender.clone(),
-        slot_size: Uint128::from(1000u128),
+        slot_size: msg.initial_slot_size,
     };
     config.save(deps.storage)?;
 
@@ -34,7 +34,8 @@ pub fn instantiate(
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
-        .add_attribute("owner", info.sender))
+        .add_attribute("owner", info.sender)
+        .add_attribute("initial_slot_size", msg.initial_slot_size.to_string()))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
