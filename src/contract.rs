@@ -20,8 +20,13 @@ pub fn instantiate(
     info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let state = State {
+    let config = Config {
         owner: info.sender.clone(),
+        slot_size: Uint128::from(1000),
+    };
+    config.save(deps.storage)?;
+
+    let state = State {
         user_caps: HashMap::new(), // Added from your new code
     };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
