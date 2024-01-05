@@ -41,7 +41,9 @@ mod tests {
         let mut app = mock_app();
         let contract_burn_id = app.store_code(contract_burn());
 
-        let instantiate_msg = InstantiateMsg {};
+        let instantiate_msg = InstantiateMsg {
+            initial_slot_size: Uint128::new(1_000),
+        };
         let contract_addr = app
             .instantiate_contract(
                 contract_burn_id,

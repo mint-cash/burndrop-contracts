@@ -6,7 +6,8 @@ use std::collections::HashMap;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::states::config::{Config, CONFIG};
+use crate::states::state::{State, STATE};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -19,16 +20,23 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let state = State {
+    let config = Config {
         owner: info.sender.clone(),
-        user_caps: HashMap::new(), // Added from your new code
+        slot_size: msg.initial_slot_size,
+    };
+    config.save(deps.storage)?;
+
+    let state = State {
+        burned_uusd_by_user: HashMap::new(),
+        slots_by_user: HashMap::new(),
     };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
-        .add_attribute("owner", info.sender))
+        .add_attribute("owner", info.sender)
+        .add_attribute("initial_slot_size", msg.initial_slot_size.to_string()))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -40,6 +48,17 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::BurnTokens { amount } => burn_uusd(deps, env, info, amount),
+
+        ExecuteMsg::UpdateSlotSize { slot_size } => {
+            // Ensure only the owner can update the slot size.
+            let mut config = Config::load(deps.storage)?;
+            if info.sender != config.owner {
+                return Err(ContractError::Unauthorized {});
+            }
+
+            config.update_slot_size(deps.storage, slot_size)?;
+            Ok(Response::new().add_attribute("method", "update_slot_size"))
+        }
     }
 }
 
@@ -50,9 +69,23 @@ fn burn_uusd(
     amount: Uint128,
 ) -> Result<Response, ContractError> {
     let mut state: State = STATE.load(deps.storage)?;
-    let cap = state.user_caps.get(&info.sender.to_string()).copied().unwrap_or_default();
+    let config = CONFIG.load(deps.storage)?;
 
-    if amount + cap.1 > cap.0 {
+    let previously_burned: Uint128 = state.burned_uusd_by_user.get(&info.sender.to_string()).copied().unwrap_or_default();
+
+    // slots_by_user(address) * config.slot_uusd_size
+    let capped_uusd_by_user: Uint128 = {
+        let slots: Uint128 = {
+            state.slots_by_user
+                .get(&info.sender.to_string())
+                .copied()
+                .unwrap_or_default()
+        };
+        config.slot_size * slots
+    };
+
+
+    if amount + previously_burned > capped_uusd_by_user {
         return Err(ContractError::CapExceeded {});
     }
 
@@ -62,7 +95,7 @@ fn burn_uusd(
         amount: vec![coin(amount.u128(), "uusd")],
     };
 
-    state.user_caps.insert(info.sender.to_string(), (cap.0, cap.1 + amount));
+    state.burned_uusd_by_user.insert(info.sender.to_string(), previously_burned + amount);
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
@@ -75,16 +108,33 @@ fn burn_uusd(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
+        QueryMsg::GetConfig {} => to_json_binary(&query_config(deps)?),
         QueryMsg::GetBurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
     }
 }
 
+fn query_config(deps: Deps) -> StdResult<Config> {
+    let config: Config = CONFIG.load(deps.storage)?;
+
+    Ok(Config {
+        owner: config.owner,
+        slot_size: config.slot_size,
+    })
+}
+
 fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse> {
     let state: State = STATE.load(deps.storage)?;
-    let cap = state.user_caps.get(&address).copied().unwrap_or_default();
+    let config: Config = CONFIG.load(deps.storage)?;
+
+    let previously_burned: Uint128 = state.burned_uusd_by_user.get(&address).copied().unwrap_or_default();
+    let slots: Uint128 = state.slots_by_user.get(&address).copied().unwrap_or_default();
+    let cap: Uint128 = config.slot_size * slots;
 
     Ok(GetBurnInfoResponse {
-        burned: cap.1,
-        remaining_cap: cap.0 - cap.1,
+        burned: previously_burned,
+        burnable: cap - previously_burned,
+        cap,
+        slots,
+        slot_size: config.slot_size
     })
 }
