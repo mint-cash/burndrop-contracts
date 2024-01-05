@@ -1,6 +1,9 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{attr, to_json_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, coin};
+use cosmwasm_std::{
+    attr, coin, to_json_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response,
+    StdResult, Uint128,
+};
 use cw2::set_contract_version;
 use std::collections::HashMap;
 
@@ -20,6 +23,8 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
     let config = Config {
         owner: info.sender.clone(),
         slot_size: msg.initial_slot_size,
@@ -30,13 +35,13 @@ pub fn instantiate(
         burned_uusd_by_user: HashMap::new(),
         slots_by_user: HashMap::new(),
     };
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     STATE.save(deps.storage, &state)?;
 
-    Ok(Response::new()
-        .add_attribute("action", "instantiate")
-        .add_attribute("owner", info.sender)
-        .add_attribute("initial_slot_size", msg.initial_slot_size.to_string()))
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "instantiate"),
+        attr("owner", info.sender),
+        attr("initial_slot_size", msg.initial_slot_size.to_string()),
+    ]))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -71,19 +76,23 @@ fn burn_uusd(
     let mut state: State = STATE.load(deps.storage)?;
     let config = CONFIG.load(deps.storage)?;
 
-    let previously_burned: Uint128 = state.burned_uusd_by_user.get(&info.sender.to_string()).copied().unwrap_or_default();
+    let previously_burned: Uint128 = state
+        .burned_uusd_by_user
+        .get(&info.sender.to_string())
+        .copied()
+        .unwrap_or_default();
 
-    // slots_by_user(address) * config.slot_uusd_size
+    // slots_by_user(address) * config.slot_size
     let capped_uusd_by_user: Uint128 = {
         let slots: Uint128 = {
-            state.slots_by_user
+            state
+                .slots_by_user
                 .get(&info.sender.to_string())
                 .copied()
                 .unwrap_or_default()
         };
         config.slot_size * slots
     };
-
 
     if amount + previously_burned > capped_uusd_by_user {
         return Err(ContractError::CapExceeded {});
@@ -95,13 +104,14 @@ fn burn_uusd(
         amount: vec![coin(amount.u128(), "uusd")],
     };
 
-    state.burned_uusd_by_user.insert(info.sender.to_string(), previously_burned + amount);
+    state
+        .burned_uusd_by_user
+        .insert(info.sender.to_string(), previously_burned + amount);
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
         attr("amount", amount.to_string()),
-        // Add additional attributes related to the swap deposit here
     ]))
 }
 
@@ -126,8 +136,16 @@ fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse
     let state: State = STATE.load(deps.storage)?;
     let config: Config = CONFIG.load(deps.storage)?;
 
-    let previously_burned: Uint128 = state.burned_uusd_by_user.get(&address).copied().unwrap_or_default();
-    let slots: Uint128 = state.slots_by_user.get(&address).copied().unwrap_or_default();
+    let previously_burned: Uint128 = state
+        .burned_uusd_by_user
+        .get(&address)
+        .copied()
+        .unwrap_or_default();
+    let slots: Uint128 = state
+        .slots_by_user
+        .get(&address)
+        .copied()
+        .unwrap_or_default();
     let cap: Uint128 = config.slot_size * slots;
 
     Ok(GetBurnInfoResponse {
@@ -135,6 +153,6 @@ fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse
         burnable: cap - previously_burned,
         cap,
         slots,
-        slot_size: config.slot_size
+        slot_size: config.slot_size,
     })
 }
