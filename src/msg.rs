@@ -1,5 +1,6 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Uint128;
+use crate::states::config::Config;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -15,6 +16,9 @@ pub enum ExecuteMsg {
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
+    #[returns(Config)]
+    GetConfig {},
+
     #[returns(GetBurnInfoResponse)]
     GetBurnInfo { address: String },
 }

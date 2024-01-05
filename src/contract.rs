@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
-use crate::states::config::{Config, self, CONFIG};
+use crate::states::config::{Config, CONFIG};
 use crate::states::state::{State, STATE};
 
 // version info for migration info
@@ -108,8 +108,18 @@ fn burn_uusd(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
+        QueryMsg::GetConfig {} => to_json_binary(&query_config(deps)?),
         QueryMsg::GetBurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
     }
+}
+
+fn query_config(deps: Deps) -> StdResult<Config> {
+    let config: Config = CONFIG.load(deps.storage)?;
+
+    Ok(Config {
+        owner: config.owner,
+        slot_size: config.slot_size,
+    })
 }
 
 fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse> {
