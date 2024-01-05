@@ -34,7 +34,7 @@ pub fn instantiate(
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new()
-        .add_attribute("method", "instantiate")
+        .add_attribute("action", "instantiate")
         .add_attribute("owner", info.sender)
         .add_attribute("initial_slot_size", msg.initial_slot_size.to_string()))
 }
@@ -57,7 +57,7 @@ pub fn execute(
             }
 
             config.update_slot_size(deps.storage, slot_size)?;
-            Ok(Response::new().add_attribute("method", "update_slot_size"))
+            Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
     }
 }
@@ -99,7 +99,7 @@ fn burn_uusd(
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
-        attr("action", "burn_tokens"),
+        attr("action", "burn_uusd"),
         attr("amount", amount.to_string()),
         // Add additional attributes related to the swap deposit here
     ]))
