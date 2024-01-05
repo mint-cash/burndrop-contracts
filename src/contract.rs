@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
-use crate::states::config::Config;
+use crate::states::config::{Config, self, CONFIG};
 use crate::states::state::{State, STATE};
 
 // version info for migration info
@@ -27,7 +27,8 @@ pub fn instantiate(
     config.save(deps.storage)?;
 
     let state = State {
-        user_caps: HashMap::new(), // Added from your new code
+        burned_uusd_by_user: HashMap::new(),
+        slots_by_user: HashMap::new(),
     };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     STATE.save(deps.storage, &state)?;
@@ -68,9 +69,23 @@ fn burn_uusd(
     amount: Uint128,
 ) -> Result<Response, ContractError> {
     let mut state: State = STATE.load(deps.storage)?;
-    let cap = state.user_caps.get(&info.sender.to_string()).copied().unwrap_or_default();
+    let config = CONFIG.load(deps.storage)?;
 
-    if amount + cap.1 > cap.0 {
+    let previously_burned: Uint128 = state.burned_uusd_by_user.get(&info.sender.to_string()).copied().unwrap_or_default();
+
+    // slots_by_user(address) * config.slot_uusd_size
+    let capped_uusd_by_user: Uint128 = {
+        let slots: Uint128 = {
+            state.slots_by_user
+                .get(&info.sender.to_string())
+                .copied()
+                .unwrap_or_default()
+        };
+        config.slot_size * slots
+    };
+
+
+    if amount + previously_burned > capped_uusd_by_user {
         return Err(ContractError::CapExceeded {});
     }
 
@@ -80,7 +95,7 @@ fn burn_uusd(
         amount: vec![coin(amount.u128(), "uusd")],
     };
 
-    state.user_caps.insert(info.sender.to_string(), (cap.0, cap.1 + amount));
+    state.burned_uusd_by_user.insert(info.sender.to_string(), previously_burned + amount);
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
@@ -99,10 +114,17 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
 fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse> {
     let state: State = STATE.load(deps.storage)?;
-    let cap = state.user_caps.get(&address).copied().unwrap_or_default();
+    let config: Config = CONFIG.load(deps.storage)?;
+
+    let previously_burned: Uint128 = state.burned_uusd_by_user.get(&address).copied().unwrap_or_default();
+    let slots: Uint128 = state.slots_by_user.get(&address).copied().unwrap_or_default();
+    let cap: Uint128 = config.slot_size * slots;
 
     Ok(GetBurnInfoResponse {
-        burned: cap.1,
-        remaining_cap: cap.0 - cap.1,
+        burned: previously_burned,
+        burnable: cap - previously_burned,
+        cap,
+        slots,
+        slot_size: config.slot_size
     })
 }

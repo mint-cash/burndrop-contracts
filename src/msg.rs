@@ -22,5 +22,8 @@ pub enum QueryMsg {
 #[cw_serde]
 pub struct GetBurnInfoResponse {
     pub burned: Uint128,
-    pub remaining_cap: Uint128,
+    pub burnable: Uint128,
+    pub cap: Uint128,
+    pub slots: Uint128,
+    pub slot_size: Uint128,
 }
