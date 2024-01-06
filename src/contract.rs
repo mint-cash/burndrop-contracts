@@ -88,7 +88,7 @@ fn burn_uusd(
     let config = CONFIG.load(deps.storage)?;
 
     {
-        // Register referrer it and calculate new slots
+        // Register referrer and calculate new slots
         let mut state: State = STATE.load(deps.storage)?;
 
         // Update referral count
