@@ -22,7 +22,11 @@ impl Config {
         CONFIG.load(storage)
     }
 
-    pub fn update_slot_size(&mut self, storage: &mut dyn Storage, new_slot_size: Uint128) -> StdResult<()> {
+    pub fn update_slot_size(
+        &mut self,
+        storage: &mut dyn Storage,
+        new_slot_size: Uint128,
+    ) -> StdResult<()> {
         self.slot_size = new_slot_size;
         self.save(storage)
     }

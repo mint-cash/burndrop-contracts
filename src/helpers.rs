@@ -37,7 +37,9 @@ impl BurnContract {
         T: Into<String>,
         CQ: CustomQuery,
     {
-        let msg = QueryMsg::GetBurnInfo { address: address.into() };
+        let msg = QueryMsg::GetBurnInfo {
+            address: address.into(),
+        };
         let query = WasmQuery::Smart {
             contract_addr: self.addr().into(),
             msg: to_json_binary(&msg)?,
