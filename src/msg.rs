@@ -9,7 +9,8 @@ pub struct InstantiateMsg {
 
 #[cw_serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    BurnTokens { amount: Uint128 },
+    BurnTokens { amount: Uint128, referrer: String },
+    Register2ndReferrer { referrer: String },
     UpdateSlotSize { slot_size: Uint128 },
 }
 
