@@ -92,10 +92,7 @@ fn burn_uusd(
         let mut state: State = STATE.load(deps.storage)?;
 
         // Update referral count
-        let referrer_count = state
-            .referral_count_by_user
-            .entry(referrer.clone())
-            .or_insert(0);
+        let referrer_count = state.referral_count_by_user.entry(referrer).or_insert(0);
         *referrer_count += 1;
 
         // Calculate new slots
