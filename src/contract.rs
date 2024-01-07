@@ -34,6 +34,8 @@ pub fn instantiate(
     let state = State {
         burned_uusd_by_user: HashMap::new(),
         slots_by_user: HashMap::new(),
+        referral_count_by_user: HashMap::new(),
+        second_referrer_registered: HashMap::new(),
     };
     STATE.save(deps.storage, &state)?;
 
@@ -52,7 +54,8 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::BurnTokens { amount } => burn_uusd(deps, env, info, amount),
+        ExecuteMsg::BurnTokens { amount, referrer } => burn_uusd(deps, env, info, amount, referrer),
+        ExecuteMsg::Register2ndReferrer { referrer } => register_2nd_referrer(deps, info, referrer),
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {
             // Ensure only the owner can update the slot size.
@@ -67,14 +70,41 @@ pub fn execute(
     }
 }
 
+fn calculate_new_slots(referral_count: u32) -> u32 {
+    match referral_count {
+        1..=8 => 2u32.pow(referral_count - 1), // Double the slots for each referral up to the 8th
+        _ => 1,                                // Reset to 1 slot after the 8th referral
+    }
+}
+
 fn burn_uusd(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
     amount: Uint128,
+    referrer: String,
 ) -> Result<Response, ContractError> {
     let mut state: State = STATE.load(deps.storage)?;
     let config = CONFIG.load(deps.storage)?;
+
+    {
+        // Register referrer and calculate new slots
+        let mut state: State = STATE.load(deps.storage)?;
+
+        // Update referral count
+        let referrer_count = state.referral_count_by_user.entry(referrer).or_insert(0);
+        *referrer_count += 1;
+
+        // Calculate new slots
+        let new_slots = calculate_new_slots(*referrer_count).into();
+        state
+            .slots_by_user
+            .entry(info.sender.to_string())
+            .and_modify(|e| *e += new_slots)
+            .or_insert(new_slots);
+
+        STATE.save(deps.storage, &state)?;
+    }
 
     let previously_burned: Uint128 = state
         .burned_uusd_by_user
@@ -89,7 +119,7 @@ fn burn_uusd(
                 .slots_by_user
                 .get(&info.sender.to_string())
                 .copied()
-                .unwrap_or_default()
+                .unwrap_or_else(|| Uint128::new(1))
         };
         config.slot_size * slots
     };
@@ -112,6 +142,43 @@ fn burn_uusd(
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
         attr("amount", amount.to_string()),
+    ]))
+}
+
+fn register_2nd_referrer(
+    deps: DepsMut,
+    info: MessageInfo,
+    referrer: String,
+) -> Result<Response, ContractError> {
+    let mut state: State = STATE.load(deps.storage)?;
+
+    // Ensure the second referrer is registered only once
+    if state
+        .second_referrer_registered
+        .get(&info.sender.to_string())
+        .copied()
+        .unwrap_or(false)
+    {
+        return Err(ContractError::AlreadyRegistered {});
+    }
+
+    state
+        .second_referrer_registered
+        .insert(info.sender.to_string(), true);
+
+    // Logic similar to the first referrer, but without incrementing the referral count
+    let current_slots = state
+        .slots_by_user
+        .entry(info.sender.to_string())
+        .or_insert(Uint128::zero());
+    *current_slots += Uint128::from(1u128); // Add one slot
+
+    STATE.save(deps.storage, &state)?;
+
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "register_2nd_referrer"),
+        attr("referrer", referrer),
+        attr("new_slot", "1"),
     ]))
 }
 
@@ -145,7 +212,7 @@ fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse
         .slots_by_user
         .get(&address)
         .copied()
-        .unwrap_or_default();
+        .unwrap_or_else(|| Uint128::new(1));
     let cap: Uint128 = config.slot_size * slots;
 
     Ok(GetBurnInfoResponse {

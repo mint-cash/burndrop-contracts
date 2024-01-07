@@ -69,6 +69,7 @@ mod tests {
             let burn_amount = Uint128::new(100); // Set the burn amount.
             let msg = ExecuteMsg::BurnTokens {
                 amount: burn_amount,
+                referrer: String::from(""), // TODO: Add mocked Terra address
             };
             let cosmos_msg = burn_contract.call(msg).unwrap();
             app.execute(Addr::unchecked(USER), cosmos_msg).unwrap();

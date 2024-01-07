@@ -8,6 +8,9 @@ use std::collections::HashMap;
 pub struct State {
     pub burned_uusd_by_user: HashMap<String, Uint128>,
     pub slots_by_user: HashMap<String, Uint128>,
+
+    pub referral_count_by_user: HashMap<String, u32>,
+    pub second_referrer_registered: HashMap<String, bool>,
 }
 
 pub const STATE: Item<State> = Item::new("state");
