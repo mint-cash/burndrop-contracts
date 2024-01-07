@@ -119,7 +119,7 @@ fn burn_uusd(
                 .slots_by_user
                 .get(&info.sender.to_string())
                 .copied()
-                .unwrap_or_default()
+                .unwrap_or_else(|| Uint128::new(1))
         };
         config.slot_size * slots
     };
@@ -212,7 +212,7 @@ fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse
         .slots_by_user
         .get(&address)
         .copied()
-        .unwrap_or_default();
+        .unwrap_or_else(|| Uint128::new(1));
     let cap: Uint128 = config.slot_size * slots;
 
     Ok(GetBurnInfoResponse {
