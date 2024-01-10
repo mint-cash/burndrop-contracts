@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    attr, to_binary, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Env, Fraction, MessageInfo,
-    Response, Uint128, WasmMsg,
+    attr, to_binary, to_json_binary, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Env, Fraction,
+    MessageInfo, Response, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Denom};
 use pylon_utils::tax::deduct_tax;
@@ -126,7 +126,7 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> super::ExecuteResult
     Ok(Response::new()
         .add_message(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: output_token.to_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+            msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: info.sender.to_string(),
                 amount: claimable_token,
             })?,

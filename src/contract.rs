@@ -141,20 +141,13 @@ fn burn_uusd(
     STATE.save(deps.storage, &state)?;
 
     // Assuming deposit function can handle the deposit post-burn
-    match deposit(deps, env, info) {
-        Ok(deposit_response) => {
-            // Handle the deposit response
-            // You might want to update some state or log attributes based on the deposit
-        }
-        Err(e) => {
-            // Handle errors from the deposit function
-            return Err(e);
-        }
-    }
+    let res = deposit(deps, env, info);
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
         attr("amount", amount.to_string()),
+        attr("swapped_in", res.unwrap().swapped_in.to_string()),
+        attr("swapped_out", res.unwrap().swapped_out.to_string()),
     ]))
 }
 
