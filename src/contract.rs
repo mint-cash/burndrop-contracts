@@ -11,6 +11,7 @@ use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
 use crate::states::config::{Config, CONFIG};
 use crate::states::state::{State, STATE};
+use crate::swap::deposit;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -79,7 +80,7 @@ fn calculate_new_slots(referral_count: u32) -> u32 {
 
 fn burn_uusd(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     amount: Uint128,
     referrer: String,
@@ -139,10 +140,28 @@ fn burn_uusd(
         .insert(info.sender.to_string(), previously_burned + amount);
     STATE.save(deps.storage, &state)?;
 
+    // Assuming deposit function can handle the deposit post-burn
+    match deposit(deps, env, info) {
+        Ok(deposit_response) => {
+            // Handle the deposit response
+            // You might want to update some state or log attributes based on the deposit
+        }
+        Err(e) => {
+            // Handle errors from the deposit function
+            return Err(e);
+        }
+    }
+
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
         attr("amount", amount.to_string()),
     ]))
+}
+
+// The PurchaseResponse struct to handle the swap response
+struct PurchaseResponse {
+    amount: Uint128,
+    // Include other relevant fields based on the swap response
 }
 
 fn register_2nd_referrer(
