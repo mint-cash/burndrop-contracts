@@ -1,4 +1,4 @@
-use cosmwasm_std::StdError;
+use cosmwasm_std::{StdError, Uint128};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -17,6 +17,10 @@ pub enum ContractError {
 
     #[error("Swap: zero amount")]
     NotAllowZeroAmount {},
-    // Add any other custom errors you like here.
-    // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
+
+    #[error("Swap: available cap exceeded")]
+    AvailableCapExceeded { available: Uint128 },
+
+    #[error("Swap: pool size exceeded")]
+    PoolSizeExceeded { available: Uint128 },
 }

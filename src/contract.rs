@@ -11,7 +11,7 @@ use crate::error::ContractError;
 use crate::msg::{CurrentPriceResponse, ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
 use crate::states::config::{Config, CONFIG};
 use crate::states::state::{State, STATE};
-use crate::swap::deposit;
+use crate::swap::swap;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -151,7 +151,7 @@ fn burn_uusd(
     STATE.save(deps.storage, &state)?;
 
     // Assuming deposit function can handle the deposit post-burn
-    let res = deposit(deps, env, info);
+    let res = swap(deps, env, info);
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
