@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 const CONFIG_KEY: &str = "config";
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Config {
     pub owner: Addr,
     pub slot_size: Uint128,
