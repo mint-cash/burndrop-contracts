@@ -9,6 +9,7 @@ const CONFIG_KEY: &str = "config";
 pub struct Config {
     pub owner: Addr,
     pub slot_size: Uint128,
+    pub sale_amount: Uint128,
 }
 
 pub const CONFIG: Item<Config> = Item::new(CONFIG_KEY);

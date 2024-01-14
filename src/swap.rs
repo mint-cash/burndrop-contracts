@@ -14,24 +14,10 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     let config = CONFIG.load(deps.storage)?;
     let now = env.block.time.seconds();
 
-    // if now < config.start {
-    //     return Err(ContractError::SwapNotStarted {
-    //         start: config.start,
-    //     });
-    // }
-    // if config.finish < now {
-    //     return Err(ContractError::SwapFinished {
-    //         finish: config.finish,
-    //     });
-    // }
+    // TODO: Add time check
 
-    // let input_token_denom = match config.input_token {
-    //     Denom::Native(denom) => denom,
-    //     Denom::Cw20(_) => panic!("input token as cw20 token not supported"),
-    // };
     let input_token_denom = "uusd";
 
-    // 1:1
     let swapped_in = info
         .funds
         .iter()
@@ -41,11 +27,11 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     if swapped_in.is_zero() {
         return Err(ContractError::NotAllowZeroAmount {});
     }
-    // if info.funds.len() > 1 {
-    //     return Err(ContractError::NotAllowOtherDenoms {
-    //         denom: input_token_denom,
-    //     });
-    // }
+    if info.funds.len() > 1 {
+        return Err(ContractError::NotAllowOtherDenoms {
+            denom: input_token_denom.to_string(),
+        });
+    }
 
     let sender = &deps.api.addr_canonicalize(info.sender.as_str())?;
     let mut user = User::load(deps.storage, sender);
@@ -53,19 +39,13 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     let price = calculate_current_price(&state);
 
-    // if let Some(strategy) = config.deposit_cap_strategy {
-    //     let (amount, unlimited) =
-    //         strategy.available_cap_of(deps.querier, info.sender.to_string(), user.swapped_in);
-    //     if !unlimited && swapped_in > amount {
-    //         return Err(ContractError::AvailableCapExceeded { available: amount });
-    //     }
-    // }
+    // TODO: Add cap check
 
     let swapped_out =
         swapped_in * Uint128::from(price.denominator()) / Uint128::from(price.numerator());
-    if state.total_swapped + swapped_out > config.amount {
+    if state.total_swapped + swapped_out > config.sale_amount {
         return Err(ContractError::PoolSizeExceeded {
-            available: config.amount - state.total_swapped,
+            available: config.sale_amount - state.total_swapped,
         });
     }
 
@@ -76,12 +56,6 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     User::save(deps.storage, sender, &user)?;
     STATE.save(deps.storage, &state)?;
-
-    // let deposit_response = Response::new().add_attributes(vec![
-    //     attr("sender", info.sender.to_string()),
-    //     attr("swapped_in", swapped_in.to_string()),
-    //     attr("swapped_out", swapped_out.to_string()),
-    // ]);
 
     let deposit_result = SwapResult {
         swapped_in,

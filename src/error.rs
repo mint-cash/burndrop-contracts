@@ -18,6 +18,9 @@ pub enum ContractError {
     #[error("Swap: zero amount")]
     NotAllowZeroAmount {},
 
+    #[error("Swap: not allow other denoms")]
+    NotAllowOtherDenoms { denom: String },
+
     #[error("Swap: available cap exceeded")]
     AvailableCapExceeded { available: Uint128 },
 
