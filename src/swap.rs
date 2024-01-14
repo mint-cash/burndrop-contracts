@@ -2,8 +2,7 @@ use cosmwasm_std::{DepsMut, Env, Fraction, MessageInfo, Uint128};
 
 use crate::contract::calculate_current_price;
 use crate::error::ContractError;
-use crate::states::config::CONFIG;
-use crate::states::state::STATE;
+use crate::states::{config::CONFIG, state::STATE, user::USER};
 
 pub struct SwapResult {
     pub swapped_in: Uint128,
@@ -34,7 +33,7 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     }
 
     let sender = &deps.api.addr_canonicalize(info.sender.as_str())?;
-    let mut user = User::load(deps.storage, sender);
+    let mut user = USER.load(deps.storage, sender)?;
     let mut state = STATE.load(deps.storage)?;
 
     let price = calculate_current_price(&state);
@@ -54,7 +53,7 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     state.total_swapped += swapped_out;
 
-    User::save(deps.storage, sender, &user)?;
+    USER.save(deps.storage, sender, &user)?;
     STATE.save(deps.storage, &state)?;
 
     let deposit_result = SwapResult {

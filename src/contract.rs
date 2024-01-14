@@ -29,6 +29,7 @@ pub fn instantiate(
     let config = Config {
         owner: info.sender.clone(),
         slot_size: msg.initial_slot_size,
+        sale_amount: msg.sale_amount,
     };
     CONFIG.save(deps.storage, &config)?;
 
@@ -156,15 +157,9 @@ fn burn_uusd(
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
         attr("amount", amount.to_string()),
-        attr("swapped_in", res.unwrap().swapped_in.to_string()),
-        attr("swapped_out", res.unwrap().swapped_out.to_string()),
+        attr("swapped_in", res.as_ref().unwrap().swapped_in.to_string()),
+        attr("swapped_out", res.as_ref().unwrap().swapped_out.to_string()),
     ]))
-}
-
-// The PurchaseResponse struct to handle the swap response
-struct PurchaseResponse {
-    amount: Uint128,
-    // Include other relevant fields based on the swap response
 }
 
 fn register_2nd_referrer(
@@ -219,6 +214,7 @@ fn query_config(deps: Deps) -> StdResult<Config> {
     Ok(Config {
         owner: config.owner,
         slot_size: config.slot_size,
+        sale_amount: config.sale_amount,
     })
 }
 
