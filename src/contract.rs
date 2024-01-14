@@ -1,8 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    attr, coin, to_json_binary, BankMsg, Binary, Decimal, Deps, DepsMut, Env, MessageInfo,
-    Response, StdResult, Uint128,
+    attr, coin, to_json_binary, BankMsg, Binary, Decimal, Deps, DepsMut, Env, Fraction,
+    MessageInfo, Response, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 use std::collections::HashMap;
@@ -253,4 +253,26 @@ pub fn query_current_price(deps: Deps) -> StdResult<CurrentPriceResponse> {
     Ok(CurrentPriceResponse {
         price: calculate_current_price(&state),
     })
+}
+
+pub fn query_simulate_burn(deps: Deps, amount: Uint128) -> StdResult<Uint128> {
+    let state = STATE.load(deps.storage)?;
+    let price = calculate_current_price(&state);
+
+    let k = state.x_liquidity * state.y_liquidity;
+
+    // if state.y_liquidity + amount == Uint128::zero() {
+    //     return Err(ContractError::DivisionByZeroError {});
+    // }
+
+    let swapped_out = state.x_liquidity - (k / (state.y_liquidity + amount));
+    // if state.total_swapped + swapped_out > config.sale_amount {
+    //     return Err(ContractError::PoolSizeExceeded {
+    //         available: config.sale_amount - state.total_swapped,
+    //     });
+    // }
+
+    let virtual_slippage = swapped_out * price.numerator() / price.denominator() - amount;
+
+    Ok(swapped_out - virtual_slippage)
 }
