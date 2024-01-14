@@ -255,22 +255,23 @@ pub fn query_current_price(deps: Deps) -> StdResult<CurrentPriceResponse> {
     })
 }
 
-pub fn query_simulate_burn(deps: Deps, amount: Uint128) -> StdResult<Uint128> {
+pub fn query_simulate_burn(deps: Deps, amount: Uint128) -> Result<Uint128, ContractError> {
     let state = STATE.load(deps.storage)?;
+    let config = CONFIG.load(deps.storage)?;
     let price = calculate_current_price(&state);
 
     let k = state.x_liquidity * state.y_liquidity;
 
-    // if state.y_liquidity + amount == Uint128::zero() {
-    //     return Err(ContractError::DivisionByZeroError {});
-    // }
+    if state.y_liquidity + amount == Uint128::zero() {
+        return Err(ContractError::DivisionByZeroError {});
+    }
 
     let swapped_out = state.x_liquidity - (k / (state.y_liquidity + amount));
-    // if state.total_swapped + swapped_out > config.sale_amount {
-    //     return Err(ContractError::PoolSizeExceeded {
-    //         available: config.sale_amount - state.total_swapped,
-    //     });
-    // }
+    if state.total_swapped + swapped_out > config.sale_amount {
+        return Err(ContractError::PoolSizeExceeded {
+            available: config.sale_amount - state.total_swapped,
+        });
+    }
 
     let virtual_slippage = swapped_out * price.numerator() / price.denominator() - amount;
 
