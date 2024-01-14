@@ -1,6 +1,6 @@
 use crate::states::config::Config;
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::Uint128;
+use cosmwasm_std::{Decimal, Uint128};
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -22,6 +22,9 @@ pub enum QueryMsg {
 
     #[returns(GetBurnInfoResponse)]
     GetBurnInfo { address: String },
+
+    #[returns(CurrentPriceResponse)]
+    GetCurrentPrice {},
 }
 
 #[cw_serde]
@@ -31,4 +34,9 @@ pub struct GetBurnInfoResponse {
     pub cap: Uint128,
     pub slots: Uint128,
     pub slot_size: Uint128,
+}
+
+#[cw_serde]
+pub struct CurrentPriceResponse {
+    pub price: Decimal,
 }

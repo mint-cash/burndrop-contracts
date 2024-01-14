@@ -1,14 +1,14 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    attr, coin, to_json_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Uint128,
+    attr, coin, to_json_binary, BankMsg, Binary, Decimal, Deps, DepsMut, Env, MessageInfo,
+    Response, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 use std::collections::HashMap;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
+use crate::msg::{CurrentPriceResponse, ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
 use crate::states::config::{Config, CONFIG};
 use crate::states::state::{State, STATE};
 use crate::swap::deposit;
@@ -37,6 +37,12 @@ pub fn instantiate(
         slots_by_user: HashMap::new(),
         referral_count_by_user: HashMap::new(),
         second_referrer_registered: HashMap::new(),
+
+        // FIXME: These are dummy values
+        x_liquidity: Uint128::zero(),
+        y_liquidity: Uint128::zero(),
+        total_claimed: Uint128::zero(),
+        total_swapped: Uint128::zero(),
     };
     STATE.save(deps.storage, &state)?;
 
@@ -199,6 +205,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetConfig {} => to_json_binary(&query_config(deps)?),
         QueryMsg::GetBurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
+        QueryMsg::GetCurrentPrice {} => to_json_binary(&query_current_price(deps)?),
     }
 }
 
@@ -233,5 +240,17 @@ fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse
         cap,
         slots,
         slot_size: config.slot_size,
+    })
+}
+
+pub fn calculate_current_price(state: &State) -> Decimal {
+    Decimal::from_ratio(state.x_liquidity, state.y_liquidity)
+}
+
+pub fn query_current_price(deps: Deps) -> StdResult<CurrentPriceResponse> {
+    let state = STATE.load(deps.storage)?;
+
+    Ok(CurrentPriceResponse {
+        price: calculate_current_price(&state),
     })
 }
