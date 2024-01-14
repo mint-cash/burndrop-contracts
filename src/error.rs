@@ -30,3 +30,9 @@ pub enum ContractError {
     #[error("Swap: attempted division by zero")]
     DivisionByZeroError {},
 }
+
+impl Into<StdError> for ContractError {
+    fn into(self) -> StdError {
+        StdError::generic_err(self.to_string())
+    }
+}

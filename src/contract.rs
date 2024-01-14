@@ -8,7 +8,9 @@ use cw2::set_contract_version;
 use std::collections::HashMap;
 
 use crate::error::ContractError;
-use crate::msg::{BurnInfoResponse, ExecuteMsg, InstantiateMsg, PriceResponse, QueryMsg};
+use crate::msg::{
+    BurnInfoResponse, ExecuteMsg, InstantiateMsg, PriceResponse, QueryMsg, SimulateBurnResponse,
+};
 use crate::states::config::{Config, CONFIG};
 use crate::states::state::{State, STATE};
 use crate::swap::swap;
@@ -205,6 +207,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
         QueryMsg::BurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
         QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps)?),
+        QueryMsg::SimulateBurn { amount } => to_json_binary(&query_simulate_burn(deps, amount)?),
     }
 }
 
@@ -255,7 +258,7 @@ pub fn query_current_price(deps: Deps) -> StdResult<PriceResponse> {
     })
 }
 
-pub fn query_simulate_burn(deps: Deps, amount: Uint128) -> Result<Uint128, ContractError> {
+pub fn query_simulate_burn(deps: Deps, amount: Uint128) -> StdResult<SimulateBurnResponse> {
     let state = STATE.load(deps.storage)?;
     let config = CONFIG.load(deps.storage)?;
     let price = calculate_current_price(&state);
@@ -263,17 +266,22 @@ pub fn query_simulate_burn(deps: Deps, amount: Uint128) -> Result<Uint128, Contr
     let k = state.x_liquidity * state.y_liquidity;
 
     if state.y_liquidity + amount == Uint128::zero() {
-        return Err(ContractError::DivisionByZeroError {});
+        return Err(ContractError::DivisionByZeroError {}.into());
     }
 
     let swapped_out = state.x_liquidity - (k / (state.y_liquidity + amount));
     if state.total_swapped + swapped_out > config.sale_amount {
         return Err(ContractError::PoolSizeExceeded {
             available: config.sale_amount - state.total_swapped,
-        });
+        }
+        .into());
     }
 
     let virtual_slippage = swapped_out * price.numerator() / price.denominator() - amount;
 
-    Ok(swapped_out - virtual_slippage)
+    Ok(SimulateBurnResponse {
+        swapped_out,
+        virtual_slippage,
+        final_amount: amount - virtual_slippage,
+    })
 }

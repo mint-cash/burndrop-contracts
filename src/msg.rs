@@ -26,6 +26,9 @@ pub enum QueryMsg {
 
     #[returns(PriceResponse)]
     CurrentPrice {},
+
+    #[returns(SimulateBurnResponse)]
+    SimulateBurn { amount: Uint128 },
 }
 
 #[cw_serde]
@@ -40,4 +43,11 @@ pub struct BurnInfoResponse {
 #[cw_serde]
 pub struct PriceResponse {
     pub price: Decimal,
+}
+
+#[cw_serde]
+pub struct SimulateBurnResponse {
+    pub swapped_out: Uint128,
+    pub virtual_slippage: Uint128,
+    pub final_amount: Uint128,
 }
