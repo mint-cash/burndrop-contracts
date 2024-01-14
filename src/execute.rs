@@ -4,8 +4,7 @@ use cosmwasm_std::Fraction;
 
 use crate::error::ContractError;
 use crate::query::calculate_current_price;
-use crate::states::state::State;
-use crate::states::{config::CONFIG, state::STATE, user::USER};
+use crate::states::{config::CONFIG, state::State, state::STATE, user::USER};
 
 pub fn calculate_new_slots(referral_count: u32) -> u32 {
     match referral_count {
