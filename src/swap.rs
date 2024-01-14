@@ -41,6 +41,11 @@ pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, C
     // TODO: Add cap check
 
     let k = state.x_liquidity * state.y_liquidity;
+
+    if state.y_liquidity + swapped_in == Uint128::zero() {
+        return Err(ContractError::DivisionByZeroError {});
+    }
+
     let swapped_out = state.x_liquidity - (k / (state.y_liquidity + swapped_in));
     if state.total_swapped + swapped_out > config.sale_amount {
         return Err(ContractError::PoolSizeExceeded {
