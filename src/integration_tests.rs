@@ -76,11 +76,11 @@ mod tests {
             app.execute(Addr::unchecked(USER), cosmos_msg).unwrap();
 
             // Query the burn info after burning tokens.
-            let query_res: crate::msg::GetBurnInfoResponse = app
+            let query_res: crate::msg::BurnInfoResponse = app
                 .wrap()
                 .query_wasm_smart(
                     burn_contract.addr(),
-                    &QueryMsg::GetBurnInfo {
+                    &QueryMsg::BurnInfo {
                         address: USER.to_string(),
                     },
                 )

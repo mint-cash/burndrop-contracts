@@ -19,17 +19,17 @@ pub enum ExecuteMsg {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     #[returns(Config)]
-    GetConfig {},
+    Config {},
 
-    #[returns(GetBurnInfoResponse)]
-    GetBurnInfo { address: String },
+    #[returns(BurnInfoResponse)]
+    BurnInfo { address: String },
 
-    #[returns(CurrentPriceResponse)]
-    GetCurrentPrice {},
+    #[returns(PriceResponse)]
+    CurrentPrice {},
 }
 
 #[cw_serde]
-pub struct GetBurnInfoResponse {
+pub struct BurnInfoResponse {
     pub burned: Uint128,
     pub burnable: Uint128,
     pub cap: Uint128,
@@ -38,6 +38,6 @@ pub struct GetBurnInfoResponse {
 }
 
 #[cw_serde]
-pub struct CurrentPriceResponse {
+pub struct PriceResponse {
     pub price: Decimal,
 }

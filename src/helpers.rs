@@ -6,7 +6,7 @@ use cosmwasm_std::{
     WasmQuery,
 };
 
-use crate::msg::{ExecuteMsg, GetBurnInfoResponse, QueryMsg};
+use crate::msg::{BurnInfoResponse, ExecuteMsg, QueryMsg};
 
 /// BurnContract is a wrapper around Addr that provides a lot of helpers
 /// for working with this contract specifically.
@@ -31,13 +31,13 @@ impl BurnContract {
     }
 
     /// Helper to query the burn information of a specific address.
-    pub fn get_burn_info<Q, T, CQ>(&self, querier: &Q, address: T) -> StdResult<GetBurnInfoResponse>
+    pub fn get_burn_info<Q, T, CQ>(&self, querier: &Q, address: T) -> StdResult<BurnInfoResponse>
     where
         Q: Querier,
         T: Into<String>,
         CQ: CustomQuery,
     {
-        let msg = QueryMsg::GetBurnInfo {
+        let msg = QueryMsg::BurnInfo {
             address: address.into(),
         };
         let query = WasmQuery::Smart {
@@ -45,7 +45,7 @@ impl BurnContract {
             msg: to_json_binary(&msg)?,
         }
         .into();
-        let res: GetBurnInfoResponse = QuerierWrapper::<CQ>::new(querier).query(&query)?;
+        let res: BurnInfoResponse = QuerierWrapper::<CQ>::new(querier).query(&query)?;
         Ok(res)
     }
 }

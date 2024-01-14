@@ -8,7 +8,7 @@ use cw2::set_contract_version;
 use std::collections::HashMap;
 
 use crate::error::ContractError;
-use crate::msg::{CurrentPriceResponse, ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
+use crate::msg::{BurnInfoResponse, ExecuteMsg, InstantiateMsg, PriceResponse, QueryMsg};
 use crate::states::config::{Config, CONFIG};
 use crate::states::state::{State, STATE};
 use crate::swap::swap;
@@ -202,9 +202,9 @@ fn register_2nd_referrer(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::GetConfig {} => to_json_binary(&query_config(deps)?),
-        QueryMsg::GetBurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
-        QueryMsg::GetCurrentPrice {} => to_json_binary(&query_current_price(deps)?),
+        QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
+        QueryMsg::BurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
+        QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps)?),
     }
 }
 
@@ -218,7 +218,7 @@ fn query_config(deps: Deps) -> StdResult<Config> {
     })
 }
 
-fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse> {
+fn query_burn_info(deps: Deps, address: String) -> StdResult<BurnInfoResponse> {
     let state: State = STATE.load(deps.storage)?;
     let config: Config = CONFIG.load(deps.storage)?;
 
@@ -234,7 +234,7 @@ fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse
         .unwrap_or_else(|| Uint128::new(1));
     let cap: Uint128 = config.slot_size * slots;
 
-    Ok(GetBurnInfoResponse {
+    Ok(BurnInfoResponse {
         burned: previously_burned,
         burnable: cap - previously_burned,
         cap,
@@ -247,10 +247,10 @@ pub fn calculate_current_price(state: &State) -> Decimal {
     Decimal::from_ratio(state.x_liquidity, state.y_liquidity)
 }
 
-pub fn query_current_price(deps: Deps) -> StdResult<CurrentPriceResponse> {
+pub fn query_current_price(deps: Deps) -> StdResult<PriceResponse> {
     let state = STATE.load(deps.storage)?;
 
-    Ok(CurrentPriceResponse {
+    Ok(PriceResponse {
         price: calculate_current_price(&state),
     })
 }
