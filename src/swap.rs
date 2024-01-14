@@ -9,9 +9,9 @@ pub struct SwapResult {
     pub swapped_out: Uint128,
 }
 
-pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, ContractError> {
+pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, ContractError> {
     let config = CONFIG.load(deps.storage)?;
-    let now = env.block.time.seconds();
+    // let now = env.block.time.seconds();
 
     // TODO: Add time check
 
@@ -40,18 +40,22 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     // TODO: Add cap check
 
-    let swapped_out =
-        swapped_in * Uint128::from(price.denominator()) / Uint128::from(price.numerator());
+    let k = state.x_liquidity * state.y_liquidity;
+    let swapped_out = state.x_liquidity - (k / (state.y_liquidity + swapped_in));
     if state.total_swapped + swapped_out > config.sale_amount {
         return Err(ContractError::PoolSizeExceeded {
             available: config.sale_amount - state.total_swapped,
         });
     }
 
-    user.swapped_in += swapped_in;
-    user.swapped_out += swapped_out;
+    let virtual_slippage = swapped_out * price.numerator() / price.denominator() - swapped_in;
+
+    user.swapped_in += swapped_in; // FIXME: same as burned uusd
+    user.swapped_out += swapped_out - virtual_slippage;
 
     state.total_swapped += swapped_out;
+    state.x_liquidity += swapped_in;
+    state.y_liquidity -= swapped_out;
 
     USER.save(deps.storage, sender, &user)?;
     STATE.save(deps.storage, &state)?;

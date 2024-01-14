@@ -67,7 +67,7 @@ pub fn execute(
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {
             // Ensure only the owner can update the slot size.
-            let mut config = CONFIG.load(deps.storage)?;
+            let config = CONFIG.load(deps.storage)?;
             if info.sender != config.owner {
                 return Err(ContractError::Unauthorized {});
             }
