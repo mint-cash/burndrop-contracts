@@ -1,14 +1,15 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    attr, coin, to_json_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, Uint128,
+    attr, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 use std::collections::HashMap;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, GetBurnInfoResponse, InstantiateMsg, QueryMsg};
+use crate::execute::{burn_uusd, register_2nd_referrer};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::query::{query_burn_info, query_config, query_current_price, query_simulate_burn};
 use crate::states::config::{Config, CONFIG};
 use crate::states::state::{State, STATE};
 
@@ -28,14 +29,21 @@ pub fn instantiate(
     let config = Config {
         owner: info.sender.clone(),
         slot_size: msg.initial_slot_size,
+        sale_amount: msg.sale_amount,
     };
-    config.save(deps.storage)?;
+    CONFIG.save(deps.storage, &config)?;
 
     let state = State {
         burned_uusd_by_user: HashMap::new(),
         slots_by_user: HashMap::new(),
         referral_count_by_user: HashMap::new(),
         second_referrer_registered: HashMap::new(),
+
+        // FIXME: These are dummy values
+        x_liquidity: Uint128::zero(),
+        y_liquidity: Uint128::zero(),
+        total_claimed: Uint128::zero(),
+        total_swapped: Uint128::zero(),
     };
     STATE.save(deps.storage, &state)?;
 
@@ -59,167 +67,27 @@ pub fn execute(
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {
             // Ensure only the owner can update the slot size.
-            let mut config = Config::load(deps.storage)?;
+            let config = CONFIG.load(deps.storage)?;
             if info.sender != config.owner {
                 return Err(ContractError::Unauthorized {});
             }
 
-            config.update_slot_size(deps.storage, slot_size)?;
+            CONFIG.update(deps.storage, |mut config| -> StdResult<Config> {
+                config.slot_size = slot_size;
+                Ok(config)
+            })?;
+
             Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
     }
 }
 
-fn calculate_new_slots(referral_count: u32) -> u32 {
-    match referral_count {
-        1..=8 => 2u32.pow(referral_count - 1), // Double the slots for each referral up to the 8th
-        _ => 1,                                // Reset to 1 slot after the 8th referral
-    }
-}
-
-fn burn_uusd(
-    deps: DepsMut,
-    _env: Env,
-    info: MessageInfo,
-    amount: Uint128,
-    referrer: String,
-) -> Result<Response, ContractError> {
-    let mut state: State = STATE.load(deps.storage)?;
-    let config = CONFIG.load(deps.storage)?;
-
-    {
-        // Register referrer and calculate new slots
-        let mut state: State = STATE.load(deps.storage)?;
-
-        // Update referral count
-        let referrer_count = state.referral_count_by_user.entry(referrer).or_insert(0);
-        *referrer_count += 1;
-
-        // Calculate new slots
-        let new_slots = calculate_new_slots(*referrer_count).into();
-        state
-            .slots_by_user
-            .entry(info.sender.to_string())
-            .and_modify(|e| *e += new_slots)
-            .or_insert(new_slots);
-
-        STATE.save(deps.storage, &state)?;
-    }
-
-    let previously_burned: Uint128 = state
-        .burned_uusd_by_user
-        .get(&info.sender.to_string())
-        .copied()
-        .unwrap_or_default();
-
-    // slots_by_user(address) * config.slot_size
-    let capped_uusd_by_user: Uint128 = {
-        let slots: Uint128 = {
-            state
-                .slots_by_user
-                .get(&info.sender.to_string())
-                .copied()
-                .unwrap_or_else(|| Uint128::new(1))
-        };
-        config.slot_size * slots
-    };
-
-    if amount + previously_burned > capped_uusd_by_user {
-        return Err(ContractError::CapExceeded {});
-    }
-
-    let burn_address = "terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu";
-    let burn_msg = BankMsg::Send {
-        to_address: burn_address.to_string(),
-        amount: vec![coin(amount.u128(), "uusd")],
-    };
-
-    state
-        .burned_uusd_by_user
-        .insert(info.sender.to_string(), previously_burned + amount);
-    STATE.save(deps.storage, &state)?;
-
-    Ok(Response::new().add_message(burn_msg).add_attributes(vec![
-        attr("action", "burn_uusd"),
-        attr("amount", amount.to_string()),
-    ]))
-}
-
-fn register_2nd_referrer(
-    deps: DepsMut,
-    info: MessageInfo,
-    referrer: String,
-) -> Result<Response, ContractError> {
-    let mut state: State = STATE.load(deps.storage)?;
-
-    // Ensure the second referrer is registered only once
-    if state
-        .second_referrer_registered
-        .get(&info.sender.to_string())
-        .copied()
-        .unwrap_or(false)
-    {
-        return Err(ContractError::AlreadyRegistered {});
-    }
-
-    state
-        .second_referrer_registered
-        .insert(info.sender.to_string(), true);
-
-    // Logic similar to the first referrer, but without incrementing the referral count
-    let current_slots = state
-        .slots_by_user
-        .entry(info.sender.to_string())
-        .or_insert(Uint128::zero());
-    *current_slots += Uint128::from(1u128); // Add one slot
-
-    STATE.save(deps.storage, &state)?;
-
-    Ok(Response::new().add_attributes(vec![
-        attr("action", "register_2nd_referrer"),
-        attr("referrer", referrer),
-        attr("new_slot", "1"),
-    ]))
-}
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::GetConfig {} => to_json_binary(&query_config(deps)?),
-        QueryMsg::GetBurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
+        QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
+        QueryMsg::BurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
+        QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps)?),
+        QueryMsg::SimulateBurn { amount } => to_json_binary(&query_simulate_burn(deps, amount)?),
     }
-}
-
-fn query_config(deps: Deps) -> StdResult<Config> {
-    let config: Config = CONFIG.load(deps.storage)?;
-
-    Ok(Config {
-        owner: config.owner,
-        slot_size: config.slot_size,
-    })
-}
-
-fn query_burn_info(deps: Deps, address: String) -> StdResult<GetBurnInfoResponse> {
-    let state: State = STATE.load(deps.storage)?;
-    let config: Config = CONFIG.load(deps.storage)?;
-
-    let previously_burned: Uint128 = state
-        .burned_uusd_by_user
-        .get(&address)
-        .copied()
-        .unwrap_or_default();
-    let slots: Uint128 = state
-        .slots_by_user
-        .get(&address)
-        .copied()
-        .unwrap_or_else(|| Uint128::new(1));
-    let cap: Uint128 = config.slot_size * slots;
-
-    Ok(GetBurnInfoResponse {
-        burned: previously_burned,
-        burnable: cap - previously_burned,
-        cap,
-        slots,
-        slot_size: config.slot_size,
-    })
 }
