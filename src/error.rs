@@ -31,8 +31,8 @@ pub enum ContractError {
     DivisionByZeroError {},
 }
 
-impl Into<StdError> for ContractError {
-    fn into(self) -> StdError {
-        StdError::generic_err(self.to_string())
+impl From<ContractError> for StdError {
+    fn from(error: ContractError) -> Self {
+        StdError::generic_err(error.to_string())
     }
 }
