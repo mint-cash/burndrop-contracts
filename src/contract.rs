@@ -30,7 +30,7 @@ pub fn instantiate(
         owner: info.sender.clone(),
         slot_size: msg.initial_slot_size,
     };
-    config.save(deps.storage)?;
+    CONFIG.save(deps.storage, &config)?;
 
     let state = State {
         burned_uusd_by_user: HashMap::new(),
@@ -66,12 +66,16 @@ pub fn execute(
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {
             // Ensure only the owner can update the slot size.
-            let mut config = Config::load(deps.storage)?;
+            let mut config = CONFIG.load(deps.storage)?;
             if info.sender != config.owner {
                 return Err(ContractError::Unauthorized {});
             }
 
-            config.update_slot_size(deps.storage, slot_size)?;
+            CONFIG.update(deps.storage, |mut config| -> StdResult<Config> {
+                config.slot_size = slot_size;
+                Ok(config)
+            })?;
+
             Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
     }
