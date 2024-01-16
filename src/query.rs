@@ -14,7 +14,7 @@ pub fn query_config(deps: Deps) -> StdResult<Config> {
     })
 }
 
-pub fn query_burn_info(deps: Deps, address: String) -> StdResult<BurnInfoResponse> {
+pub fn query_user(deps: Deps, address: String) -> StdResult<BurnInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
     let user: crate::states::user::User = USER.load(deps.storage, address.as_bytes())?;
 

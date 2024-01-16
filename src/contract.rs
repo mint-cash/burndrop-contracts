@@ -8,7 +8,7 @@ use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::execute::{burn_uusd, register_2nd_referrer};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::query::{query_burn_info, query_config, query_current_price, query_simulate_burn};
+use crate::query::{query_config, query_current_price, query_simulate_burn, query_user};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 
 // version info for migration info
@@ -79,7 +79,7 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
-        QueryMsg::BurnInfo { address } => to_json_binary(&query_burn_info(deps, address)?),
+        QueryMsg::BurnInfo { address } => to_json_binary(&query_user(deps, address)?),
         QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps)?),
         QueryMsg::SimulateBurn { amount } => to_json_binary(&query_simulate_burn(deps, amount)?),
     }
