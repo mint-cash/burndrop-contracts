@@ -6,6 +6,9 @@ use cosmwasm_std::{Decimal, Uint128};
 pub struct InstantiateMsg {
     pub initial_slot_size: Uint128,
     pub sale_amount: Uint128,
+
+    pub x_liquidity: Uint128,
+    pub y_liquidity: Uint128,
 }
 
 #[cw_serde(rename_all = "snake_case")]

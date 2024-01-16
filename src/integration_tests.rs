@@ -67,6 +67,10 @@ mod tests {
         let instantiate_msg = InstantiateMsg {
             initial_slot_size: Uint128::new(1_000),
             sale_amount: Uint128::new(1_000_000),
+
+            // Mocked initial liquidity.
+            x_liquidity: Uint128::new(1_000_000),
+            y_liquidity: Uint128::new(500_000),
         };
         let contract_addr = app
             .instantiate_contract(

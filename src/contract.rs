@@ -32,9 +32,8 @@ pub fn instantiate(
     CONFIG.save(deps.storage, &config)?;
 
     let state = State {
-        // FIXME: These are dummy values
-        x_liquidity: Uint128::zero(),
-        y_liquidity: Uint128::zero(),
+        x_liquidity: msg.x_liquidity,
+        y_liquidity: msg.y_liquidity,
         total_claimed: Uint128::zero(),
         total_swapped: Uint128::zero(),
     };
