@@ -38,6 +38,7 @@ pub struct BurnInfoResponse {
     pub cap: Uint128,
     pub slots: Uint128,
     pub slot_size: Uint128,
+    pub swapped_out: Uint128,
 }
 
 #[cw_serde]

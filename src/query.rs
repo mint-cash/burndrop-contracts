@@ -27,6 +27,7 @@ pub fn query_user(deps: Deps, address: String) -> StdResult<BurnInfoResponse> {
         cap,
         slots: user.slots,
         slot_size: config.slot_size,
+        swapped_out: user.swapped_out,
     })
 }
 
