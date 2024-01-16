@@ -2,8 +2,7 @@ use cosmwasm_std::{Decimal, Deps, Fraction, StdResult, Uint128};
 
 use crate::error::ContractError;
 use crate::msg::{BurnInfoResponse, PriceResponse, SimulateBurnResponse};
-use crate::states::config::{Config, CONFIG};
-use crate::states::state::{State, STATE};
+use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
     let config: Config = CONFIG.load(deps.storage)?;
@@ -16,26 +15,17 @@ pub fn query_config(deps: Deps) -> StdResult<Config> {
 }
 
 pub fn query_burn_info(deps: Deps, address: String) -> StdResult<BurnInfoResponse> {
-    let state: State = STATE.load(deps.storage)?;
     let config: Config = CONFIG.load(deps.storage)?;
+    let user: crate::states::user::User = USER.load(deps.storage, address.as_bytes())?;
 
-    let previously_burned: Uint128 = state
-        .burned_uusd_by_user
-        .get(&address)
-        .copied()
-        .unwrap_or_default();
-    let slots: Uint128 = state
-        .slots_by_user
-        .get(&address)
-        .copied()
-        .unwrap_or_else(|| Uint128::new(1));
-    let cap: Uint128 = config.slot_size * slots;
+    let previously_burned: Uint128 = user.burned_uusd;
+    let cap: Uint128 = config.slot_size * user.slots;
 
     Ok(BurnInfoResponse {
         burned: previously_burned,
         burnable: cap - previously_burned,
         cap,
-        slots,
+        slots: user.slots,
         slot_size: config.slot_size,
     })
 }
