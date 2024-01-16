@@ -4,7 +4,7 @@ use cosmwasm_std::Fraction;
 
 use crate::error::ContractError;
 use crate::query::calculate_current_price;
-use crate::states::{config::CONFIG, state::State, state::STATE, user::USER};
+use crate::states::{config::CONFIG, state::STATE, user::USER};
 
 // Double the slots for each referral up to the 8th and reset to 1 slot after the 8th referral
 pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
@@ -154,30 +154,20 @@ pub fn register_2nd_referrer(
     info: MessageInfo,
     referrer: String,
 ) -> Result<Response, ContractError> {
-    let mut state: State = STATE.load(deps.storage)?;
+    let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
 
     // Ensure the second referrer is registered only once
-    if state
-        .second_referrer_registered
-        .get(&info.sender.to_string())
-        .copied()
-        .unwrap_or(false)
-    {
+    if sender.second_referrer_registered {
         return Err(ContractError::AlreadyRegistered {});
     }
-
-    state
-        .second_referrer_registered
-        .insert(info.sender.to_string(), true);
+    sender.second_referrer_registered = true;
 
     // Logic similar to the first referrer, but without incrementing the referral count
-    let current_slots = state
-        .slots_by_user
-        .entry(info.sender.to_string())
-        .or_insert(Uint128::zero());
-    *current_slots += Uint128::from(1u128); // Add one slot
+    // add one slot to the user
+    // FIXME: make it dynamic because this additional slot must be excluded from the doubling logic
+    sender.slots += Uint128::from(1u128);
 
-    STATE.save(deps.storage, &state)?;
+    USER.save(deps.storage, info.sender.as_bytes(), &sender)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_2nd_referrer"),
