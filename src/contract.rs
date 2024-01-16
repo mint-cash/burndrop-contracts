@@ -4,14 +4,12 @@ use cosmwasm_std::{
     attr, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
 };
 use cw2::set_contract_version;
-use std::collections::HashMap;
 
 use crate::error::ContractError;
 use crate::execute::{burn_uusd, register_2nd_referrer};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{query_burn_info, query_config, query_current_price, query_simulate_burn};
-use crate::states::config::{Config, CONFIG};
-use crate::states::state::{State, STATE};
+use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -34,11 +32,6 @@ pub fn instantiate(
     CONFIG.save(deps.storage, &config)?;
 
     let state = State {
-        burned_uusd_by_user: HashMap::new(),
-        slots_by_user: HashMap::new(),
-        referral_count_by_user: HashMap::new(),
-        second_referrer_registered: HashMap::new(),
-
         // FIXME: These are dummy values
         x_liquidity: Uint128::zero(),
         y_liquidity: Uint128::zero(),

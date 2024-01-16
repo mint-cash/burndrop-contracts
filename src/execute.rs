@@ -4,13 +4,23 @@ use cosmwasm_std::Fraction;
 
 use crate::error::ContractError;
 use crate::query::calculate_current_price;
-use crate::states::{config::CONFIG, state::State, state::STATE, user::USER};
+use crate::states::{config::CONFIG, state::STATE, user::USER};
 
-pub fn calculate_new_slots(referral_count: u32) -> u32 {
-    match referral_count {
-        1..=8 => 2u32.pow(referral_count - 1), // Double the slots for each referral up to the 8th
-        _ => 1,                                // Reset to 1 slot after the 8th referral
+// Double the slots for each referral up to the 8th and reset to 1 slot after the 8th referral
+pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
+    let mut new_slots = Uint128::zero();
+
+    if referral_count == Uint128::zero() {
+        return new_slots;
     }
+
+    if referral_count <= Uint128::from(8u128) {
+        new_slots = Uint128::from(2u128).pow(referral_count.u128() as u32);
+    } else {
+        new_slots = Uint128::from(2u128).pow(8u32);
+    }
+
+    new_slots
 }
 
 pub struct SwapResult {
@@ -89,48 +99,37 @@ pub fn burn_uusd(
     amount: Uint128,
     referrer: String,
 ) -> Result<Response, ContractError> {
-    let mut state: State = STATE.load(deps.storage)?;
     let config = CONFIG.load(deps.storage)?;
 
     {
         // Register referrer and calculate new slots
-        let mut state: State = STATE.load(deps.storage)?;
+        let mut referrer = USER.load(deps.storage, referrer.as_bytes())?;
 
         // Update referral count
-        let referrer_count = state.referral_count_by_user.entry(referrer).or_insert(0);
-        *referrer_count += 1;
+        referrer.referral_count += Uint128::from(1u8); // Convert 1 to Uint128
 
-        // Calculate new slots
-        let new_slots = calculate_new_slots(*referrer_count).into();
-        state
-            .slots_by_user
-            .entry(info.sender.to_string())
-            .and_modify(|e| *e += new_slots)
-            .or_insert(new_slots);
-
-        STATE.save(deps.storage, &state)?;
+        // Calculate new slots and update
+        let new_slots = calculate_new_slots(referrer.referral_count);
+        referrer.slots += new_slots;
+        USER.save(deps.storage, info.sender.as_bytes(), &referrer)?;
     }
 
-    let previously_burned: Uint128 = state
-        .burned_uusd_by_user
-        .get(&info.sender.to_string())
-        .copied()
-        .unwrap_or_default();
+    {
+        let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
+        let previously_burned = sender.burned_uusd;
 
-    // slots_by_user(address) * config.slot_size
-    let capped_uusd_by_user: Uint128 = {
-        let slots: Uint128 = {
-            state
-                .slots_by_user
-                .get(&info.sender.to_string())
-                .copied()
-                .unwrap_or_else(|| Uint128::new(1))
+        // slots_by_user(address) * config.slot_size
+        let capped_uusd_by_user = {
+            let slots = sender.slots;
+            config.slot_size * slots
         };
-        config.slot_size * slots
-    };
 
-    if amount + previously_burned > capped_uusd_by_user {
-        return Err(ContractError::CapExceeded {});
+        if amount + previously_burned > capped_uusd_by_user {
+            return Err(ContractError::CapExceeded {});
+        }
+
+        sender.burned_uusd = previously_burned + amount;
+        USER.save(deps.storage, info.sender.as_bytes(), &sender)?;
     }
 
     let burn_address = "terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu";
@@ -138,11 +137,6 @@ pub fn burn_uusd(
         to_address: burn_address.to_string(),
         amount: vec![coin(amount.u128(), "uusd")],
     };
-
-    state
-        .burned_uusd_by_user
-        .insert(info.sender.to_string(), previously_burned + amount);
-    STATE.save(deps.storage, &state)?;
 
     // Assuming deposit function can handle the deposit post-burn
     let res = swap(deps, env, info);
@@ -160,30 +154,20 @@ pub fn register_2nd_referrer(
     info: MessageInfo,
     referrer: String,
 ) -> Result<Response, ContractError> {
-    let mut state: State = STATE.load(deps.storage)?;
+    let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
 
     // Ensure the second referrer is registered only once
-    if state
-        .second_referrer_registered
-        .get(&info.sender.to_string())
-        .copied()
-        .unwrap_or(false)
-    {
+    if sender.second_referrer_registered {
         return Err(ContractError::AlreadyRegistered {});
     }
-
-    state
-        .second_referrer_registered
-        .insert(info.sender.to_string(), true);
+    sender.second_referrer_registered = true;
 
     // Logic similar to the first referrer, but without incrementing the referral count
-    let current_slots = state
-        .slots_by_user
-        .entry(info.sender.to_string())
-        .or_insert(Uint128::zero());
-    *current_slots += Uint128::from(1u128); // Add one slot
+    // add one slot to the user
+    // FIXME: make it dynamic because this additional slot must be excluded from the doubling logic
+    sender.slots += Uint128::from(1u128);
 
-    STATE.save(deps.storage, &state)?;
+    USER.save(deps.storage, info.sender.as_bytes(), &sender)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_2nd_referrer"),
