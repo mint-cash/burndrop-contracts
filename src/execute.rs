@@ -109,7 +109,7 @@ pub fn burn_uusd(
         referrer.referral_count += Uint128::from(1u8); // Convert 1 to Uint128
 
         // Calculate new slots and update
-        let new_slots: Uint128 = calculate_new_slots(referrer.referral_count).into();
+        let new_slots = calculate_new_slots(referrer.referral_count);
         referrer.slots += new_slots;
         USER.save(deps.storage, info.sender.as_bytes(), &referrer)?;
     }
@@ -119,7 +119,7 @@ pub fn burn_uusd(
         let previously_burned = sender.burned_uusd;
 
         // slots_by_user(address) * config.slot_size
-        let capped_uusd_by_user: Uint128 = {
+        let capped_uusd_by_user = {
             let slots = sender.slots;
             config.slot_size * slots
         };

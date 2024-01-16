@@ -5,7 +5,7 @@ use crate::msg::{BurnInfoResponse, PriceResponse, SimulateBurnResponse};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
-    let config: Config = CONFIG.load(deps.storage)?;
+    let config = CONFIG.load(deps.storage)?;
 
     Ok(Config {
         owner: config.owner,
@@ -15,11 +15,11 @@ pub fn query_config(deps: Deps) -> StdResult<Config> {
 }
 
 pub fn query_burn_info(deps: Deps, address: String) -> StdResult<BurnInfoResponse> {
-    let config: Config = CONFIG.load(deps.storage)?;
+    let config = CONFIG.load(deps.storage)?;
     let user: crate::states::user::User = USER.load(deps.storage, address.as_bytes())?;
 
-    let previously_burned: Uint128 = user.burned_uusd;
-    let cap: Uint128 = config.slot_size * user.slots;
+    let previously_burned = user.burned_uusd;
+    let cap = config.slot_size * user.slots;
 
     Ok(BurnInfoResponse {
         burned: previously_burned,
