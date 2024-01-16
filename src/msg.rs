@@ -21,8 +21,8 @@ pub enum QueryMsg {
     #[returns(Config)]
     Config {},
 
-    #[returns(BurnInfoResponse)]
-    BurnInfo { address: String },
+    #[returns(UserInfoResponse)]
+    UserInfo { address: String },
 
     #[returns(PriceResponse)]
     CurrentPrice {},
@@ -32,7 +32,7 @@ pub enum QueryMsg {
 }
 
 #[cw_serde]
-pub struct BurnInfoResponse {
+pub struct UserInfoResponse {
     pub burned: Uint128,
     pub burnable: Uint128,
     pub cap: Uint128,

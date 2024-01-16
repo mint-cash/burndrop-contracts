@@ -1,7 +1,7 @@
 use cosmwasm_std::{Decimal, Deps, Fraction, StdResult, Uint128};
 
 use crate::error::ContractError;
-use crate::msg::{BurnInfoResponse, PriceResponse, SimulateBurnResponse};
+use crate::msg::{PriceResponse, SimulateBurnResponse, UserInfoResponse};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
@@ -14,14 +14,14 @@ pub fn query_config(deps: Deps) -> StdResult<Config> {
     })
 }
 
-pub fn query_user(deps: Deps, address: String) -> StdResult<BurnInfoResponse> {
+pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
     let user = USER.load(deps.storage, address.as_bytes())?;
 
     let previously_burned = user.burned_uusd;
     let cap = config.slot_size * user.slots;
 
-    Ok(BurnInfoResponse {
+    Ok(UserInfoResponse {
         burned: previously_burned,
         burnable: cap - previously_burned,
         cap,

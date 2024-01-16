@@ -79,7 +79,7 @@ pub fn execute(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
-        QueryMsg::BurnInfo { address } => to_json_binary(&query_user(deps, address)?),
+        QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),
         QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps)?),
         QueryMsg::SimulateBurn { amount } => to_json_binary(&query_simulate_burn(deps, amount)?),
     }
