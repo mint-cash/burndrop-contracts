@@ -114,7 +114,6 @@ mod tests {
 
             // Perform assertions based on the expected state after burning tokens.
             assert_eq!(query_res.burned, burn_amount);
-            // Add more assertions as needed.
 
             // Test burning with the second referrer.
             let msg = ExecuteMsg::Register2ndReferrer {
@@ -140,17 +139,14 @@ mod tests {
         fn query_config_test() {
             let (app, burn_contract) = proper_instantiate();
 
-            // Query the contract configuration.
             let query_res: Config = app
                 .wrap()
                 .query_wasm_smart(burn_contract.addr(), &QueryMsg::Config {})
                 .unwrap();
 
-            // Assertions for config parameters.
+            assert_eq!(query_res.owner, Addr::unchecked(ADMIN));
+            assert_eq!(query_res.slot_size, Uint128::new(1_000));
+            assert_eq!(query_res.sale_amount, Uint128::new(1_000_000));
         }
-
-        // Additional query tests for `query_current_price` and `query_simulate_burn`.
     }
-
-    // Additional tests for error scenarios and edge cases.
 }

@@ -7,11 +7,7 @@ use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
     let config = CONFIG.load(deps.storage)?;
 
-    Ok(Config {
-        owner: config.owner,
-        slot_size: config.slot_size,
-        sale_amount: config.sale_amount,
-    })
+    Ok(config)
 }
 
 pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
