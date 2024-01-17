@@ -10,8 +10,8 @@ COPY --from=wasmd /usr/bin/wasmd /usr/local/bin/wasmd
 COPY --from=wasmd /opt/* /opt/
 
 RUN sudo apt-get update \
-    && sudo apt-get install -y jq \
-    && sudo rm -rf /var/lib/apt/lists/*
+  && sudo apt-get install -y jq \
+  && sudo rm -rf /var/lib/apt/lists/*
 
 RUN rustup update stable \
-   && rustup target add wasm32-unknown-unknown
+  && rustup target add wasm32-unknown-unknown
