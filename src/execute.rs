@@ -4,7 +4,27 @@ use cosmwasm_std::Fraction;
 
 use crate::error::ContractError;
 use crate::query::calculate_current_price;
-use crate::states::{config::CONFIG, state::STATE, user::USER};
+use crate::states::{config::CONFIG, state::STATE, user::User, user::USER};
+
+fn ensure_user_initialized(
+    deps: &mut DepsMut<'_>,
+    user_address: &str,
+) -> Result<(), ContractError> {
+    let user_exists = USER
+        .may_load(deps.storage, user_address.as_bytes())?
+        .is_some();
+    if !user_exists {
+        let new_user = User {
+            burned_uusd: Uint128::zero(),
+            swapped_out: Uint128::zero(),
+            referral_count: Uint128::zero(),
+            slots: Uint128::zero(),
+            second_referrer_registered: false,
+        };
+        USER.save(deps.storage, user_address.as_bytes(), &new_user)?;
+    }
+    Ok(())
+}
 
 // Double the slots for each referral up to the 8th and reset to 1 slot after the 8th referral
 pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
@@ -93,12 +113,13 @@ pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, C
 }
 
 pub fn burn_uusd(
-    deps: DepsMut,
+    mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
     amount: Uint128,
     referrer: String,
 ) -> Result<Response, ContractError> {
+    ensure_user_initialized(&mut deps, info.sender.as_str())?;
     let config = CONFIG.load(deps.storage)?;
 
     {
@@ -154,10 +175,11 @@ pub fn burn_uusd(
 }
 
 pub fn register_2nd_referrer(
-    deps: DepsMut,
+    mut deps: DepsMut,
     info: MessageInfo,
     referrer: String,
 ) -> Result<Response, ContractError> {
+    ensure_user_initialized(&mut deps, info.sender.as_str())?;
     let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
 
     // Ensure the second referrer is registered only once
