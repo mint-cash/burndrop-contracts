@@ -64,7 +64,7 @@ mod tests {
         let mut app = mock_app();
         let contract_burn_id = app.store_code(contract_template());
 
-        let instantiate_msg = InstantiateMsg {
+        let instantiate_msg: InstantiateMsg = InstantiateMsg {
             initial_slot_size: Uint128::new(1_000),
             sale_amount: Uint128::new(1_000_000),
 
@@ -118,13 +118,13 @@ mod tests {
                 amount: burn_amount,
                 referrer: REFERRER.to_string(),
             };
-            let res = app.execute_contract(
+            let execute_res = app.execute_contract(
                 Addr::unchecked(USER),
                 burn_contract.addr(),
                 &msg,
                 &sender_info.funds,
             );
-            assert!(res.is_ok());
+            assert!(execute_res.is_ok());
 
             // Query the burn info after burning tokens for the user.
             let query_res: crate::msg::UserInfoResponse = app
@@ -138,7 +138,13 @@ mod tests {
                 .unwrap();
 
             // Perform assertions based on the expected state after burning tokens.
-            assert_eq!(query_res.burned, burn_amount);
+            assert_eq!(query_res.slot_size, Uint128::new(1000));
+            assert_eq!(query_res.slots, Uint128::new(1));
+            assert_eq!(query_res.cap, Uint128::new(1000));
+
+            assert_eq!(query_res.burned, Uint128::new(100));
+            assert_eq!(query_res.burnable, Uint128::new(900));
+            assert_eq!(query_res.swapped_out, Uint128::new(196)); // 200 - virtual_slippage (4)
         }
         // Add more tests for other functionalities like error cases.
     }

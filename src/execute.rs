@@ -1,7 +1,5 @@
 use cosmwasm_std::{attr, coin, BankMsg, DepsMut, Env, MessageInfo, Response, Uint128};
 
-use cosmwasm_std::Fraction;
-
 use crate::error::ContractError;
 use crate::query::calculate_current_price;
 use crate::states::{config::CONFIG, state::STATE, user::User, user::USER};
@@ -43,11 +41,7 @@ pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
     new_slots
 }
 
-fn process_referral(
-    deps: DepsMut<'_>,
-    referrer: &str,
-    sender: String,
-) -> Result<(), ContractError> {
+fn process_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), ContractError> {
     let referrer_addr = deps.api.addr_validate(referrer)?;
     let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.as_bytes())? {
         Some(state) => state,
@@ -61,7 +55,7 @@ fn process_referral(
     let new_slots = calculate_new_slots(referrer_user.referral_count);
     referrer_user.slots += new_slots;
 
-    USER.save(deps.storage, sender.as_bytes(), &referrer_user)?;
+    USER.save(deps.storage, referrer.as_bytes(), &referrer_user)?;
 
     Ok(())
 }
@@ -141,12 +135,12 @@ pub fn burn_uusd(
     referrer: String,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, info.sender.as_str())?;
-    process_referral(deps.branch(), &referrer, info.sender.to_string())?;
+    process_referral(deps.branch(), &referrer)?;
 
     let config = CONFIG.load(deps.storage)?;
 
     {
-        let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
+        let sender = USER.load(deps.storage, info.sender.as_bytes())?;
         let previously_burned = sender.burned_uusd;
 
         // slots_by_user(address) * config.slot_size
@@ -158,9 +152,6 @@ pub fn burn_uusd(
         if amount + previously_burned > capped_uusd_by_user {
             return Err(ContractError::CapExceeded {});
         }
-
-        sender.burned_uusd = previously_burned + amount;
-        USER.save(deps.storage, info.sender.as_bytes(), &sender)?;
     }
 
     let burn_address = "terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu";
@@ -212,7 +203,7 @@ pub fn register_2nd_referrer(
     referrer: String,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, info.sender.as_str())?;
-    process_referral(deps.branch(), &referrer, info.sender.to_string())?;
+    process_referral(deps.branch(), &referrer)?;
 
     let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
 
