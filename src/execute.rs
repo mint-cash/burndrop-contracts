@@ -43,6 +43,29 @@ pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
     new_slots
 }
 
+fn process_referral(
+    deps: DepsMut<'_>,
+    referrer: String,
+    sender: String,
+) -> Result<(), ContractError> {
+    let referrer_addr = deps.api.addr_validate(&referrer)?;
+    let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.as_bytes())? {
+        Some(state) => state,
+        None => return Err(ContractError::ReferrerNotInitialized {}),
+    };
+
+    // Update referral count
+    referrer_user.referral_count += Uint128::from(1u8);
+
+    // Calculate new slots and update
+    let new_slots = calculate_new_slots(referrer_user.referral_count);
+    referrer_user.slots += new_slots;
+
+    USER.save(deps.storage, sender.as_bytes(), &referrer_user)?;
+
+    Ok(())
+}
+
 pub struct SwapResult {
     pub swapped_in: Uint128,
     pub swapped_out: Uint128,
@@ -122,22 +145,7 @@ pub fn burn_uusd(
     ensure_user_initialized(&mut deps, info.sender.as_str())?;
     let config = CONFIG.load(deps.storage)?;
 
-    {
-        // Register referrer and calculate new slots
-        let referrer_addr = deps.api.addr_validate(&referrer)?;
-        let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.as_bytes())? {
-            Some(state) => state,
-            None => return Err(ContractError::ReferrerNotInitialized {}),
-        };
-
-        // Update referral count
-        referrer_user.referral_count += Uint128::from(1u8); // Convert 1 to Uint128
-
-        // Calculate new slots and update
-        let new_slots = calculate_new_slots(referrer_user.referral_count);
-        referrer_user.slots += new_slots;
-        USER.save(deps.storage, info.sender.as_bytes(), &referrer_user)?;
-    }
+    process_referral(deps.branch(), referrer, info.sender.to_string())?;
 
     {
         let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
