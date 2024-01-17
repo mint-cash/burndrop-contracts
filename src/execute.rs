@@ -18,7 +18,7 @@ fn ensure_user_initialized(
             burned_uusd: Uint128::zero(),
             swapped_out: Uint128::zero(),
             referral_count: Uint128::zero(),
-            slots: Uint128::zero(),
+            slots: Uint128::from(1u128), // initial slot is 1
             second_referrer_registered: false,
         };
         USER.save(deps.storage, user_address.as_bytes(), &new_user)?;
@@ -179,6 +179,33 @@ pub fn burn_uusd(
         attr("amount", amount.to_string()),
         attr("swapped_in", res.as_ref().unwrap().swapped_in.to_string()),
         attr("swapped_out", res.as_ref().unwrap().swapped_out.to_string()),
+    ]))
+}
+
+// fn register_starting_user (only owner)
+// owner can allow specific address to bypass referral requirement
+// which means just init'ing the new User with initial slots is 1, so that the address can be used as referrer
+pub fn register_starting_user(
+    mut deps: DepsMut,
+    info: MessageInfo,
+    user: String,
+) -> Result<Response, ContractError> {
+    let config = CONFIG.load(deps.storage)?;
+    if info.sender != config.owner {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    // if user is already initialized, return error
+    let user_exists = USER.may_load(deps.storage, user.as_bytes())?.is_some();
+    if user_exists {
+        return Err(ContractError::AlreadyRegistered {});
+    }
+
+    ensure_user_initialized(&mut deps, info.sender.as_str())?;
+
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "register_starting_user"),
+        attr("referrer", user),
     ]))
 }
 
