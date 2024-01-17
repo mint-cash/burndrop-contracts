@@ -103,15 +103,19 @@ pub fn burn_uusd(
 
     {
         // Register referrer and calculate new slots
-        let mut referrer = USER.load(deps.storage, referrer.as_bytes())?;
+        let referrer_addr = deps.api.addr_validate(&referrer)?;
+        let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.as_bytes())? {
+            Some(state) => state,
+            None => return Err(ContractError::ReferrerNotInitialized {}),
+        };
 
         // Update referral count
-        referrer.referral_count += Uint128::from(1u8); // Convert 1 to Uint128
+        referrer_user.referral_count += Uint128::from(1u8); // Convert 1 to Uint128
 
         // Calculate new slots and update
-        let new_slots = calculate_new_slots(referrer.referral_count);
-        referrer.slots += new_slots;
-        USER.save(deps.storage, info.sender.as_bytes(), &referrer)?;
+        let new_slots = calculate_new_slots(referrer_user.referral_count);
+        referrer_user.slots += new_slots;
+        USER.save(deps.storage, info.sender.as_bytes(), &referrer_user)?;
     }
 
     {
