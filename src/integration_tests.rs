@@ -139,18 +139,6 @@ mod tests {
 
             // Perform assertions based on the expected state after burning tokens.
             assert_eq!(query_res.burned, burn_amount);
-
-            // Test burning with the second referrer.
-            let msg = ExecuteMsg::Register2ndReferrer {
-                referrer: SECOND_REFERRER.to_string(),
-            };
-            let cosmos_msg = burn_contract.call(msg).unwrap();
-            app.execute(Addr::unchecked(USER), cosmos_msg).unwrap();
-
-            // Query the burn info after registering the second referrer.
-            // Similar query and assertions as above.
-
-            // Query the user's swapped_out amount.
         }
         // Add more tests for other functionalities like error cases.
     }

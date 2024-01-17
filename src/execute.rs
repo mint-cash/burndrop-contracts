@@ -95,8 +95,7 @@ pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, C
         });
     }
 
-    let sender = &deps.api.addr_canonicalize(info.sender.as_str())?;
-    let mut user = USER.load(deps.storage, sender)?;
+    let mut user = USER.load(deps.storage, info.sender.as_bytes())?;
     let mut state = STATE.load(deps.storage)?;
 
     let price = calculate_current_price(&state);
@@ -125,7 +124,7 @@ pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, C
     state.x_liquidity += burned_uusd;
     state.y_liquidity -= swapped_out;
 
-    USER.save(deps.storage, sender, &user)?;
+    USER.save(deps.storage, info.sender.as_bytes(), &user)?;
     STATE.save(deps.storage, &state)?;
 
     let deposit_result = SwapResult {
@@ -171,7 +170,6 @@ pub fn burn_uusd(
         amount: vec![coin(amount.u128(), "uusd")],
     };
 
-    // Assuming deposit function can handle the deposit post-burn
     let res = swap(deps, env, info);
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
