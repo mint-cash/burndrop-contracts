@@ -1,8 +1,10 @@
 [package]
 name = "burndrop-contracts"
 version = "0.1.0"
-authors = ["Junho Yeo <i@junho.io>"]
+authors = ["Unorthodox Labs, LLC"]
 edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/mint-cash/burndrop-contracts"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
