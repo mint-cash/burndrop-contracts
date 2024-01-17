@@ -45,10 +45,10 @@ pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
 
 fn process_referral(
     deps: DepsMut<'_>,
-    referrer: String,
+    referrer: &String,
     sender: String,
 ) -> Result<(), ContractError> {
-    let referrer_addr = deps.api.addr_validate(&referrer)?;
+    let referrer_addr = deps.api.addr_validate(referrer)?;
     let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.as_bytes())? {
         Some(state) => state,
         None => return Err(ContractError::ReferrerNotInitialized {}),
@@ -143,9 +143,9 @@ pub fn burn_uusd(
     referrer: String,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, info.sender.as_str())?;
-    let config = CONFIG.load(deps.storage)?;
+    process_referral(deps.branch(), &referrer, info.sender.to_string())?;
 
-    process_referral(deps.branch(), referrer, info.sender.to_string())?;
+    let config = CONFIG.load(deps.storage)?;
 
     {
         let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
@@ -188,6 +188,8 @@ pub fn register_2nd_referrer(
     referrer: String,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, info.sender.as_str())?;
+    process_referral(deps.branch(), &referrer, info.sender.to_string())?;
+
     let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
 
     // Ensure the second referrer is registered only once
