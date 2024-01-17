@@ -45,7 +45,7 @@ pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
 
 fn process_referral(
     deps: DepsMut<'_>,
-    referrer: &String,
+    referrer: &str,
     sender: String,
 ) -> Result<(), ContractError> {
     let referrer_addr = deps.api.addr_validate(referrer)?;
