@@ -6,7 +6,7 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
-use crate::execute::{burn_uusd, register_2nd_referrer};
+use crate::execute::{burn_uusd, register_2nd_referrer, register_starting_user};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{query_config, query_current_price, query_simulate_burn, query_user};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
@@ -55,6 +55,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::BurnTokens { amount, referrer } => burn_uusd(deps, env, info, amount, referrer),
+        ExecuteMsg::RegisterStartingUser { user } => register_starting_user(deps, info, user),
         ExecuteMsg::Register2ndReferrer { referrer } => register_2nd_referrer(deps, info, referrer),
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {

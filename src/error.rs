@@ -15,6 +15,9 @@ pub enum ContractError {
     #[error("Already registered")]
     AlreadyRegistered {},
 
+    #[error("Referrer is not initialized")]
+    ReferrerNotInitialized {},
+
     #[error("Swap: zero amount")]
     NotAllowZeroAmount {},
 

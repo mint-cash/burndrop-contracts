@@ -64,7 +64,7 @@ mod tests {
         let mut app = mock_app();
         let contract_burn_id = app.store_code(contract_template());
 
-        let instantiate_msg = InstantiateMsg {
+        let instantiate_msg: InstantiateMsg = InstantiateMsg {
             initial_slot_size: Uint128::new(1_000),
             sale_amount: Uint128::new(1_000_000),
 
@@ -83,23 +83,48 @@ mod tests {
             )
             .unwrap();
 
-        (app, BurnContract(contract_addr))
+        // owner should register REFERRER as starting_user
+        let burn_contract = BurnContract(contract_addr);
+        let msg = ExecuteMsg::RegisterStartingUser {
+            user: REFERRER.to_string(),
+        };
+        let cosmos_msg = burn_contract.call(msg).unwrap();
+        app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+
+        (app, burn_contract)
     }
 
-    mod burn {
+    mod execute_tests {
+        use cosmwasm_std::testing::mock_info;
+
         use super::*;
 
         #[test]
-        fn burn_tokens() {
+        fn test_burn_tokens() {
             let (mut app, burn_contract) = proper_instantiate();
             // Try to burn some tokens for a user with a referrer.
-            let burn_amount = Uint128::new(100); // Set the burn amount.
+
+            let burn_amount = Uint128::new(100);
+            let sender_info = mock_info(
+                USER,
+                &vec![Coin {
+                    denom: NATIVE_DENOM.to_string(),
+                    amount: burn_amount,
+                }],
+            );
+
+            // Create a burn tokens message
             let msg = ExecuteMsg::BurnTokens {
                 amount: burn_amount,
                 referrer: REFERRER.to_string(),
             };
-            let cosmos_msg = burn_contract.call(msg).unwrap();
-            app.execute(Addr::unchecked(USER), cosmos_msg).unwrap();
+            let execute_res = app.execute_contract(
+                Addr::unchecked(USER),
+                burn_contract.addr(),
+                &msg,
+                &sender_info.funds,
+            );
+            assert!(execute_res.is_ok());
 
             // Query the burn info after burning tokens for the user.
             let query_res: crate::msg::UserInfoResponse = app
@@ -113,20 +138,13 @@ mod tests {
                 .unwrap();
 
             // Perform assertions based on the expected state after burning tokens.
-            assert_eq!(query_res.burned, burn_amount);
-            // Add more assertions as needed.
+            assert_eq!(query_res.slot_size, Uint128::new(1000));
+            assert_eq!(query_res.slots, Uint128::new(1));
+            assert_eq!(query_res.cap, Uint128::new(1000));
 
-            // Test burning with the second referrer.
-            let msg = ExecuteMsg::Register2ndReferrer {
-                referrer: SECOND_REFERRER.to_string(),
-            };
-            let cosmos_msg = burn_contract.call(msg).unwrap();
-            app.execute(Addr::unchecked(USER), cosmos_msg).unwrap();
-
-            // Query the burn info after registering the second referrer.
-            // Similar query and assertions as above.
-
-            // Query the user's swapped_out amount.
+            assert_eq!(query_res.burned, Uint128::new(100));
+            assert_eq!(query_res.burnable, Uint128::new(900));
+            assert_eq!(query_res.swapped_out, Uint128::new(196)); // 200 - virtual_slippage (4)
         }
         // Add more tests for other functionalities like error cases.
     }
@@ -137,20 +155,17 @@ mod tests {
         use super::*;
 
         #[test]
-        fn query_config_test() {
+        fn test_query_config() {
             let (app, burn_contract) = proper_instantiate();
 
-            // Query the contract configuration.
             let query_res: Config = app
                 .wrap()
                 .query_wasm_smart(burn_contract.addr(), &QueryMsg::Config {})
                 .unwrap();
 
-            // Assertions for config parameters.
+            assert_eq!(query_res.owner, Addr::unchecked(ADMIN));
+            assert_eq!(query_res.slot_size, Uint128::new(1_000));
+            assert_eq!(query_res.sale_amount, Uint128::new(1_000_000));
         }
-
-        // Additional query tests for `query_current_price` and `query_simulate_burn`.
     }
-
-    // Additional tests for error scenarios and edge cases.
 }
