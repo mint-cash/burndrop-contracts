@@ -115,8 +115,7 @@ pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, C
         });
     }
 
-    let virtual_slippage = swapped_out * price.numerator() / price.denominator() - burned_uusd;
-
+    let virtual_slippage = (swapped_out * price) / burned_uusd;
     user.burned_uusd += burned_uusd;
     user.swapped_out += swapped_out - virtual_slippage;
 
