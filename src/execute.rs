@@ -201,7 +201,7 @@ pub fn register_starting_user(
         return Err(ContractError::AlreadyRegistered {});
     }
 
-    ensure_user_initialized(&mut deps, info.sender.as_str())?;
+    ensure_user_initialized(&mut deps, &user)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_starting_user"),
