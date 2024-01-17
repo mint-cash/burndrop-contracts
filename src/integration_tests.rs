@@ -95,19 +95,36 @@ mod tests {
     }
 
     mod burn {
+        use cosmwasm_std::testing::mock_info;
+
         use super::*;
 
         #[test]
         fn burn_tokens() {
             let (mut app, burn_contract) = proper_instantiate();
             // Try to burn some tokens for a user with a referrer.
-            let burn_amount = Uint128::new(100); // Set the burn amount.
+
+            let burn_amount = Uint128::new(100);
+            let sender_info = mock_info(
+                USER,
+                &vec![Coin {
+                    denom: NATIVE_DENOM.to_string(),
+                    amount: burn_amount,
+                }],
+            );
+
+            // Create a burn tokens message
             let msg = ExecuteMsg::BurnTokens {
                 amount: burn_amount,
                 referrer: REFERRER.to_string(),
             };
-            let cosmos_msg = burn_contract.call(msg).unwrap();
-            app.execute(Addr::unchecked(USER), cosmos_msg).unwrap();
+            let res = app.execute_contract(
+                Addr::unchecked(USER),
+                burn_contract.addr(),
+                &msg,
+                &sender_info.funds,
+            );
+            assert!(res.is_ok());
 
             // Query the burn info after burning tokens for the user.
             let query_res: crate::msg::UserInfoResponse = app
