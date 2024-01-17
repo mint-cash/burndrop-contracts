@@ -83,7 +83,15 @@ mod tests {
             )
             .unwrap();
 
-        (app, BurnContract(contract_addr))
+        // owner should register REFERRER as starting_user
+        let burn_contract = BurnContract(contract_addr);
+        let msg = ExecuteMsg::RegisterStartingUser {
+            user: REFERRER.to_string(),
+        };
+        let cosmos_msg = burn_contract.call(msg).unwrap();
+        app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+
+        (app, burn_contract)
     }
 
     mod burn {
