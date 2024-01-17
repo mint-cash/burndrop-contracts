@@ -94,13 +94,13 @@ mod tests {
         (app, burn_contract)
     }
 
-    mod burn {
+    mod execute_tests {
         use cosmwasm_std::testing::mock_info;
 
         use super::*;
 
         #[test]
-        fn burn_tokens() {
+        fn test_burn_tokens() {
             let (mut app, burn_contract) = proper_instantiate();
             // Try to burn some tokens for a user with a referrer.
 
@@ -155,7 +155,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn query_config_test() {
+        fn test_query_config() {
             let (app, burn_contract) = proper_instantiate();
 
             let query_res: Config = app
