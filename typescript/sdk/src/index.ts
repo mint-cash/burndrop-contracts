@@ -8,7 +8,6 @@ import * as _0 from './Burndrop.types';
 import * as _1 from './Burndrop.client';
 import * as _2 from './Burndrop.message-composer';
 import * as _3 from './Burndrop.react-query';
-import * as _4 from './Burndrop.recoil';
 export namespace contracts {
-  export const Burndrop = { ..._0, ..._1, ..._2, ..._3, ..._4 };
+  export const Burndrop = { ..._0, ..._1, ..._2, ..._3 };
 }

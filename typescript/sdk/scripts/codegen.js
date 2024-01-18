@@ -30,9 +30,6 @@ const main = async () => {
         version: 'v5',
         mutations: false,
       },
-      recoil: {
-        enabled: true,
-      },
       messageComposer: {
         enabled: true,
       },

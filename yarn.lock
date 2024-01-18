@@ -1795,7 +1795,6 @@ __metadata:
     find-yarn-workspace-root: "npm:^2.0.0"
     prettier: "npm:^3.2.4"
     react-query: "npm:^3.39.3"
-    recoil: "npm:^0.7.7"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
