@@ -1,0 +1,10 @@
+{
+  "name": "@mint-cash/burndrop-contracts",
+  "version": "0.0.0",
+  "private": true,
+  "repository": "https://github.com/mint-cash/burndrop-contracts.git",
+  "workspaces": [
+    "typescript/*"
+  ],
+  "packageManager": "yarn@4.0.2"
+}
