@@ -74,6 +74,21 @@ pub fn execute(
 
             Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
+        ExecuteMsg::UpdateRoundPeriod { start_time, end_time } => {
+            // Ensure only the owner can update the round period.
+            let config = CONFIG.load(deps.storage)?;
+            if info.sender != config.owner {
+                return Err(ContractError::Unauthorized {});
+            }
+
+            STATE.update(deps.storage, |mut state| -> StdResult<State> {
+                state.start_time = start_time;
+                state.end_time = end_time;
+                Ok(state)
+            })?;
+
+            Ok(Response::new().add_attribute("action", "update_round_period"))
+        }
     }
 }
 

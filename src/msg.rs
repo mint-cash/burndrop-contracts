@@ -17,6 +17,7 @@ pub enum ExecuteMsg {
     RegisterStartingUser { user: String },
     Register2ndReferrer { referrer: String },
     UpdateSlotSize { slot_size: Uint128 },
+    UpdateRoundPeriod { start_time: u64, end_time: u64 },
 }
 
 #[cw_serde]
