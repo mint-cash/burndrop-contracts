@@ -32,6 +32,12 @@ pub enum ContractError {
 
     #[error("Swap: attempted division by zero")]
     DivisionByZeroError {},
+
+    #[error("Swap: not started. (time: {start:?})")]
+    SwapNotStarted { start: u64 },
+
+    #[error("Swap: finished. (time: {finish:?})")]
+    SwapFinished { finish: u64 },
 }
 
 impl From<ContractError> for StdError {
