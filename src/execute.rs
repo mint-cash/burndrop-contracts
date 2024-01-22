@@ -71,12 +71,8 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     let now = env.block.time.seconds();
 
-    if state.start_time == 0 || state.end_time == 0 || now < state.start_time {
-        return Err(ContractError::SwapNotStarted { start: state.start_time });
-    }
-    if now > state.end_time {
-        return Err(ContractError::SwapFinished { end: state.end_time });
-    }
+    let round = state.rounds.iter().find(|r| r.start_time <= now && now <= r.end_time)
+        .ok_or(ContractError::NoActiveSwapRound {})?;
 
     let input_token_denom = "uusd";
 

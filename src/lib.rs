@@ -8,3 +8,4 @@ pub mod states;
 
 #[cfg(test)]
 pub mod integration_tests;
+mod types;

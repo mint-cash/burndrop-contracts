@@ -1,6 +1,7 @@
 use crate::states::config::Config;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Decimal, Uint128};
+use crate::types::swap_round::SwapRound;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -17,7 +18,7 @@ pub enum ExecuteMsg {
     RegisterStartingUser { user: String },
     Register2ndReferrer { referrer: String },
     UpdateSlotSize { slot_size: Uint128 },
-    UpdateRoundPeriod { start_time: u64, end_time: u64 },
+    UpdateRounds { rounds: Vec<SwapRound> },
 }
 
 #[cw_serde]

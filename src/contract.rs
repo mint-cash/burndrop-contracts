@@ -36,8 +36,7 @@ pub fn instantiate(
         y_liquidity: msg.y_liquidity,
         total_claimed: Uint128::zero(),
         total_swapped: Uint128::zero(),
-        start_time: 0,
-        end_time: 0,
+        rounds: vec![]
     };
     STATE.save(deps.storage, &state)?;
 
@@ -74,20 +73,20 @@ pub fn execute(
 
             Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
-        ExecuteMsg::UpdateRoundPeriod { start_time, end_time } => {
-            // Ensure only the owner can update the round period.
+        ExecuteMsg::UpdateRounds { rounds } => {
+            // Ensure only the owner can update the rounds.
             let config = CONFIG.load(deps.storage)?;
             if info.sender != config.owner {
                 return Err(ContractError::Unauthorized {});
             }
 
-            STATE.update(deps.storage, |mut state| -> StdResult<State> {
-                state.start_time = start_time;
-                state.end_time = end_time;
-                Ok(state)
-            })?;
+            let mut state = STATE.load(deps.storage)?;
+            state.rounds = rounds;
+            STATE.save(deps.storage, &state)?;
 
-            Ok(Response::new().add_attribute("action", "update_round_period"))
+            Ok(Response::new().add_attributes(vec![
+                attr("action", "update_rounds"),
+            ]))
         }
     }
 }
