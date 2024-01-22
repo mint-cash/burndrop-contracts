@@ -36,6 +36,8 @@ pub fn instantiate(
         y_liquidity: msg.y_liquidity,
         total_claimed: Uint128::zero(),
         total_swapped: Uint128::zero(),
+        start_time: 0,
+        end_time: 0,
     };
     STATE.save(deps.storage, &state)?;
 

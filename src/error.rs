@@ -36,8 +36,8 @@ pub enum ContractError {
     #[error("Swap: not started. (time: {start:?})")]
     SwapNotStarted { start: u64 },
 
-    #[error("Swap: finished. (time: {finish:?})")]
-    SwapFinished { finish: u64 },
+    #[error("Swap: finished. (time: {end:?})")]
+    SwapFinished { end: u64 },
 }
 
 impl From<ContractError> for StdError {

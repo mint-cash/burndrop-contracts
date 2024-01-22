@@ -65,11 +65,18 @@ pub struct SwapResult {
     pub swapped_out: Uint128,
 }
 
-pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, ContractError> {
+pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, ContractError> {
     let config = CONFIG.load(deps.storage)?;
-    // let now = env.block.time.seconds();
+    let mut state = STATE.load(deps.storage)?;
 
-    // TODO: Add time check
+    let now = env.block.time.seconds();
+
+    if state.start_time == 0 || state.end_time == 0 || now < state.start_time {
+        return Err(ContractError::SwapNotStarted { start: state.start_time });
+    }
+    if now > state.end_time {
+        return Err(ContractError::SwapFinished { end: state.end_time });
+    }
 
     let input_token_denom = "uusd";
 
@@ -90,7 +97,6 @@ pub fn swap(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<SwapResult, C
     }
 
     let mut user = USER.load(deps.storage, info.sender.as_bytes())?;
-    let mut state = STATE.load(deps.storage)?;
 
     let price = calculate_current_price(&state);
 

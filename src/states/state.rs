@@ -10,6 +10,9 @@ pub struct State {
 
     pub x_liquidity: Uint128,
     pub y_liquidity: Uint128,
+
+    pub start_time: u64,
+    pub end_time: u64,
 }
 
 pub const STATE: Item<State> = Item::new("state");
