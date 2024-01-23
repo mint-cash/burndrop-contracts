@@ -1,9 +1,11 @@
 #[cfg(test)]
 mod tests {
-    use crate::helpers::BurnContract;
-    use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
     use cosmwasm_std::{Addr, Coin, Empty, Uint128};
     use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
+
+    use crate::helpers::BurnContract;
+    use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+    use crate::types::output_token::OutputTokenMap;
 
     pub fn contract_template() -> Box<dyn Contract<Empty>> {
         let contract = ContractWrapper::new(
@@ -66,11 +68,19 @@ mod tests {
 
         let instantiate_msg: InstantiateMsg = InstantiateMsg {
             initial_slot_size: Uint128::new(1_000),
-            sale_amount: Uint128::new(1_000_000),
+            sale_amount: OutputTokenMap {
+                oppamint: Uint128::new(1_000_000),
+                ancs: Uint128::new(1_000_000),
+            },
 
             // Mocked initial liquidity.
             x_liquidity: Uint128::new(1_000_000),
-            y_liquidity: Uint128::new(500_000),
+            y_liquidity: OutputTokenMap {
+                oppamint: Uint128::new(500_000),
+                ancs: Uint128::new(500_000),
+            },
+
+            rounds: vec![],
         };
         let contract_addr = app
             .instantiate_contract(
@@ -144,7 +154,8 @@ mod tests {
 
             assert_eq!(query_res.burned, Uint128::new(100));
             assert_eq!(query_res.burnable, Uint128::new(900));
-            assert_eq!(query_res.swapped_out, Uint128::new(196)); // 200 - virtual_slippage (4)
+            assert_eq!(query_res.swapped_out.oppamint, Uint128::new(196)); // 200 - virtual_slippage (4)
+            assert_eq!(query_res.swapped_out.ancs, Uint128::new(196)); // 200 - virtual_slippage (4)
         }
         // Add more tests for other functionalities like error cases.
     }
@@ -165,7 +176,8 @@ mod tests {
 
             assert_eq!(query_res.owner, Addr::unchecked(ADMIN));
             assert_eq!(query_res.slot_size, Uint128::new(1_000));
-            assert_eq!(query_res.sale_amount, Uint128::new(1_000_000));
+            assert_eq!(query_res.sale_amount.oppamint, Uint128::new(1_000_000));
+            assert_eq!(query_res.sale_amount.ancs, Uint128::new(1_000_000));
         }
     }
 }

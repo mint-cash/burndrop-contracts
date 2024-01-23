@@ -3,6 +3,7 @@ use cosmwasm_std::{Decimal, Deps, Fraction, StdResult, Uint128};
 use crate::error::ContractError;
 use crate::msg::{PriceResponse, SimulateBurnResponse, UserInfoResponse};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
+use crate::types::output_token::OutputToken;
 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
     let config = CONFIG.load(deps.storage)?;
@@ -27,33 +28,37 @@ pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
     })
 }
 
-pub fn calculate_current_price(state: &State) -> Decimal {
-    Decimal::from_ratio(state.x_liquidity, state.y_liquidity)
+pub fn calculate_current_price(state: &State, token: OutputToken) -> Decimal {
+    Decimal::from_ratio(state.x_liquidity, state.y_liquidity.get(token))
 }
 
-pub fn query_current_price(deps: Deps) -> StdResult<PriceResponse> {
+pub fn query_current_price(deps: Deps, token: OutputToken) -> StdResult<PriceResponse> {
     let state = STATE.load(deps.storage)?;
 
     Ok(PriceResponse {
-        price: calculate_current_price(&state),
+        price: calculate_current_price(&state, token),
     })
 }
 
-pub fn query_simulate_burn(deps: Deps, amount: Uint128) -> StdResult<SimulateBurnResponse> {
+pub fn query_simulate_burn(
+    deps: Deps,
+    amount: Uint128,
+    out_token: OutputToken,
+) -> StdResult<SimulateBurnResponse> {
     let state = STATE.load(deps.storage)?;
     let config = CONFIG.load(deps.storage)?;
-    let price = calculate_current_price(&state);
+    let price = calculate_current_price(&state, out_token);
 
-    let k = state.x_liquidity * state.y_liquidity;
+    let k = state.x_liquidity * state.y_liquidity.get(out_token);
 
-    if state.y_liquidity + amount == Uint128::zero() {
+    if state.y_liquidity.get(out_token) + amount == Uint128::zero() {
         return Err(ContractError::DivisionByZeroError {}.into());
     }
 
-    let swapped_out = state.x_liquidity - (k / (state.y_liquidity + amount));
-    if state.total_swapped + swapped_out > config.sale_amount {
+    let swapped_out = state.x_liquidity - (k / (state.y_liquidity.get(out_token) + amount));
+    if state.total_swapped.get(out_token) + swapped_out > config.sale_amount.get(out_token) {
         return Err(ContractError::PoolSizeExceeded {
-            available: config.sale_amount - state.total_swapped,
+            available: config.sale_amount.get(out_token) - state.total_swapped.get(out_token),
         }
         .into());
     }

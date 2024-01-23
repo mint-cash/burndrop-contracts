@@ -1,6 +1,8 @@
 use cosmwasm_std::{StdError, Uint128};
 use thiserror::Error;
 
+use crate::types::output_token::OutputToken;
+
 #[derive(Error, Debug)]
 pub enum ContractError {
     #[error("{0}")]
@@ -35,6 +37,9 @@ pub enum ContractError {
 
     #[error("Swap: no active swap round")]
     NoActiveSwapRound {},
+
+    #[error("Swap: no liquidity for {token:?}")]
+    NoLiquidity { token: OutputToken },
 }
 
 impl From<ContractError> for StdError {

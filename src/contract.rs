@@ -10,6 +10,7 @@ use crate::execute::{burn_uusd, register_2nd_referrer, register_starting_user};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{query_config, query_current_price, query_simulate_burn, query_user};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
+use crate::types::output_token::OutputTokenMap;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -34,10 +35,17 @@ pub fn instantiate(
     let state = State {
         x_liquidity: msg.x_liquidity,
         y_liquidity: msg.y_liquidity,
-        total_claimed: Uint128::zero(),
-        total_swapped: Uint128::zero(),
-        rounds: vec![]
+        total_claimed: OutputTokenMap {
+            oppamint: Uint128::zero(),
+            ancs: Uint128::zero(),
+        },
+        total_swapped: OutputTokenMap {
+            oppamint: Uint128::zero(),
+            ancs: Uint128::zero(),
+        },
+        rounds: msg.rounds,
     };
+
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new().add_attributes(vec![
@@ -84,9 +92,7 @@ pub fn execute(
             state.rounds = rounds;
             STATE.save(deps.storage, &state)?;
 
-            Ok(Response::new().add_attributes(vec![
-                attr("action", "update_rounds"),
-            ]))
+            Ok(Response::new().add_attributes(vec![attr("action", "update_rounds")]))
         }
     }
 }
@@ -96,7 +102,10 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
         QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),
-        QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps)?),
-        QueryMsg::SimulateBurn { amount } => to_json_binary(&query_simulate_burn(deps, amount)?),
+        QueryMsg::CurrentPrice { token } => to_json_binary(&query_current_price(deps, token)?),
+        QueryMsg::SimulateBurn {
+            amount,
+            output_token,
+        } => to_json_binary(&query_simulate_burn(deps, amount, output_token)?),
     }
 }

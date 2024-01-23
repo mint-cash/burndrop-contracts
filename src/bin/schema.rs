@@ -1,6 +1,8 @@
-use burndrop_contracts::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use cosmwasm_schema::write_api;
 use std::{env::current_dir, fs::remove_dir_all};
+
+use cosmwasm_schema::write_api;
+
+use burndrop_contracts::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 fn main() {
     write_api! {

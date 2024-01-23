@@ -3,6 +3,7 @@ use cosmwasm_std::{attr, coin, BankMsg, DepsMut, Env, MessageInfo, Response, Uin
 use crate::error::ContractError;
 use crate::query::calculate_current_price;
 use crate::states::{config::CONFIG, state::STATE, user::User, user::USER};
+use crate::types::output_token::OutputTokenMap;
 
 fn ensure_user_initialized(
     deps: &mut DepsMut<'_>,
@@ -14,7 +15,10 @@ fn ensure_user_initialized(
     if !user_exists {
         let new_user = User {
             burned_uusd: Uint128::zero(),
-            swapped_out: Uint128::zero(),
+            swapped_out: OutputTokenMap {
+                oppamint: Uint128::zero(),
+                ancs: Uint128::zero(),
+            },
             referral_count: Uint128::zero(),
             slots: Uint128::from(1u128), // initial slot is 1
             second_referrer_registered: false,
@@ -71,8 +75,13 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     let now = env.block.time.seconds();
 
-    let round = state.rounds.iter().find(|r| r.start_time <= now && now <= r.end_time)
+    let round = state
+        .rounds
+        .iter()
+        .find(|r| r.start_time <= now && now <= r.end_time)
         .ok_or(ContractError::NoActiveSwapRound {})?;
+
+    let out_token = round.output_token;
 
     let input_token_denom = "uusd";
 
@@ -94,30 +103,31 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     let mut user = USER.load(deps.storage, info.sender.as_bytes())?;
 
-    let price = calculate_current_price(&state);
+    let price = calculate_current_price(&state, out_token);
 
     // TODO: Add cap check
 
-    let k = state.x_liquidity * state.y_liquidity;
+    let k = state.x_liquidity * state.y_liquidity.get(out_token);
 
-    if state.y_liquidity + swapped_in == Uint128::zero() {
+    if state.y_liquidity.get(out_token) + swapped_in == Uint128::zero() {
         return Err(ContractError::DivisionByZeroError {});
     }
 
-    let swapped_out = state.x_liquidity - (k / (state.y_liquidity + swapped_in));
-    if state.total_swapped + swapped_out > config.sale_amount {
+    let swapped_out = state.x_liquidity - (k / (state.y_liquidity.get(out_token) + swapped_in));
+    if state.total_swapped.get(out_token) + swapped_out > config.sale_amount.get(out_token) {
         return Err(ContractError::PoolSizeExceeded {
-            available: config.sale_amount - state.total_swapped,
+            available: config.sale_amount.get(out_token) - state.total_swapped.get(out_token),
         });
     }
 
     let virtual_slippage = (swapped_out * price) / swapped_in;
     user.burned_uusd += swapped_in;
-    user.swapped_out += swapped_out - virtual_slippage;
+    user.swapped_out
+        .add(out_token, swapped_out - virtual_slippage);
 
-    state.total_swapped += swapped_out;
+    state.total_swapped.add(out_token, swapped_out);
     state.x_liquidity += swapped_in;
-    state.y_liquidity -= swapped_out;
+    state.y_liquidity.sub(out_token, swapped_out);
 
     USER.save(deps.storage, info.sender.as_bytes(), &user)?;
     STATE.save(deps.storage, &state)?;

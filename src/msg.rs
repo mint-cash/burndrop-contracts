@@ -1,15 +1,19 @@
-use crate::states::config::Config;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Decimal, Uint128};
+
+use crate::states::config::Config;
+use crate::types::output_token::{OutputToken, OutputTokenMap};
 use crate::types::swap_round::SwapRound;
 
 #[cw_serde]
 pub struct InstantiateMsg {
     pub initial_slot_size: Uint128,
-    pub sale_amount: Uint128,
+    pub sale_amount: OutputTokenMap,
 
     pub x_liquidity: Uint128,
-    pub y_liquidity: Uint128,
+    pub y_liquidity: OutputTokenMap,
+
+    pub rounds: Vec<SwapRound>,
 }
 
 #[cw_serde(rename_all = "snake_case")]
@@ -31,10 +35,13 @@ pub enum QueryMsg {
     UserInfo { address: String },
 
     #[returns(PriceResponse)]
-    CurrentPrice {},
+    CurrentPrice { token: OutputToken },
 
     #[returns(SimulateBurnResponse)]
-    SimulateBurn { amount: Uint128 },
+    SimulateBurn {
+        amount: Uint128,
+        output_token: OutputToken,
+    },
 }
 
 #[cw_serde]
@@ -44,7 +51,7 @@ pub struct UserInfoResponse {
     pub cap: Uint128,
     pub slots: Uint128,
     pub slot_size: Uint128,
-    pub swapped_out: Uint128,
+    pub swapped_out: OutputTokenMap,
 }
 
 #[cw_serde]
