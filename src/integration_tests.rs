@@ -5,7 +5,8 @@ mod tests {
 
     use crate::helpers::BurnContract;
     use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-    use crate::types::output_token::OutputTokenMap;
+    use crate::types::output_token::{OutputToken, OutputTokenMap};
+    use crate::types::swap_round::SwapRound;
 
     pub fn contract_template() -> Box<dyn Contract<Empty>> {
         let contract = ContractWrapper::new(
@@ -80,7 +81,12 @@ mod tests {
                 ancs: Uint128::new(500_000),
             },
 
-            rounds: vec![],
+            rounds: vec![SwapRound {
+                start_time: 1706001400,
+                end_time: 1706001650,
+
+                output_token: OutputToken::OppaMINT,
+            }],
         };
         let contract_addr = app
             .instantiate_contract(
@@ -106,6 +112,7 @@ mod tests {
 
     mod execute_tests {
         use cosmwasm_std::testing::mock_info;
+        use cosmwasm_std::Timestamp;
 
         use super::*;
 
@@ -128,6 +135,9 @@ mod tests {
                 amount: burn_amount,
                 referrer: REFERRER.to_string(),
             };
+            app.update_block(|block| {
+                block.time = Timestamp::from_seconds(1706001506); // in the swap period
+            });
             let execute_res = app.execute_contract(
                 Addr::unchecked(USER),
                 burn_contract.addr(),
@@ -155,7 +165,38 @@ mod tests {
             assert_eq!(query_res.burned, Uint128::new(100));
             assert_eq!(query_res.burnable, Uint128::new(900));
             assert_eq!(query_res.swapped_out.oppamint, Uint128::new(196)); // 200 - virtual_slippage (4)
-            assert_eq!(query_res.swapped_out.ancs, Uint128::new(196)); // 200 - virtual_slippage (4)
+            assert_eq!(query_res.swapped_out.ancs, Uint128::new(0));
+        }
+
+        #[test]
+        fn test_burn_tokens_not_period() {
+            let (mut app, burn_contract) = proper_instantiate();
+            // Try to burn some tokens for a user with a referrer.
+
+            let burn_amount = Uint128::new(100);
+            let sender_info = mock_info(
+                USER,
+                &vec![Coin {
+                    denom: NATIVE_DENOM.to_string(),
+                    amount: burn_amount,
+                }],
+            );
+
+            // Create a burn tokens message
+            let msg = ExecuteMsg::BurnTokens {
+                amount: burn_amount,
+                referrer: REFERRER.to_string(),
+            };
+            app.update_block(|block| {
+                block.time = Timestamp::from_seconds(1706001653); // not in time
+            });
+            let execute_res = app.execute_contract(
+                Addr::unchecked(USER),
+                burn_contract.addr(),
+                &msg,
+                &sender_info.funds,
+            );
+            assert!(execute_res.is_err());
         }
         // Add more tests for other functionalities like error cases.
     }

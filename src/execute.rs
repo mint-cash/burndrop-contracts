@@ -174,12 +174,15 @@ pub fn burn_uusd(
 
     let res = swap(deps, env, info);
 
-    Ok(Response::new().add_message(burn_msg).add_attributes(vec![
-        attr("action", "burn_uusd"),
-        attr("amount", amount.to_string()),
-        attr("swapped_in", res.as_ref().unwrap().swapped_in.to_string()),
-        attr("swapped_out", res.as_ref().unwrap().swapped_out.to_string()),
-    ]))
+    match res {
+        Ok(res) => Ok(Response::new().add_message(burn_msg).add_attributes(vec![
+            attr("action", "burn_uusd"),
+            attr("amount", amount.to_string()),
+            attr("swapped_in", res.swapped_in.to_string()),
+            attr("swapped_out", res.swapped_out.to_string()),
+        ])),
+        Err(e) => Err(e),
+    }
 }
 
 // fn register_starting_user (only owner)
