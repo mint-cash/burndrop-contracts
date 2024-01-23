@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::types::output_token::OutputTokenMap;
 use crate::types::swap_round::SwapRound;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct State {
     pub total_swapped: OutputTokenMap,
     pub total_claimed: OutputTokenMap,
