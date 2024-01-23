@@ -124,7 +124,7 @@ mod tests {
             let burn_amount = Uint128::new(100);
             let sender_info = mock_info(
                 USER,
-                &vec![Coin {
+                &[Coin {
                     denom: NATIVE_DENOM.to_string(),
                     amount: burn_amount,
                 }],
@@ -176,7 +176,7 @@ mod tests {
             let burn_amount = Uint128::new(100);
             let sender_info = mock_info(
                 USER,
-                &vec![Coin {
+                &[Coin {
                     denom: NATIVE_DENOM.to_string(),
                     amount: burn_amount,
                 }],
