@@ -32,9 +32,17 @@ pub fn instantiate(
     };
     CONFIG.save(deps.storage, &config)?;
 
+    // Ensure the rounds are sorted by start time, and not overlapping.
+    let mut rounds = msg.rounds.clone();
+
+    rounds.sort_by(|a, b| a.start_time.cmp(&b.start_time));
+    for i in 0..rounds.len() - 1 {
+        if rounds[i].end_time > rounds[i + 1].start_time {
+            return Err(ContractError::InvalidRounds {});
+        }
+    }
+
     let state = State {
-        x_liquidity: msg.x_liquidity,
-        y_liquidity: msg.y_liquidity,
         total_claimed: OutputTokenMap {
             oppamint: Uint128::zero(),
             ancs: Uint128::zero(),
@@ -43,7 +51,7 @@ pub fn instantiate(
             oppamint: Uint128::zero(),
             ancs: Uint128::zero(),
         },
-        rounds: msg.rounds,
+        rounds,
     };
 
     STATE.save(deps.storage, &state)?;
@@ -98,14 +106,13 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
         QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),
-        QueryMsg::CurrentPrice { token } => to_json_binary(&query_current_price(deps, token)?),
-        QueryMsg::SimulateBurn {
-            amount,
-            output_token,
-        } => to_json_binary(&query_simulate_burn(deps, amount, output_token)?),
+        QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps, env)?),
+        QueryMsg::SimulateBurn { amount } => {
+            to_json_binary(&query_simulate_burn(deps, env, amount)?)
+        }
     }
 }
