@@ -35,6 +35,24 @@ pub enum ContractError {
     #[error("Swap: attempted division by zero")]
     DivisionByZeroError {},
 
+    #[error("Swap: invalid rounds")]
+    InvalidRounds {},
+
+    #[error("Swap: invalid round time")]
+    InvalidRoundTime { start_time: u64, end_time: u64 },
+
+    #[error("Swap: round not found")]
+    RoundNotFound { round_id: u64 },
+
+    #[error("Swap: round id already exists")]
+    RoundIdAlreadyExists { round_id: u64 },
+
+    #[error("Swap: cannot update active swap round (except start_time and end_time)")]
+    CannotUpdateActiveRound {},
+
+    #[error("Swap: cannot delete active swap round")]
+    CannotDeleteActiveRound {},
+
     #[error("Swap: no active swap round")]
     NoActiveSwapRound {},
 

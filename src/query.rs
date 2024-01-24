@@ -1,9 +1,9 @@
-use cosmwasm_std::{Decimal, Deps, Fraction, StdResult, Uint128};
+use cosmwasm_std::{Decimal, Deps, Env, Fraction, StdResult, Uint128};
 
 use crate::error::ContractError;
 use crate::msg::{PriceResponse, SimulateBurnResponse, UserInfoResponse};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
-use crate::types::output_token::OutputToken;
+use crate::types::swap_round::SwapRound;
 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
     let config = CONFIG.load(deps.storage)?;
@@ -28,34 +28,52 @@ pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
     })
 }
 
-pub fn calculate_current_price(state: &State, token: OutputToken) -> Decimal {
-    Decimal::from_ratio(state.x_liquidity, state.y_liquidity.get(token))
+pub fn calculate_round_price(round: &SwapRound) -> Decimal {
+    Decimal::from_ratio(round.x_liquidity, round.y_liquidity)
 }
 
-pub fn query_current_price(deps: Deps, token: OutputToken) -> StdResult<PriceResponse> {
+// find the recent active round
+// if no active round, use the first round
+pub fn calculate_current_price(state: &State, now: u64) -> Decimal {
+    let round = state.recent_active_round(now);
+
+    match round {
+        Some(round) => calculate_round_price(round),
+        None => calculate_round_price(&state.rounds.first().unwrap()),
+    }
+}
+
+pub fn query_current_price(deps: Deps, env: Env) -> StdResult<PriceResponse> {
     let state = STATE.load(deps.storage)?;
+    let now = env.block.time.seconds();
 
     Ok(PriceResponse {
-        price: calculate_current_price(&state, token),
+        price: calculate_current_price(&state, now),
     })
 }
 
 pub fn query_simulate_burn(
     deps: Deps,
+    env: Env,
     amount: Uint128,
-    out_token: OutputToken,
 ) -> StdResult<SimulateBurnResponse> {
     let state = STATE.load(deps.storage)?;
     let config = CONFIG.load(deps.storage)?;
-    let price = calculate_current_price(&state, out_token);
 
-    let k = state.x_liquidity * state.y_liquidity.get(out_token);
+    let now = env.block.time.seconds();
+    let round = state
+        .recent_active_round(now)
+        .ok_or(ContractError::NoActiveSwapRound {})?;
+    let out_token = round.output_token;
+    let price = calculate_round_price(&round);
 
-    if state.y_liquidity.get(out_token) + amount == Uint128::zero() {
+    let k = round.x_liquidity * round.y_liquidity;
+
+    if round.y_liquidity + amount == Uint128::zero() {
         return Err(ContractError::DivisionByZeroError {}.into());
     }
 
-    let swapped_out = state.x_liquidity - (k / (state.y_liquidity.get(out_token) + amount));
+    let swapped_out = round.x_liquidity - (k / (round.y_liquidity + amount));
     if state.total_swapped.get(out_token) + swapped_out > config.sale_amount.get(out_token) {
         return Err(ContractError::PoolSizeExceeded {
             available: config.sale_amount.get(out_token) - state.total_swapped.get(out_token),

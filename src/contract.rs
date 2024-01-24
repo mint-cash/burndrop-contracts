@@ -6,7 +6,11 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
-use crate::execute::{burn_uusd, register_2nd_referrer, register_starting_user};
+use crate::executions::round::{
+    create_round, delete_round, sort_and_validate_rounds, update_round,
+};
+use crate::executions::swap::burn_uusd;
+use crate::executions::user::{register_2nd_referrer, register_starting_user};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{query_config, query_current_price, query_simulate_burn, query_user};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
@@ -35,12 +39,7 @@ pub fn instantiate(
     // Ensure the rounds are sorted by start time, and not overlapping.
     let mut rounds = msg.rounds.clone();
 
-    rounds.sort_by(|a, b| a.start_time.cmp(&b.start_time));
-    for i in 0..rounds.len() - 1 {
-        if rounds[i].end_time > rounds[i + 1].start_time {
-            return Err(ContractError::InvalidRounds {});
-        }
-    }
+    sort_and_validate_rounds(&mut rounds)?;
 
     let state = State {
         total_claimed: OutputTokenMap {
@@ -89,19 +88,9 @@ pub fn execute(
 
             Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
-        ExecuteMsg::UpdateRounds { rounds } => {
-            // Ensure only the owner can update the rounds.
-            let config = CONFIG.load(deps.storage)?;
-            if info.sender != config.owner {
-                return Err(ContractError::Unauthorized {});
-            }
-
-            let mut state = STATE.load(deps.storage)?;
-            state.rounds = rounds;
-            STATE.save(deps.storage, &state)?;
-
-            Ok(Response::new().add_attributes(vec![attr("action", "update_rounds")]))
-        }
+        ExecuteMsg::CreateRound { round } => create_round(deps, info, round),
+        ExecuteMsg::UpdateRound { params } => update_round(deps, env, info, params),
+        ExecuteMsg::DeleteRound { id } => delete_round(deps, env, info, id),
     }
 }
 

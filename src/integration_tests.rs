@@ -74,18 +74,16 @@ mod tests {
                 ancs: Uint128::new(1_000_000),
             },
 
-            // Mocked initial liquidity.
-            x_liquidity: Uint128::new(1_000_000),
-            y_liquidity: OutputTokenMap {
-                oppamint: Uint128::new(500_000),
-                ancs: Uint128::new(500_000),
-            },
-
             rounds: vec![SwapRound {
+                id: 1,
+
                 start_time: 1706001400,
                 end_time: 1706001650,
 
                 output_token: OutputToken::OppaMINT,
+
+                x_liquidity: Uint128::new(1_000_000),
+                y_liquidity: Uint128::new(500_000),
             }],
         };
         let contract_addr = app
@@ -113,6 +111,8 @@ mod tests {
     mod execute_tests {
         use cosmwasm_std::testing::mock_info;
         use cosmwasm_std::Timestamp;
+
+        use crate::executions::round::UpdateRoundParams;
 
         use super::*;
 
@@ -203,12 +203,16 @@ mod tests {
             let (mut app, burn_contract) = proper_instantiate();
 
             // Modify the swap period to be shorter.
-            let modify_msg = ExecuteMsg::UpdateRounds {
-                rounds: vec![SwapRound {
-                    start_time: 1706001400,
-                    end_time: 1706001500, // modify end_time
-                    output_token: OutputToken::OppaMINT,
-                }],
+            let modify_msg = ExecuteMsg::UpdateRound {
+                params: UpdateRoundParams {
+                    id: 1,
+                    start_time: None,
+                    end_time: Some(1706001500), // modify end_time
+                    output_token: None,
+
+                    x_liquidity: None,
+                    y_liquidity: None,
+                },
             };
             let cosmos_msg = burn_contract.call(modify_msg).unwrap();
             let modify_res = app.execute(Addr::unchecked(ADMIN), cosmos_msg);
@@ -246,12 +250,16 @@ mod tests {
             let (mut app, burn_contract) = proper_instantiate();
 
             // Modify the swap period to be shorter.
-            let modify_msg = ExecuteMsg::UpdateRounds {
-                rounds: vec![SwapRound {
-                    start_time: 1706001400,
-                    end_time: 1706001700, // modify end_time
-                    output_token: OutputToken::OppaMINT,
-                }],
+            let modify_msg = ExecuteMsg::UpdateRound {
+                params: UpdateRoundParams {
+                    id: 1,
+                    start_time: None,
+                    end_time: Some(1706001700), // modify end_time
+                    output_token: None,
+
+                    x_liquidity: None,
+                    y_liquidity: None,
+                },
             };
             let cosmos_msg = burn_contract.call(modify_msg).unwrap();
             let modify_res = app.execute(Addr::unchecked(ADMIN), cosmos_msg);

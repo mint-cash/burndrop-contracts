@@ -1,4 +1,3 @@
-use cosmwasm_std::Uint128;
 use cw_storage_plus::Item;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -11,10 +10,13 @@ pub struct State {
     pub total_swapped: OutputTokenMap,
     pub total_claimed: OutputTokenMap,
 
-    pub x_liquidity: Uint128,
-    pub y_liquidity: OutputTokenMap,
-
     pub rounds: Vec<SwapRound>,
+}
+
+impl State {
+    pub fn recent_active_round(&self, now: u64) -> Option<&SwapRound> {
+        self.rounds.iter().rfind(|r| r.start_time <= now)
+    }
 }
 
 pub const STATE: Item<State> = Item::new("state");
