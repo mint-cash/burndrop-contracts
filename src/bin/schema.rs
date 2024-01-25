@@ -1,4 +1,4 @@
-use burndrop_contracts::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use burndrop_contracts::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use cosmwasm_schema::write_api;
 use std::{env::current_dir, fs::remove_dir_all};
 
@@ -7,6 +7,7 @@ fn main() {
         instantiate: InstantiateMsg,
         execute: ExecuteMsg,
         query: QueryMsg,
+        migrate: MigrateMsg,
     }
 
     let mut raw_dir = current_dir().unwrap();

@@ -11,6 +11,9 @@ pub struct InstantiateMsg {
     pub y_liquidity: Uint128,
 }
 
+#[cw_serde]
+pub struct MigrateMsg {}
+
 #[cw_serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     BurnTokens { amount: Uint128, referrer: String },
