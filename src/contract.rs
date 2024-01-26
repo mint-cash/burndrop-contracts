@@ -12,7 +12,9 @@ use crate::executions::round::{
 use crate::executions::swap::burn_uusd;
 use crate::executions::user::{register_2nd_referrer, register_starting_user};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::query::{query_config, query_current_price, query_simulate_burn, query_user};
+use crate::query::{
+    query_config, query_current_price, query_rounds, query_simulate_burn, query_user,
+};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
 
@@ -103,5 +105,6 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::SimulateBurn { amount } => {
             to_json_binary(&query_simulate_burn(deps, env, amount)?)
         }
+        QueryMsg::Rounds {} => to_json_binary(&query_rounds(deps)?),
     }
 }

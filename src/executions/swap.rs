@@ -46,7 +46,7 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     let mut user = USER.load(deps.storage, info.sender.as_bytes())?;
 
-    let price = calculate_round_price(&round);
+    let price = calculate_round_price(round);
 
     // TODO: Add cap check
 

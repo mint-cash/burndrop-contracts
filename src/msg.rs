@@ -39,6 +39,9 @@ pub enum QueryMsg {
 
     #[returns(SimulateBurnResponse)]
     SimulateBurn { amount: Uint128 },
+
+    #[returns(RoundsResponse)]
+    Rounds {},
 }
 
 #[cw_serde]

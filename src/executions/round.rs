@@ -35,7 +35,7 @@ pub fn create_round(
     round.validate()?;
 
     // Ensure the id is unique.
-    let mut rounds = STATE.load(deps.storage)?.rounds.clone();
+    let mut rounds = STATE.load(deps.storage)?.rounds;
     if rounds.iter().any(|r| r.id == round.id) {
         return Err(ContractError::RoundIdAlreadyExists { round_id: round.id });
     }
@@ -85,7 +85,7 @@ pub fn update_round(
     }
 
     // Ensure the round exists.
-    let mut rounds = STATE.load(deps.storage)?.rounds.clone();
+    let mut rounds = STATE.load(deps.storage)?.rounds;
     let round_index = rounds
         .iter()
         .position(|r| r.id == id)
@@ -157,7 +157,7 @@ pub fn delete_round(
     }
 
     // Ensure the round exists.
-    let mut rounds = STATE.load(deps.storage)?.rounds.clone();
+    let mut rounds = STATE.load(deps.storage)?.rounds;
     let round_index = rounds
         .iter()
         .position(|r| r.id == id)

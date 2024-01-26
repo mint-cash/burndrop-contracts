@@ -1,7 +1,7 @@
 use cosmwasm_std::{Decimal, Deps, Env, Fraction, StdResult, Uint128};
 
 use crate::error::ContractError;
-use crate::msg::{PriceResponse, SimulateBurnResponse, UserInfoResponse};
+use crate::msg::{PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::swap_round::SwapRound;
 
@@ -39,7 +39,7 @@ pub fn calculate_current_price(state: &State, now: u64) -> Decimal {
 
     match round {
         Some(round) => calculate_round_price(round),
-        None => calculate_round_price(&state.rounds.first().unwrap()),
+        None => calculate_round_price(state.rounds.first().unwrap()),
     }
 }
 
@@ -65,7 +65,7 @@ pub fn query_simulate_burn(
         .recent_active_round(now)
         .ok_or(ContractError::NoActiveSwapRound {})?;
     let out_token = round.output_token;
-    let price = calculate_round_price(&round);
+    let price = calculate_round_price(round);
 
     let k = round.x_liquidity * round.y_liquidity;
 
@@ -87,5 +87,13 @@ pub fn query_simulate_burn(
         swapped_out,
         virtual_slippage,
         final_amount: amount - virtual_slippage,
+    })
+}
+
+pub fn query_rounds(deps: Deps) -> StdResult<RoundsResponse> {
+    let state = STATE.load(deps.storage)?;
+
+    Ok(RoundsResponse {
+        rounds: state.rounds,
     })
 }
