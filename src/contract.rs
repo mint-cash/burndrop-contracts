@@ -1,9 +1,11 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    attr, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+    attr, to_json_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdError,
+    StdResult, Uint128,
 };
-use cw2::set_contract_version;
+use cw2::{get_contract_version, set_contract_version};
+use semver::Version;
 
 use crate::error::ContractError;
 use crate::execute::{burn_uusd, register_2nd_referrer, register_starting_user};
@@ -44,6 +46,29 @@ pub fn instantiate(
         attr("owner", info.sender),
         attr("initial_slot_size", msg.initial_slot_size.to_string()),
     ]))
+}
+
+#[entry_point]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, ContractError> {
+    let stored = get_contract_version(deps.storage)?;
+    let storage_contract_name = stored.contract;
+
+    if storage_contract_name != CONTRACT_NAME {
+        return Err(ContractError::Std(StdError::generic_err(
+            "Can only upgrade from same contract type",
+        )));
+    }
+
+    let version: Version = CONTRACT_VERSION.parse()?;
+    let storage_contract_version: Version = stored.version.parse()?;
+    if storage_contract_version >= version {
+        return Err(ContractError::Std(StdError::generic_err(
+            "Cannot upgrade from a newer contract version",
+        )));
+    }
+
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    Ok(Response::new())
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
