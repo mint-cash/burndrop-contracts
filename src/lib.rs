@@ -7,5 +7,5 @@ pub mod states;
 
 pub mod executions;
 #[cfg(test)]
-pub mod integration_tests;
+mod testing;
 mod types;
