@@ -14,6 +14,9 @@ pub struct InstantiateMsg {
     pub rounds: Vec<SwapRound>,
 }
 
+#[cw_serde]
+pub struct MigrateMsg {}
+
 #[cw_serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     BurnTokens { amount: Uint128, referrer: String },

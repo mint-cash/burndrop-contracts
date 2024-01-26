@@ -34,7 +34,7 @@ pub enum ContractError {
 
     #[error("Swap: attempted division by zero")]
     DivisionByZeroError {},
-
+  
     #[error("Swap: invalid rounds")]
     InvalidRounds {},
 
@@ -58,10 +58,19 @@ pub enum ContractError {
 
     #[error("Swap: no liquidity for {token:?}")]
     NoLiquidity { token: OutputToken },
+
+    #[error("Semver parsing error: {0}")]
+    SemVer(String),
 }
 
 impl From<ContractError> for StdError {
     fn from(error: ContractError) -> Self {
         StdError::generic_err(error.to_string())
+    }
+}
+
+impl From<semver::Error> for ContractError {
+    fn from(err: semver::Error) -> Self {
+        Self::SemVer(err.to_string())
     }
 }
