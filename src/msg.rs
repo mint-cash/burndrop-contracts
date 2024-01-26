@@ -1,14 +1,17 @@
-use crate::states::config::Config;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Decimal, Uint128};
+
+use crate::executions::round::UpdateRoundParams;
+use crate::states::config::Config;
+use crate::types::output_token::OutputTokenMap;
+use crate::types::swap_round::SwapRound;
 
 #[cw_serde]
 pub struct InstantiateMsg {
     pub initial_slot_size: Uint128,
-    pub sale_amount: Uint128,
+    pub sale_amount: OutputTokenMap,
 
-    pub x_liquidity: Uint128,
-    pub y_liquidity: Uint128,
+    pub rounds: Vec<SwapRound>,
 }
 
 #[cw_serde]
@@ -20,6 +23,9 @@ pub enum ExecuteMsg {
     RegisterStartingUser { user: String },
     Register2ndReferrer { referrer: String },
     UpdateSlotSize { slot_size: Uint128 },
+    CreateRound { round: SwapRound },
+    UpdateRound { params: UpdateRoundParams },
+    DeleteRound { id: u64 },
 }
 
 #[cw_serde]
@@ -36,6 +42,9 @@ pub enum QueryMsg {
 
     #[returns(SimulateBurnResponse)]
     SimulateBurn { amount: Uint128 },
+
+    #[returns(RoundsResponse)]
+    Rounds {},
 }
 
 #[cw_serde]
@@ -45,7 +54,7 @@ pub struct UserInfoResponse {
     pub cap: Uint128,
     pub slots: Uint128,
     pub slot_size: Uint128,
-    pub swapped_out: Uint128,
+    pub swapped_out: OutputTokenMap,
 }
 
 #[cw_serde]
@@ -58,4 +67,9 @@ pub struct SimulateBurnResponse {
     pub swapped_out: Uint128,
     pub virtual_slippage: Uint128,
     pub final_amount: Uint128,
+}
+
+#[cw_serde]
+pub struct RoundsResponse {
+    pub rounds: Vec<SwapRound>,
 }

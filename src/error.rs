@@ -1,6 +1,8 @@
 use cosmwasm_std::{StdError, Uint128};
 use thiserror::Error;
 
+use crate::types::output_token::OutputToken;
+
 #[derive(Error, Debug)]
 pub enum ContractError {
     #[error("{0}")]
@@ -32,6 +34,30 @@ pub enum ContractError {
 
     #[error("Swap: attempted division by zero")]
     DivisionByZeroError {},
+  
+    #[error("Swap: invalid rounds")]
+    InvalidRounds {},
+
+    #[error("Swap: invalid round time")]
+    InvalidRoundTime { start_time: u64, end_time: u64 },
+
+    #[error("Swap: round not found")]
+    RoundNotFound { round_id: u64 },
+
+    #[error("Swap: round id already exists")]
+    RoundIdAlreadyExists { round_id: u64 },
+
+    #[error("Swap: cannot update active executions round (except start_time and end_time)")]
+    CannotUpdateActiveRound {},
+
+    #[error("Swap: cannot delete active executions round")]
+    CannotDeleteActiveRound {},
+
+    #[error("Swap: no active executions round")]
+    NoActiveSwapRound {},
+
+    #[error("Swap: no liquidity for {token:?}")]
+    NoLiquidity { token: OutputToken },
 
     #[error("Semver parsing error: {0}")]
     SemVer(String),

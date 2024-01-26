@@ -8,10 +8,17 @@ use cw2::{get_contract_version, set_contract_version};
 use semver::Version;
 
 use crate::error::ContractError;
-use crate::execute::{burn_uusd, register_2nd_referrer, register_starting_user};
+use crate::executions::round::{
+    create_round, delete_round, sort_and_validate_rounds, update_round,
+};
+use crate::executions::swap::burn_uusd;
+use crate::executions::user::{register_2nd_referrer, register_starting_user};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::query::{query_config, query_current_price, query_simulate_burn, query_user};
+use crate::query::{
+    query_config, query_current_price, query_rounds, query_simulate_burn, query_user,
+};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
+use crate::types::output_token::OutputTokenMap;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -33,12 +40,23 @@ pub fn instantiate(
     };
     CONFIG.save(deps.storage, &config)?;
 
+    // Ensure the rounds are sorted by start time, and not overlapping.
+    let mut rounds = msg.rounds.clone();
+
+    sort_and_validate_rounds(&mut rounds)?;
+
     let state = State {
-        x_liquidity: msg.x_liquidity,
-        y_liquidity: msg.y_liquidity,
-        total_claimed: Uint128::zero(),
-        total_swapped: Uint128::zero(),
+        total_claimed: OutputTokenMap {
+            oppamint: Uint128::zero(),
+            ancs: Uint128::zero(),
+        },
+        total_swapped: OutputTokenMap {
+            oppamint: Uint128::zero(),
+            ancs: Uint128::zero(),
+        },
+        rounds,
     };
+
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::new().add_attributes(vec![
@@ -97,15 +115,21 @@ pub fn execute(
 
             Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
+        ExecuteMsg::CreateRound { round } => create_round(deps, info, round),
+        ExecuteMsg::UpdateRound { params } => update_round(deps, env, info, params),
+        ExecuteMsg::DeleteRound { id } => delete_round(deps, env, info, id),
     }
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
         QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),
-        QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps)?),
-        QueryMsg::SimulateBurn { amount } => to_json_binary(&query_simulate_burn(deps, amount)?),
+        QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps, env)?),
+        QueryMsg::SimulateBurn { amount } => {
+            to_json_binary(&query_simulate_burn(deps, env, amount)?)
+        }
+        QueryMsg::Rounds {} => to_json_binary(&query_rounds(deps)?),
     }
 }
