@@ -34,7 +34,7 @@ pub enum ContractError {
 
     #[error("Swap: attempted division by zero")]
     DivisionByZeroError {},
-  
+
     #[error("Swap: invalid rounds")]
     InvalidRounds {},
 
