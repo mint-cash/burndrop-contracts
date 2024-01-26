@@ -62,9 +62,9 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, Contra
     let version: Version = CONTRACT_VERSION.parse()?;
     let storage_contract_version: Version = stored.version.parse()?;
     if storage_contract_version >= version {
-        return Err(ContractError::Std(
-            StdError::generic_err("Cannot upgrade from a newer contract version").into(),
-        ));
+        return Err(ContractError::Std(StdError::generic_err(
+            "Cannot upgrade from a newer contract version",
+        )));
     }
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
