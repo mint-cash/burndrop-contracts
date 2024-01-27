@@ -1,42 +1,65 @@
 use cosmwasm_std::testing::mock_info;
 use cosmwasm_std::{Addr, Coin, Timestamp, Uint128};
-use cw_multi_test::Executor;
+use cw_multi_test::{App, AppResponse, Executor};
 
 use crate::executions::round::UpdateRoundParams;
-use crate::msg::{ExecuteMsg, QueryMsg};
+use crate::helpers::BurnContract;
+use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
 use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
+
+fn execute_swap(
+    app: &mut App,
+    burn_contract: BurnContract,
+    sender: &str,
+    amount: Uint128,
+    referrer: &str,
+    time: Option<u64>,
+) -> anyhow::Result<AppResponse> {
+    // Try to burn some tokens for a user with a referrer.
+    let sender_info = mock_info(
+        sender,
+        &[Coin {
+            denom: NATIVE_DENOM.to_string(),
+            amount,
+        }],
+    );
+
+    // Create a burn tokens message
+    let msg = ExecuteMsg::BurnTokens {
+        amount,
+        referrer: referrer.to_string(),
+    };
+    if let Some(time) = time {
+        app.update_block(|block| {
+            block.time = Timestamp::from_seconds(time);
+        });
+    }
+    app.execute_contract(
+        Addr::unchecked(sender),
+        burn_contract.addr(),
+        &msg,
+        &sender_info.funds,
+    )
+}
 
 #[test]
 fn success_during_period() {
     let (mut app, burn_contract) = instantiate::default();
     // Try to burn some tokens for a user with a referrer.
     let burn_amount = Uint128::new(100);
-    let sender_info = mock_info(
-        USER,
-        &[Coin {
-            denom: NATIVE_DENOM.to_string(),
-            amount: burn_amount,
-        }],
-    );
 
-    // Create a burn tokens message
-    let msg = ExecuteMsg::BurnTokens {
-        amount: burn_amount,
-        referrer: REFERRER.to_string(),
-    };
-    app.update_block(|block| {
-        block.time = Timestamp::from_seconds(1706001506); // in the executions period
-    });
-    let execute_res = app.execute_contract(
-        Addr::unchecked(USER),
-        burn_contract.addr(),
-        &msg,
-        &sender_info.funds,
+    let execute_res = execute_swap(
+        &mut app,
+        burn_contract,
+        USER,
+        burn_amount,
+        REFERRER,
+        Some(1706001506),
     );
     assert!(execute_res.is_ok());
 
     // Query the burn info after burning tokens for the user.
-    let query_res: crate::msg::UserInfoResponse = app
+    let query_res: UserInfoResponse = app
         .wrap()
         .query_wasm_smart(
             burn_contract.addr(),
@@ -63,27 +86,14 @@ fn fail_not_period() {
 
     // Try to burn some tokens for a user with a referrer.
     let burn_amount = Uint128::new(100);
-    let sender_info = mock_info(
-        USER,
-        &[Coin {
-            denom: NATIVE_DENOM.to_string(),
-            amount: burn_amount,
-        }],
-    );
 
-    // Create a burn tokens message
-    let msg = ExecuteMsg::BurnTokens {
-        amount: burn_amount,
-        referrer: REFERRER.to_string(),
-    };
-    app.update_block(|block| {
-        block.time = Timestamp::from_seconds(1706001653); // not in time
-    });
-    let execute_res = app.execute_contract(
-        Addr::unchecked(USER),
-        burn_contract.addr(),
-        &msg,
-        &sender_info.funds,
+    let execute_res = execute_swap(
+        &mut app,
+        burn_contract,
+        USER,
+        burn_amount,
+        REFERRER,
+        Some(1706001653),
     );
     assert!(execute_res.is_err());
 }
@@ -110,28 +120,15 @@ fn fail_not_modified_period() {
 
     // Try to burn some tokens for a user with a referrer.
     let burn_amount = Uint128::new(100);
-    let sender_info = mock_info(
+    let burn_res = execute_swap(
+        &mut app,
+        burn_contract,
         USER,
-        &[Coin {
-            denom: NATIVE_DENOM.to_string(),
-            amount: burn_amount,
-        }],
+        burn_amount,
+        REFERRER,
+        Some(1706001506),
     );
 
-    // Create a burn tokens message
-    let burn_msg = ExecuteMsg::BurnTokens {
-        amount: burn_amount,
-        referrer: REFERRER.to_string(),
-    };
-    app.update_block(|block| {
-        block.time = Timestamp::from_seconds(1706001506); // in the previous executions period, not in the modified period
-    });
-    let burn_res = app.execute_contract(
-        Addr::unchecked(USER),
-        burn_contract.addr(),
-        &burn_msg,
-        &sender_info.funds,
-    );
     assert!(burn_res.is_err());
 }
 
@@ -157,27 +154,13 @@ fn success_during_modified_period() {
 
     // Try to burn some tokens for a user with a referrer.
     let burn_amount = Uint128::new(100);
-    let sender_info = mock_info(
+    let burn_res = execute_swap(
+        &mut app,
+        burn_contract,
         USER,
-        &[Coin {
-            denom: NATIVE_DENOM.to_string(),
-            amount: burn_amount,
-        }],
-    );
-
-    // Create a burn tokens message
-    let burn_msg = ExecuteMsg::BurnTokens {
-        amount: burn_amount,
-        referrer: REFERRER.to_string(),
-    };
-    app.update_block(|block| {
-        block.time = Timestamp::from_seconds(1706001680); // in the modified executions period
-    });
-    let burn_res = app.execute_contract(
-        Addr::unchecked(USER),
-        burn_contract.addr(),
-        &burn_msg,
-        &sender_info.funds,
+        burn_amount,
+        REFERRER,
+        Some(1706001506),
     );
     assert!(burn_res.is_ok());
 
