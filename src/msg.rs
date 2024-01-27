@@ -58,6 +58,11 @@ pub struct UserInfoResponse {
 }
 
 #[cw_serde]
+pub struct UsersResponse {
+    pub users: Vec<(String, UserInfoResponse)>,
+}
+
+#[cw_serde]
 pub struct PriceResponse {
     pub price: Decimal,
 }
