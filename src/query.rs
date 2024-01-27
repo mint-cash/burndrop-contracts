@@ -4,7 +4,7 @@ use cw_storage_plus::Bound;
 use crate::constants::{DEFAULT_QUERY_LIMIT, MAX_QUERY_LIMIT};
 use crate::error::ContractError;
 use crate::msg::{
-    PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersResponse,
+    PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse,
 };
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::swap_round::SwapRound;
@@ -38,7 +38,7 @@ pub fn query_users(
     start: Option<String>,
     limit: Option<u32>,
     order: Option<Order>,
-) -> StdResult<UsersResponse> {
+) -> StdResult<UsersInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
 
     let start = start.map(|s| deps.api.addr_validate(&s)).transpose()?;
@@ -72,7 +72,7 @@ pub fn query_users(
         })
         .collect();
 
-    Ok(UsersResponse { users })
+    Ok(UsersInfoResponse { users })
 }
 
 pub fn calculate_round_price(round: &SwapRound) -> Decimal {

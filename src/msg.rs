@@ -3,6 +3,7 @@ use cosmwasm_std::{Decimal, Uint128};
 
 use crate::executions::round::UpdateRoundParams;
 use crate::states::config::Config;
+use crate::types::common::OrderBy;
 use crate::types::output_token::OutputTokenMap;
 use crate::types::swap_round::SwapRound;
 
@@ -37,6 +38,13 @@ pub enum QueryMsg {
     #[returns(UserInfoResponse)]
     UserInfo { address: String },
 
+    #[returns(UsersInfoResponse)]
+    UsersInfo {
+        start: Option<String>,
+        limit: Option<u32>,
+        order: Option<OrderBy>,
+    },
+
     #[returns(PriceResponse)]
     CurrentPrice {},
 
@@ -58,7 +66,7 @@ pub struct UserInfoResponse {
 }
 
 #[cw_serde]
-pub struct UsersResponse {
+pub struct UsersInfoResponse {
     pub users: Vec<(String, UserInfoResponse)>,
 }
 
