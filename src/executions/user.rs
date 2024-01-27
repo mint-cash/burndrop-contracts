@@ -6,7 +6,7 @@ use crate::types::output_token::OutputTokenMap;
 
 pub fn ensure_user_initialized(
     deps: &mut DepsMut<'_>,
-    user_address: Addr,
+    user_address: &Addr,
 ) -> Result<(), ContractError> {
     let user_exists = USER.may_load(deps.storage, user_address.clone())?.is_some();
     if !user_exists {
@@ -20,7 +20,7 @@ pub fn ensure_user_initialized(
             slots: Uint128::from(1u128), // initial slot is 1
             second_referrer_registered: false,
         };
-        USER.save(deps.storage, user_address, &new_user)?;
+        USER.save(deps.storage, user_address.clone(), &new_user)?;
     }
     Ok(())
 }
@@ -82,7 +82,7 @@ pub fn register_starting_user(
         return Err(ContractError::AlreadyRegistered {});
     }
 
-    ensure_user_initialized(&mut deps, user_addr)?;
+    ensure_user_initialized(&mut deps, &user_addr)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_starting_user"),
@@ -95,7 +95,7 @@ pub fn register_2nd_referrer(
     info: MessageInfo,
     referrer: String,
 ) -> Result<Response, ContractError> {
-    ensure_user_initialized(&mut deps, info.sender.clone())?;
+    ensure_user_initialized(&mut deps, &info.sender)?;
     process_referral(deps.branch(), &referrer)?;
 
     let mut sender = USER.load(deps.storage, info.sender.clone())?;

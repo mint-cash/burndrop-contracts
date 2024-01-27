@@ -89,7 +89,7 @@ pub fn burn_uusd(
     amount: Uint128,
     referrer: String,
 ) -> Result<Response, ContractError> {
-    ensure_user_initialized(&mut deps, info.sender.clone())?;
+    ensure_user_initialized(&mut deps, &info.sender)?;
     process_referral(deps.branch(), &referrer)?;
 
     let config = CONFIG.load(deps.storage)?;
