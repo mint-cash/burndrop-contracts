@@ -1,4 +1,4 @@
-use cosmwasm_std::{attr, DepsMut, MessageInfo, Response, Uint128};
+use cosmwasm_std::{attr, Addr, DepsMut, MessageInfo, Response, Uint128};
 
 use crate::error::ContractError;
 use crate::states::{config::CONFIG, user::User, user::USER};
@@ -6,11 +6,9 @@ use crate::types::output_token::OutputTokenMap;
 
 pub fn ensure_user_initialized(
     deps: &mut DepsMut<'_>,
-    user_address: &str,
+    user_address: Addr,
 ) -> Result<(), ContractError> {
-    let user_exists = USER
-        .may_load(deps.storage, user_address.as_bytes())?
-        .is_some();
+    let user_exists = USER.may_load(deps.storage, user_address.clone())?.is_some();
     if !user_exists {
         let new_user = User {
             burned_uusd: Uint128::zero(),
@@ -22,7 +20,7 @@ pub fn ensure_user_initialized(
             slots: Uint128::from(1u128), // initial slot is 1
             second_referrer_registered: false,
         };
-        USER.save(deps.storage, user_address.as_bytes(), &new_user)?;
+        USER.save(deps.storage, user_address, &new_user)?;
     }
     Ok(())
 }
@@ -46,7 +44,7 @@ pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
 
 pub fn process_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), ContractError> {
     let referrer_addr = deps.api.addr_validate(referrer)?;
-    let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.as_bytes())? {
+    let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
         Some(state) => state,
         None => return Err(ContractError::ReferrerNotInitialized {}),
     };
@@ -58,7 +56,7 @@ pub fn process_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), Contrac
     let new_slots = calculate_new_slots(referrer_user.referral_count);
     referrer_user.slots += new_slots;
 
-    USER.save(deps.storage, referrer.as_bytes(), &referrer_user)?;
+    USER.save(deps.storage, referrer_addr, &referrer_user)?;
 
     Ok(())
 }
@@ -76,13 +74,15 @@ pub fn register_starting_user(
         return Err(ContractError::Unauthorized {});
     }
 
+    let user_addr = deps.api.addr_validate(&user)?;
+
     // if user is already initialized, return error
-    let user_exists = USER.may_load(deps.storage, user.as_bytes())?.is_some();
+    let user_exists = USER.may_load(deps.storage, user_addr.clone())?.is_some();
     if user_exists {
         return Err(ContractError::AlreadyRegistered {});
     }
 
-    ensure_user_initialized(&mut deps, &user)?;
+    ensure_user_initialized(&mut deps, user_addr)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_starting_user"),
@@ -95,10 +95,10 @@ pub fn register_2nd_referrer(
     info: MessageInfo,
     referrer: String,
 ) -> Result<Response, ContractError> {
-    ensure_user_initialized(&mut deps, info.sender.as_str())?;
+    ensure_user_initialized(&mut deps, info.sender.clone())?;
     process_referral(deps.branch(), &referrer)?;
 
-    let mut sender = USER.load(deps.storage, info.sender.as_bytes())?;
+    let mut sender = USER.load(deps.storage, info.sender.clone())?;
 
     // Ensure the second referrer is registered only once
     if sender.second_referrer_registered {
@@ -111,7 +111,7 @@ pub fn register_2nd_referrer(
     // FIXME: make it dynamic because this additional slot must be excluded from the doubling logic
     sender.slots += Uint128::from(1u128);
 
-    USER.save(deps.storage, info.sender.as_bytes(), &sender)?;
+    USER.save(deps.storage, info.sender, &sender)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_2nd_referrer"),

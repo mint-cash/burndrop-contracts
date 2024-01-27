@@ -9,7 +9,7 @@ use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
 
 fn execute_swap(
     app: &mut App,
-    burn_contract: BurnContract,
+    burn_contract: &BurnContract,
     sender: &str,
     amount: Uint128,
     referrer: &str,
@@ -50,7 +50,7 @@ fn success_during_period() {
 
     let execute_res = execute_swap(
         &mut app,
-        burn_contract,
+        &burn_contract,
         USER,
         burn_amount,
         REFERRER,
@@ -89,7 +89,7 @@ fn fail_not_period() {
 
     let execute_res = execute_swap(
         &mut app,
-        burn_contract,
+        &burn_contract,
         USER,
         burn_amount,
         REFERRER,
@@ -122,7 +122,7 @@ fn fail_not_modified_period() {
     let burn_amount = Uint128::new(100);
     let burn_res = execute_swap(
         &mut app,
-        burn_contract,
+        &burn_contract,
         USER,
         burn_amount,
         REFERRER,
@@ -156,7 +156,7 @@ fn success_during_modified_period() {
     let burn_amount = Uint128::new(100);
     let burn_res = execute_swap(
         &mut app,
-        burn_contract,
+        &burn_contract,
         USER,
         burn_amount,
         REFERRER,

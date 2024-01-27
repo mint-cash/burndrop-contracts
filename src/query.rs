@@ -1,7 +1,11 @@
-use cosmwasm_std::{Decimal, Deps, Env, Fraction, StdResult, Uint128};
+use crate::constants::{DEFAULT_QUERY_LIMIT, MAX_QUERY_LIMIT};
+use cosmwasm_std::{Decimal, Deps, Env, Fraction, Order, StdResult, Uint128};
+use cw_storage_plus::Bound;
 
 use crate::error::ContractError;
-use crate::msg::{PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse};
+use crate::msg::{
+    PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersResponse,
+};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::swap_round::SwapRound;
 
@@ -13,7 +17,8 @@ pub fn query_config(deps: Deps) -> StdResult<Config> {
 
 pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
-    let user = USER.load(deps.storage, address.as_bytes())?;
+    let address = deps.api.addr_validate(&address)?;
+    let user = USER.load(deps.storage, address)?;
 
     let previously_burned = user.burned_uusd;
     let cap = config.slot_size * user.slots;
