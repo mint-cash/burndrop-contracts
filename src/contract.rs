@@ -15,7 +15,7 @@ use crate::executions::swap::burn_uusd;
 use crate::executions::user::{register_2nd_referrer, register_starting_user};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{
-    query_config, query_current_price, query_rounds, query_simulate_burn, query_user,
+    query_config, query_current_price, query_rounds, query_simulate_burn, query_user, query_users,
 };
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
@@ -37,6 +37,8 @@ pub fn instantiate(
         owner: info.sender.clone(),
         slot_size: msg.initial_slot_size,
         sale_amount: msg.sale_amount,
+        max_query_limit: msg.max_query_limit,
+        default_query_limit: msg.default_query_limit,
     };
     CONFIG.save(deps.storage, &config)?;
 
@@ -126,6 +128,11 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
         QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),
+        QueryMsg::UsersInfo {
+            start,
+            limit,
+            order,
+        } => to_json_binary(&query_users(deps, start, limit, order.map(From::from))?),
         QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps, env)?),
         QueryMsg::SimulateBurn { amount } => {
             to_json_binary(&query_simulate_burn(deps, env, amount)?)

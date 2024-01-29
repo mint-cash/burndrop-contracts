@@ -44,7 +44,7 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
         });
     }
 
-    let mut user = USER.load(deps.storage, info.sender.as_bytes())?;
+    let mut user = USER.load(deps.storage, info.sender.clone())?;
 
     let price = calculate_round_price(round);
 
@@ -72,7 +72,7 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     round.x_liquidity += swapped_in;
     round.y_liquidity -= swapped_out;
 
-    USER.save(deps.storage, info.sender.as_bytes(), &user)?;
+    USER.save(deps.storage, info.sender, &user)?;
     STATE.save(deps.storage, &state)?;
 
     let deposit_result = SwapResult {
@@ -89,13 +89,13 @@ pub fn burn_uusd(
     amount: Uint128,
     referrer: String,
 ) -> Result<Response, ContractError> {
-    ensure_user_initialized(&mut deps, info.sender.as_str())?;
+    ensure_user_initialized(&mut deps, &info.sender)?;
     process_referral(deps.branch(), &referrer)?;
 
     let config = CONFIG.load(deps.storage)?;
 
     {
-        let sender = USER.load(deps.storage, info.sender.as_bytes())?;
+        let sender = USER.load(deps.storage, info.sender.clone())?;
         let previously_burned = sender.burned_uusd;
 
         // slots_by_user(address) * config.slot_size

@@ -76,6 +76,9 @@ pub fn default() -> (App, BurnContract) {
             x_liquidity: Uint128::new(1_000_000),
             y_liquidity: Uint128::new(500_000),
         }],
+
+        max_query_limit: 30,
+        default_query_limit: 10,
     };
     let contract_addr = app
         .instantiate_contract(

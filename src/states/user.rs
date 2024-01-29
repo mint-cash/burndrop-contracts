@@ -1,4 +1,4 @@
-use cosmwasm_std::Uint128;
+use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::Map;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -15,4 +15,4 @@ pub struct User {
     pub swapped_out: OutputTokenMap,
 }
 
-pub const USER: Map<&[u8], User> = Map::new("user");
+pub const USER: Map<Addr, User> = Map::new("user");

@@ -1,7 +1,10 @@
-use cosmwasm_std::{Decimal, Deps, Env, Fraction, StdResult, Uint128};
+use cosmwasm_std::{Decimal, Deps, Env, Fraction, Order, StdResult, Uint128};
+use cw_storage_plus::Bound;
 
 use crate::error::ContractError;
-use crate::msg::{PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse};
+use crate::msg::{
+    PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse,
+};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::swap_round::SwapRound;
 
@@ -13,7 +16,8 @@ pub fn query_config(deps: Deps) -> StdResult<Config> {
 
 pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
-    let user = USER.load(deps.storage, address.as_bytes())?;
+    let address = deps.api.addr_validate(&address)?;
+    let user = USER.load(deps.storage, address)?;
 
     let previously_burned = user.burned_uusd;
     let cap = config.slot_size * user.slots;
@@ -26,6 +30,50 @@ pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
         slot_size: config.slot_size,
         swapped_out: user.swapped_out,
     })
+}
+
+pub fn query_users(
+    deps: Deps,
+    start: Option<String>,
+    limit: Option<u32>,
+    order: Option<Order>,
+) -> StdResult<UsersInfoResponse> {
+    let config = CONFIG.load(deps.storage)?;
+
+    let start = start.map(|s| deps.api.addr_validate(&s)).transpose()?;
+    let limit = limit
+        .unwrap_or(config.default_query_limit)
+        .min(config.max_query_limit) as usize;
+    let order = order.unwrap_or(Order::Ascending);
+
+    let (min, max) = match order {
+        Order::Ascending => (start.map(Bound::exclusive), None),
+        Order::Descending => (None, start.map(Bound::exclusive)),
+    };
+
+    let users: Vec<(String, UserInfoResponse)> = USER
+        .range(deps.storage, min, max, order)
+        .take(limit)
+        .map(|item| {
+            let (address, user) = item.unwrap();
+            let previously_burned = user.burned_uusd;
+            let cap = config.slot_size * user.slots;
+
+            (
+                address.to_string(),
+                UserInfoResponse {
+                    burned: previously_burned,
+                    burnable: cap - previously_burned,
+                    cap,
+                    slots: user.slots,
+                    slot_size: config.slot_size,
+                    swapped_out: user.swapped_out,
+                },
+            )
+        })
+        .collect();
+
+    Ok(UsersInfoResponse { users })
 }
 
 pub fn calculate_round_price(round: &SwapRound) -> Decimal {
