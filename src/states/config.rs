@@ -12,6 +12,8 @@ pub struct Config {
     pub owner: Addr,
     pub slot_size: Uint128,
     pub sale_amount: OutputTokenMap,
+    pub max_query_limit: u32,
+    pub default_query_limit: u32,
 }
 
 pub const CONFIG: Item<Config> = Item::new(CONFIG_KEY);

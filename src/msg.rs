@@ -13,6 +13,9 @@ pub struct InstantiateMsg {
     pub sale_amount: OutputTokenMap,
 
     pub rounds: Vec<SwapRound>,
+
+    pub max_query_limit: u32,
+    pub default_query_limit: u32,
 }
 
 #[cw_serde]

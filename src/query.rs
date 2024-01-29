@@ -1,7 +1,6 @@
 use cosmwasm_std::{Decimal, Deps, Env, Fraction, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
 
-use crate::constants::{DEFAULT_QUERY_LIMIT, MAX_QUERY_LIMIT};
 use crate::error::ContractError;
 use crate::msg::{
     PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse,
@@ -42,7 +41,9 @@ pub fn query_users(
     let config = CONFIG.load(deps.storage)?;
 
     let start = start.map(|s| deps.api.addr_validate(&s)).transpose()?;
-    let limit = limit.unwrap_or(DEFAULT_QUERY_LIMIT).min(MAX_QUERY_LIMIT) as usize;
+    let limit = limit
+        .unwrap_or(config.default_query_limit)
+        .min(config.max_query_limit) as usize;
     let order = order.unwrap_or(Order::Ascending);
 
     let (min, max) = match order {
