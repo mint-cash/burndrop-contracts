@@ -56,9 +56,6 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     let (swapped_out_ancs, virtual_slippage_ancs) =
         calculate_swap_result(half_swapped_in, &round.ancs_liquidity, price.ancs)?;
 
-    println!("swapped_out_oppamint: {}", swapped_out_oppamint);
-    println!("swapped_out_ancs: {}", swapped_out_ancs);
-
     println!("virtual_slippage_oppamint: {}", virtual_slippage_oppamint);
     println!("virtual_slippage_ancs: {}", virtual_slippage_ancs);
 

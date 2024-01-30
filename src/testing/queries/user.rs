@@ -36,8 +36,6 @@ fn test_query_users() {
 
     let users = query_res.users;
 
-    println!("users: {:?}", users);
-
     assert_eq!(users.len(), 3);
     assert_eq!(users[0].0, "referrer1");
     assert_eq!(users[1].0, "referrer2");
@@ -57,8 +55,6 @@ fn test_query_users() {
 
     let users = query_res.users;
 
-    println!("users: {:?}", users);
-
     assert_eq!(users.len(), 3);
     assert_eq!(users[2].0, "referrer1");
     assert_eq!(users[1].0, "referrer2");
@@ -77,8 +73,6 @@ fn test_query_users() {
         .unwrap();
 
     let users = query_res.users;
-
-    println!("users: {:?}", users);
 
     assert_eq!(users.len(), 2);
     assert_eq!(users[0].0, "referrer2");
