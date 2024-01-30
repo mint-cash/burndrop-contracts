@@ -2,7 +2,7 @@ use cosmwasm_std::{attr, coin, BankMsg, DepsMut, Env, MessageInfo, Response, Uin
 
 use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_referral};
-use crate::query::{calculate_round_price, calculate_swap_result};
+use crate::query::calculate_round_swap_result;
 use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::states::user::USER;
@@ -44,33 +44,22 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     let mut user = USER.load(deps.storage, info.sender.clone())?;
 
-    let price = calculate_round_price(round);
-
     // TODO: Add cap check
 
     let half_swapped_in = swapped_in / Uint128::new(2);
 
-    let (swapped_out_oppamint, virtual_slippage_oppamint) =
-        calculate_swap_result(half_swapped_in, &round.oppamint_liquidity, price.oppamint)?;
-
-    let (swapped_out_ancs, virtual_slippage_ancs) =
-        calculate_swap_result(half_swapped_in, &round.ancs_liquidity, price.ancs)?;
-
-    println!("virtual_slippage_oppamint: {}", virtual_slippage_oppamint);
-    println!("virtual_slippage_ancs: {}", virtual_slippage_ancs);
+    let (swapped_out, virtual_slippage) = calculate_round_swap_result(half_swapped_in, round)?;
 
     user.burned_uusd += half_swapped_in * Uint128::new(2);
-    user.swapped_out.oppamint += swapped_out_oppamint - virtual_slippage_oppamint;
-    user.swapped_out.ancs += swapped_out_ancs - virtual_slippage_ancs;
+    user.swapped_out += swapped_out.clone().checked_sub(virtual_slippage)?;
 
-    state.total_swapped.oppamint += swapped_out_oppamint;
-    state.total_swapped.ancs += swapped_out_ancs;
+    state.total_swapped += swapped_out.clone();
 
     round.oppamint_liquidity.x += half_swapped_in;
-    round.oppamint_liquidity.y -= swapped_out_oppamint;
+    round.oppamint_liquidity.y -= swapped_out.oppamint;
 
     round.ancs_liquidity.x += half_swapped_in;
-    round.ancs_liquidity.y -= swapped_out_ancs;
+    round.ancs_liquidity.y -= swapped_out.ancs;
 
     USER.save(deps.storage, info.sender, &user)?;
     STATE.save(deps.storage, &state)?;
@@ -78,8 +67,8 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     let deposit_result = SwapResult {
         swapped_in: half_swapped_in * Uint128::new(2),
         swapped_out: OutputTokenMap {
-            oppamint: swapped_out_oppamint,
-            ancs: swapped_out_ancs,
+            oppamint: swapped_out.oppamint,
+            ancs: swapped_out.ancs,
         },
     };
     Ok(deposit_result)

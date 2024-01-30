@@ -118,6 +118,30 @@ pub fn calculate_swap_result(
     Ok((swapped_out, virtual_slippage))
 }
 
+pub fn calculate_round_swap_result(
+    half_amount: Uint128,
+    round: &SwapRound,
+) -> StdResult<(OutputTokenMap<Uint128>, OutputTokenMap<Uint128>)> {
+    let price = calculate_round_price(round);
+
+    let (swapped_out_oppamint, virtual_slippage_oppamint) =
+        calculate_swap_result(half_amount, &round.oppamint_liquidity, price.oppamint)?;
+
+    let (swapped_out_ancs, virtual_slippage_ancs) =
+        calculate_swap_result(half_amount, &round.ancs_liquidity, price.ancs)?;
+
+    Ok((
+        OutputTokenMap {
+            oppamint: swapped_out_oppamint,
+            ancs: swapped_out_ancs,
+        },
+        OutputTokenMap {
+            oppamint: virtual_slippage_oppamint,
+            ancs: virtual_slippage_ancs,
+        },
+    ))
+}
+
 pub fn query_simulate_burn(
     deps: Deps,
     env: Env,
@@ -129,28 +153,17 @@ pub fn query_simulate_burn(
     let round = state
         .recent_active_round(now)
         .ok_or(ContractError::NoActiveSwapRound {})?;
-    let price = calculate_round_price(round);
 
     let half_amount = amount / Uint128::new(2);
 
-    let (swapped_out_oppamint, virtual_slippage_oppamint) =
-        calculate_swap_result(half_amount, &round.oppamint_liquidity, price.oppamint)?;
-
-    let (swapped_out_ancs, virtual_slippage_ancs) =
-        calculate_swap_result(half_amount, &round.ancs_liquidity, price.ancs)?;
+    let (swapped_out, virtual_slippage) = calculate_round_swap_result(half_amount, round)?;
 
     Ok(SimulateBurnResponse {
-        swapped_out: OutputTokenMap {
-            oppamint: swapped_out_oppamint,
-            ancs: swapped_out_ancs,
-        },
-        virtual_slippage: OutputTokenMap {
-            oppamint: virtual_slippage_oppamint,
-            ancs: virtual_slippage_ancs,
-        },
+        swapped_out,
+        virtual_slippage: virtual_slippage.clone(),
         final_amount: (half_amount * Uint128::new(2))
-            - virtual_slippage_oppamint
-            - virtual_slippage_ancs,
+            - virtual_slippage.oppamint
+            - virtual_slippage.ancs,
     })
 }
 

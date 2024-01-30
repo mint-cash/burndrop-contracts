@@ -1,7 +1,9 @@
+use crate::error::ContractError;
 use cosmwasm_schema::cw_serde;
+use cosmwasm_std::{OverflowError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::ops::{AddAssign, SubAssign};
+use std::ops;
 
 #[derive(Copy, Eq)]
 #[cw_serde(rename_all = "snake_case")]
@@ -16,32 +18,23 @@ pub struct OutputTokenMap<T> {
     pub ancs: T,
 }
 
-impl<T: AddAssign + SubAssign> OutputTokenMap<T> {
-    pub fn get(&self, token: OutputToken) -> &T {
-        match token {
-            OutputToken::OppaMINT => &self.oppamint,
-            OutputToken::Ancs => &self.ancs,
-        }
+impl OutputTokenMap<Uint128> {
+    pub fn checked_sub(&mut self, rhs: Self) -> Result<Self, ContractError> {
+        let oppamint = self.oppamint.checked_sub(rhs.oppamint)?;
+        let ancs = self.ancs.checked_sub(rhs.ancs)?;
+        Ok(OutputTokenMap { oppamint, ancs })
     }
+}
 
-    pub fn set(&mut self, token: OutputToken, amount: T) {
-        match token {
-            OutputToken::OppaMINT => self.oppamint = amount,
-            OutputToken::Ancs => self.ancs = amount,
-        }
+impl From<OverflowError> for ContractError {
+    fn from(_: OverflowError) -> Self {
+        Self::Overflow {}
     }
+}
 
-    pub fn add(&mut self, token: OutputToken, amount: T) {
-        match token {
-            OutputToken::OppaMINT => self.oppamint += amount,
-            OutputToken::Ancs => self.ancs += amount,
-        }
-    }
-
-    pub fn sub(&mut self, token: OutputToken, amount: T) {
-        match token {
-            OutputToken::OppaMINT => self.oppamint -= amount,
-            OutputToken::Ancs => self.ancs -= amount,
-        }
+impl ops::AddAssign for OutputTokenMap<Uint128> {
+    fn add_assign(&mut self, rhs: Self) {
+        self.oppamint += rhs.oppamint;
+        self.ancs += rhs.ancs;
     }
 }
