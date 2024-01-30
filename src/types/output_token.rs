@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[cw_serde(rename_all = "snake_case")]
 pub enum OutputToken {
     OppaMINT,
-    ANCs,
+    ANCS,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq, JsonSchema)]
@@ -19,28 +19,28 @@ impl OutputTokenMap {
     pub fn get(&self, token: OutputToken) -> Uint128 {
         match token {
             OutputToken::OppaMINT => self.oppamint,
-            OutputToken::ANCs => self.ancs,
+            OutputToken::ANCS => self.ancs,
         }
     }
 
     pub fn set(&mut self, token: OutputToken, amount: Uint128) {
         match token {
             OutputToken::OppaMINT => self.oppamint = amount,
-            OutputToken::ANCs => self.ancs = amount,
+            OutputToken::ANCS => self.ancs = amount,
         }
     }
 
     pub fn add(&mut self, token: OutputToken, amount: Uint128) {
         match token {
             OutputToken::OppaMINT => self.oppamint += amount,
-            OutputToken::ANCs => self.ancs += amount,
+            OutputToken::ANCS => self.ancs += amount,
         }
     }
 
     pub fn sub(&mut self, token: OutputToken, amount: Uint128) {
         match token {
             OutputToken::OppaMINT => self.oppamint -= amount,
-            OutputToken::ANCs => self.ancs -= amount,
+            OutputToken::ANCS => self.ancs -= amount,
         }
     }
 }
