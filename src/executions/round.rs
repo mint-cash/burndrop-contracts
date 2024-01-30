@@ -1,12 +1,11 @@
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, Uint128};
+use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::ContractError;
 use crate::states::config::CONFIG;
 use crate::states::state::STATE;
-use crate::types::output_token::OutputToken;
-use crate::types::swap_round::SwapRound;
+use crate::types::swap_round::{LiquidityPair, SwapRound};
 
 pub fn sort_and_validate_rounds(rounds: &mut Vec<SwapRound>) -> Result<(), ContractError> {
     // Ensure the rounds are sorted by start time, and not overlapping.
@@ -60,9 +59,8 @@ pub struct UpdateRoundParams {
     pub id: u64,
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
-    pub output_token: Option<OutputToken>,
-    pub x_liquidity: Option<Uint128>,
-    pub y_liquidity: Option<Uint128>,
+    pub oppamint_liquidity: Option<LiquidityPair>,
+    pub ancs_liquidity: Option<LiquidityPair>,
 }
 
 pub fn update_round(
@@ -73,9 +71,8 @@ pub fn update_round(
         id,
         start_time,
         end_time,
-        output_token,
-        x_liquidity,
-        y_liquidity,
+        oppamint_liquidity,
+        ancs_liquidity,
     }: UpdateRoundParams,
 ) -> Result<Response, ContractError> {
     // Ensure only the owner can update a round.
@@ -101,29 +98,21 @@ pub fn update_round(
     }
 
     let now = env.block.time.seconds();
-    if let Some(output_token) = output_token {
-        // Cannot update output_token for active round
+    if let Some(oppamint_liquidity) = oppamint_liquidity {
+        // Cannot update oppamint_liquidity for active round
         if round.start_time <= now && now <= round.end_time {
             return Err(ContractError::CannotUpdateActiveRound {});
         }
 
-        round.output_token = output_token;
+        round.oppamint_liquidity = oppamint_liquidity;
     }
-    if let Some(x_liquidity) = x_liquidity {
-        // Cannot update x_liquidity for active round
+    if let Some(ancs_liquidity) = ancs_liquidity {
+        // Cannot update ancs_liquidity for active round
         if round.start_time <= now && now <= round.end_time {
             return Err(ContractError::CannotUpdateActiveRound {});
         }
 
-        round.x_liquidity = x_liquidity;
-    }
-    if let Some(y_liquidity) = y_liquidity {
-        // Cannot update x_liquidity for active round
-        if round.start_time <= now && now <= round.end_time {
-            return Err(ContractError::CannotUpdateActiveRound {});
-        }
-
-        round.y_liquidity = y_liquidity;
+        round.ancs_liquidity = ancs_liquidity;
     }
 
     // Ensure the round is valid

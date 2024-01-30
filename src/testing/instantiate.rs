@@ -4,8 +4,7 @@ use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
 use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::testing::{ADMIN, NATIVE_DENOM, REFERRER, SECOND_REFERRER, USER};
-use crate::types::output_token::OutputToken;
-use crate::types::swap_round::SwapRound;
+use crate::types::swap_round::{LiquidityPair, SwapRound};
 
 fn contract_template() -> Box<dyn Contract<Empty>> {
     let contract = ContractWrapper::new(
@@ -67,10 +66,14 @@ pub fn default() -> (App, BurnContract) {
             start_time: 1706001400,
             end_time: 1706001650,
 
-            output_token: OutputToken::OppaMINT,
-
-            x_liquidity: Uint128::new(1_000_000),
-            y_liquidity: Uint128::new(500_000),
+            oppamint_liquidity: LiquidityPair {
+                x: Uint128::new(1_000_000),
+                y: Uint128::new(500_000),
+            },
+            ancs_liquidity: LiquidityPair {
+                x: Uint128::new(1_000_000),
+                y: Uint128::new(500_000),
+            },
         }],
 
         max_query_limit: 30,

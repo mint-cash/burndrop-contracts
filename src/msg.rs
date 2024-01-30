@@ -64,7 +64,7 @@ pub struct UserInfoResponse {
     pub cap: Uint128,
     pub slots: Uint128,
     pub slot_size: Uint128,
-    pub swapped_out: OutputTokenMap,
+    pub swapped_out: OutputTokenMap<Uint128>,
 }
 
 #[cw_serde]
@@ -74,13 +74,13 @@ pub struct UsersInfoResponse {
 
 #[cw_serde]
 pub struct PriceResponse {
-    pub price: Decimal,
+    pub price: OutputTokenMap<Decimal>,
 }
 
 #[cw_serde]
 pub struct SimulateBurnResponse {
-    pub swapped_out: Uint128,
-    pub virtual_slippage: Uint128,
+    pub swapped_out: OutputTokenMap<Uint128>,
+    pub virtual_slippage: OutputTokenMap<Uint128>,
     pub final_amount: Uint128,
 }
 

@@ -76,8 +76,8 @@ fn success_during_period() {
 
     assert_eq!(query_res.burned, Uint128::new(100));
     assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(196)); // 200 - virtual_slippage (4)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(0));
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(96)); // 100 - virtual_slippage (4)
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(96)); // 100 - virtual_slippage (4)
 }
 
 #[test]
@@ -108,10 +108,9 @@ fn fail_not_modified_period() {
             id: 1,
             start_time: None,
             end_time: Some(1706001500), // modify end_time
-            output_token: None,
 
-            x_liquidity: None,
-            y_liquidity: None,
+            oppamint_liquidity: None,
+            ancs_liquidity: None,
         },
     };
     let cosmos_msg = burn_contract.call(modify_msg).unwrap();
@@ -142,10 +141,9 @@ fn success_during_modified_period() {
             id: 1,
             start_time: None,
             end_time: Some(1706001700), // modify end_time
-            output_token: None,
 
-            x_liquidity: None,
-            y_liquidity: None,
+            oppamint_liquidity: None,
+            ancs_liquidity: None,
         },
     };
     let cosmos_msg = burn_contract.call(modify_msg).unwrap();

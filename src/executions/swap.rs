@@ -2,14 +2,15 @@ use cosmwasm_std::{attr, coin, BankMsg, DepsMut, Env, MessageInfo, Response, Uin
 
 use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_referral};
-use crate::query::calculate_round_price;
+use crate::query::{calculate_round_price, calculate_swap_result};
 use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::states::user::USER;
+use crate::types::output_token::OutputTokenMap;
 
 pub struct SwapResult {
     pub swapped_in: Uint128,
-    pub swapped_out: Uint128,
+    pub swapped_out: OutputTokenMap<Uint128>,
 }
 
 pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, ContractError> {
@@ -23,8 +24,6 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
         .ok_or(ContractError::NoActiveSwapRound {})?;
 
     let round = &mut state.rounds[round_index];
-    let out_token = round.output_token;
-
     let input_token_denom = "uusd";
 
     // burned_uusd
@@ -49,28 +48,42 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
 
     // TODO: Add cap check
 
-    let k = round.x_liquidity * round.y_liquidity;
+    let half_swapped_in = swapped_in / Uint128::new(2);
 
-    if round.y_liquidity + swapped_in == Uint128::zero() {
-        return Err(ContractError::DivisionByZeroError {});
-    }
+    let (swapped_out_oppamint, virtual_slippage_oppamint) =
+        calculate_swap_result(half_swapped_in, &round.oppamint_liquidity, price.oppamint)?;
 
-    let swapped_out = round.x_liquidity - (k / (round.y_liquidity + swapped_in));
-    let virtual_slippage = (swapped_out * price) / swapped_in;
-    user.burned_uusd += swapped_in;
-    user.swapped_out
-        .add(out_token, swapped_out - virtual_slippage);
+    let (swapped_out_ancs, virtual_slippage_ancs) =
+        calculate_swap_result(half_swapped_in, &round.ancs_liquidity, price.ancs)?;
 
-    state.total_swapped.add(out_token, swapped_out);
-    round.x_liquidity += swapped_in;
-    round.y_liquidity -= swapped_out;
+    println!("swapped_out_oppamint: {}", swapped_out_oppamint);
+    println!("swapped_out_ancs: {}", swapped_out_ancs);
+
+    println!("virtual_slippage_oppamint: {}", virtual_slippage_oppamint);
+    println!("virtual_slippage_ancs: {}", virtual_slippage_ancs);
+
+    user.burned_uusd += half_swapped_in * Uint128::new(2);
+    user.swapped_out.oppamint += swapped_out_oppamint - virtual_slippage_oppamint;
+    user.swapped_out.ancs += swapped_out_ancs - virtual_slippage_ancs;
+
+    state.total_swapped.oppamint += swapped_out_oppamint;
+    state.total_swapped.ancs += swapped_out_ancs;
+
+    round.oppamint_liquidity.x += half_swapped_in;
+    round.oppamint_liquidity.y -= swapped_out_oppamint;
+
+    round.ancs_liquidity.x += half_swapped_in;
+    round.ancs_liquidity.y -= swapped_out_ancs;
 
     USER.save(deps.storage, info.sender, &user)?;
     STATE.save(deps.storage, &state)?;
 
     let deposit_result = SwapResult {
-        swapped_in,
-        swapped_out,
+        swapped_in: half_swapped_in * Uint128::new(2),
+        swapped_out: OutputTokenMap {
+            oppamint: swapped_out_oppamint,
+            ancs: swapped_out_ancs,
+        },
     };
     Ok(deposit_result)
 }
@@ -115,7 +128,8 @@ pub fn burn_uusd(
             attr("action", "burn_uusd"),
             attr("amount", amount.to_string()),
             attr("swapped_in", res.swapped_in.to_string()),
-            attr("swapped_out", res.swapped_out.to_string()),
+            attr("swapped_out_oppamint", res.swapped_out.oppamint.to_string()),
+            attr("swapped_out_ancs", res.swapped_out.ancs.to_string()),
         ])),
         Err(e) => Err(e),
     }

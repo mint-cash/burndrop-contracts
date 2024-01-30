@@ -1,4 +1,4 @@
-use cosmwasm_std::{Decimal, Deps, Env, Fraction, Order, StdResult, Uint128};
+use cosmwasm_std::{Decimal, Deps, Env, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
 
 use crate::error::ContractError;
@@ -6,7 +6,8 @@ use crate::msg::{
     PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse,
 };
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
-use crate::types::swap_round::SwapRound;
+use crate::types::output_token::OutputTokenMap;
+use crate::types::swap_round::{LiquidityPair, SwapRound};
 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
     let config = CONFIG.load(deps.storage)?;
@@ -76,19 +77,19 @@ pub fn query_users(
     Ok(UsersInfoResponse { users })
 }
 
-pub fn calculate_round_price(round: &SwapRound) -> Decimal {
-    Decimal::from_ratio(round.x_liquidity, round.y_liquidity)
+pub fn calculate_round_price(round: &SwapRound) -> OutputTokenMap<Decimal> {
+    OutputTokenMap {
+        oppamint: Decimal::from_ratio(round.oppamint_liquidity.x, round.oppamint_liquidity.y),
+        ancs: Decimal::from_ratio(round.ancs_liquidity.x, round.ancs_liquidity.y),
+    }
 }
 
 // find the recent active round
 // if no active round, use the first round
-pub fn calculate_current_price(state: &State, now: u64) -> Decimal {
-    let round = state.recent_active_round(now);
+pub fn calculate_current_price(state: &State, now: u64) -> OutputTokenMap<Decimal> {
+    let round = state.recent_active_round(now).unwrap_or(&state.rounds[0]);
 
-    match round {
-        Some(round) => calculate_round_price(round),
-        None => calculate_round_price(state.rounds.first().unwrap()),
-    }
+    calculate_round_price(&round)
 }
 
 pub fn query_current_price(deps: Deps, env: Env) -> StdResult<PriceResponse> {
@@ -98,6 +99,23 @@ pub fn query_current_price(deps: Deps, env: Env) -> StdResult<PriceResponse> {
     Ok(PriceResponse {
         price: calculate_current_price(&state, now),
     })
+}
+
+pub fn calculate_swap_result(
+    amount: Uint128,
+    pair: &LiquidityPair,
+    price: Decimal,
+) -> StdResult<(Uint128, Uint128)> {
+    let k = pair.x * pair.y;
+
+    if pair.y + amount == Uint128::zero() {
+        return Err(ContractError::DivisionByZeroError {}.into());
+    }
+
+    let swapped_out = pair.x - (k / (pair.y + amount));
+    let virtual_slippage = (swapped_out * price) / amount;
+
+    Ok((swapped_out, virtual_slippage))
 }
 
 pub fn query_simulate_burn(
@@ -113,19 +131,26 @@ pub fn query_simulate_burn(
         .ok_or(ContractError::NoActiveSwapRound {})?;
     let price = calculate_round_price(round);
 
-    let k = round.x_liquidity * round.y_liquidity;
+    let half_amount = amount / Uint128::new(2);
 
-    if round.y_liquidity + amount == Uint128::zero() {
-        return Err(ContractError::DivisionByZeroError {}.into());
-    }
+    let (swapped_out_oppamint, virtual_slippage_oppamint) =
+        calculate_swap_result(half_amount, &round.oppamint_liquidity, price.oppamint)?;
 
-    let swapped_out = round.x_liquidity - (k / (round.y_liquidity + amount));
-    let virtual_slippage = swapped_out * price.numerator() / price.denominator() - amount;
+    let (swapped_out_ancs, virtual_slippage_ancs) =
+        calculate_swap_result(half_amount, &round.ancs_liquidity, price.ancs)?;
 
     Ok(SimulateBurnResponse {
-        swapped_out,
-        virtual_slippage,
-        final_amount: amount - virtual_slippage,
+        swapped_out: OutputTokenMap {
+            oppamint: swapped_out_oppamint,
+            ancs: swapped_out_ancs,
+        },
+        virtual_slippage: OutputTokenMap {
+            oppamint: virtual_slippage_oppamint,
+            ancs: virtual_slippage_ancs,
+        },
+        final_amount: (half_amount * Uint128::new(2))
+            - virtual_slippage_oppamint
+            - virtual_slippage_ancs,
     })
 }
 

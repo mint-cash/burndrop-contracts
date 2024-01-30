@@ -12,7 +12,7 @@ pub struct User {
     pub second_referrer_registered: bool,
 
     pub burned_uusd: Uint128, // swapped_in
-    pub swapped_out: OutputTokenMap,
+    pub swapped_out: OutputTokenMap<Uint128>,
 }
 
 pub const USER: Map<Addr, User> = Map::new("user");
