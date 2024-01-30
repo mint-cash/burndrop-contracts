@@ -106,13 +106,11 @@ pub fn query_simulate_burn(
     amount: Uint128,
 ) -> StdResult<SimulateBurnResponse> {
     let state = STATE.load(deps.storage)?;
-    let config = CONFIG.load(deps.storage)?;
 
     let now = env.block.time.seconds();
     let round = state
         .recent_active_round(now)
         .ok_or(ContractError::NoActiveSwapRound {})?;
-    let out_token = round.output_token;
     let price = calculate_round_price(round);
 
     let k = round.x_liquidity * round.y_liquidity;
@@ -122,13 +120,6 @@ pub fn query_simulate_burn(
     }
 
     let swapped_out = round.x_liquidity - (k / (round.y_liquidity + amount));
-    if state.total_swapped.get(out_token) + swapped_out > config.sale_amount.get(out_token) {
-        return Err(ContractError::PoolSizeExceeded {
-            available: config.sale_amount.get(out_token) - state.total_swapped.get(out_token),
-        }
-        .into());
-    }
-
     let virtual_slippage = swapped_out * price.numerator() / price.denominator() - amount;
 
     Ok(SimulateBurnResponse {

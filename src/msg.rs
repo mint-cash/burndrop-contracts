@@ -10,7 +10,6 @@ use crate::types::swap_round::SwapRound;
 #[cw_serde]
 pub struct InstantiateMsg {
     pub initial_slot_size: Uint128,
-    pub sale_amount: OutputTokenMap,
 
     pub rounds: Vec<SwapRound>,
 

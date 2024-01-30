@@ -4,7 +4,7 @@ use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
 use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::testing::{ADMIN, NATIVE_DENOM, REFERRER, SECOND_REFERRER, USER};
-use crate::types::output_token::{OutputToken, OutputTokenMap};
+use crate::types::output_token::OutputToken;
 use crate::types::swap_round::SwapRound;
 
 fn contract_template() -> Box<dyn Contract<Empty>> {
@@ -60,10 +60,6 @@ pub fn default() -> (App, BurnContract) {
 
     let instantiate_msg: InstantiateMsg = InstantiateMsg {
         initial_slot_size: Uint128::new(1_000),
-        sale_amount: OutputTokenMap {
-            oppamint: Uint128::new(1_000_000),
-            ancs: Uint128::new(1_000_000),
-        },
 
         rounds: vec![SwapRound {
             id: 1,

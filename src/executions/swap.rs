@@ -13,7 +13,6 @@ pub struct SwapResult {
 }
 
 pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, ContractError> {
-    let config = CONFIG.load(deps.storage)?;
     let mut state = STATE.load(deps.storage)?;
 
     let now = env.block.time.seconds();
@@ -57,12 +56,6 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     }
 
     let swapped_out = round.x_liquidity - (k / (round.y_liquidity + swapped_in));
-    if state.total_swapped.get(out_token) + swapped_out > config.sale_amount.get(out_token) {
-        return Err(ContractError::PoolSizeExceeded {
-            available: config.sale_amount.get(out_token) - state.total_swapped.get(out_token),
-        });
-    }
-
     let virtual_slippage = (swapped_out * price) / swapped_in;
     user.burned_uusd += swapped_in;
     user.swapped_out

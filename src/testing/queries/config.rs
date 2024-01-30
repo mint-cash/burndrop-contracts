@@ -15,6 +15,4 @@ fn test_query_config() {
 
     assert_eq!(query_res.owner, Addr::unchecked(ADMIN));
     assert_eq!(query_res.slot_size, Uint128::new(1_000));
-    assert_eq!(query_res.sale_amount.oppamint, Uint128::new(1_000_000));
-    assert_eq!(query_res.sale_amount.ancs, Uint128::new(1_000_000));
 }
