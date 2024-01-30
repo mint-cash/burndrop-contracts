@@ -89,7 +89,7 @@ pub fn calculate_round_price(round: &SwapRound) -> OutputTokenMap<Decimal> {
 pub fn calculate_current_price(state: &State, now: u64) -> OutputTokenMap<Decimal> {
     let round = state.recent_active_round(now).unwrap_or(&state.rounds[0]);
 
-    calculate_round_price(&round)
+    calculate_round_price(round)
 }
 
 pub fn query_current_price(deps: Deps, env: Env) -> StdResult<PriceResponse> {

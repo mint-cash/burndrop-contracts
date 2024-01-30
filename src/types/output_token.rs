@@ -7,7 +7,7 @@ use std::ops::{AddAssign, SubAssign};
 #[cw_serde(rename_all = "snake_case")]
 pub enum OutputToken {
     OppaMINT,
-    ANCS,
+    Ancs,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq, JsonSchema)]
@@ -20,28 +20,28 @@ impl<T: AddAssign + SubAssign> OutputTokenMap<T> {
     pub fn get(&self, token: OutputToken) -> &T {
         match token {
             OutputToken::OppaMINT => &self.oppamint,
-            OutputToken::ANCS => &self.ancs,
+            OutputToken::Ancs => &self.ancs,
         }
     }
 
     pub fn set(&mut self, token: OutputToken, amount: T) {
         match token {
             OutputToken::OppaMINT => self.oppamint = amount,
-            OutputToken::ANCS => self.ancs = amount,
+            OutputToken::Ancs => self.ancs = amount,
         }
     }
 
     pub fn add(&mut self, token: OutputToken, amount: T) {
         match token {
             OutputToken::OppaMINT => self.oppamint += amount,
-            OutputToken::ANCS => self.ancs += amount,
+            OutputToken::Ancs => self.ancs += amount,
         }
     }
 
     pub fn sub(&mut self, token: OutputToken, amount: T) {
         match token {
             OutputToken::OppaMINT => self.oppamint -= amount,
-            OutputToken::ANCS => self.ancs -= amount,
+            OutputToken::Ancs => self.ancs -= amount,
         }
     }
 }
