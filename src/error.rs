@@ -20,7 +20,7 @@ pub enum ContractError {
     #[error("Referrer is not initialized")]
     ReferrerNotInitialized {},
 
-    #[error("Underflow")]
+    #[error("Overflow")]
     Overflow {},
 
     #[error("Swap: zero amount")]
