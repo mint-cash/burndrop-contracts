@@ -13,25 +13,44 @@ import { Coin, StdFee } from '@cosmjs/amino';
 import {
   Uint128,
   InstantiateMsg,
+  SwapRound,
+  LiquidityPair,
   ExecuteMsg,
+  UpdateRoundParams,
   QueryMsg,
+  OrderBy,
+  MigrateMsg,
   Addr,
   Config,
   Decimal,
   PriceResponse,
+  OutputTokenMapForDecimal,
+  RoundsResponse,
   SimulateBurnResponse,
+  OutputTokenMapForUint128,
   UserInfoResponse,
+  UsersInfoResponse,
 } from './Burndrop.types';
 export interface BurndropReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<Config>;
   userInfo: ({ address }: { address: string }) => Promise<UserInfoResponse>;
+  usersInfo: ({
+    limit,
+    order,
+    start,
+  }: {
+    limit?: number;
+    order?: OrderBy;
+    start?: string;
+  }) => Promise<UsersInfoResponse>;
   currentPrice: () => Promise<PriceResponse>;
   simulateBurn: ({
     amount,
   }: {
     amount: Uint128;
   }) => Promise<SimulateBurnResponse>;
+  rounds: () => Promise<RoundsResponse>;
 }
 export class BurndropQueryClient implements BurndropReadOnlyInterface {
   client: CosmWasmClient;
@@ -42,8 +61,10 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
     this.contractAddress = contractAddress;
     this.config = this.config.bind(this);
     this.userInfo = this.userInfo.bind(this);
+    this.usersInfo = this.usersInfo.bind(this);
     this.currentPrice = this.currentPrice.bind(this);
     this.simulateBurn = this.simulateBurn.bind(this);
+    this.rounds = this.rounds.bind(this);
   }
 
   config = async (): Promise<Config> => {
@@ -62,6 +83,23 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
       },
     });
   };
+  usersInfo = async ({
+    limit,
+    order,
+    start,
+  }: {
+    limit?: number;
+    order?: OrderBy;
+    start?: string;
+  }): Promise<UsersInfoResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      users_info: {
+        limit,
+        order,
+        start,
+      },
+    });
+  };
   currentPrice = async (): Promise<PriceResponse> => {
     return this.client.queryContractSmart(this.contractAddress, {
       current_price: {},
@@ -76,6 +114,11 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
       simulate_burn: {
         amount,
       },
+    });
+  };
+  rounds = async (): Promise<RoundsResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      rounds: {},
     });
   };
 }
@@ -124,6 +167,36 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
     memo?: string,
     _funds?: Coin[],
   ) => Promise<ExecuteResult>;
+  createRound: (
+    {
+      round,
+    }: {
+      round: SwapRound;
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>;
+  updateRound: (
+    {
+      params,
+    }: {
+      params: UpdateRoundParams;
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>;
+  deleteRound: (
+    {
+      id,
+    }: {
+      id: number;
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>;
 }
 export class BurndropClient
   extends BurndropQueryClient
@@ -146,6 +219,9 @@ export class BurndropClient
     this.registerStartingUser = this.registerStartingUser.bind(this);
     this.register2ndReferrer = this.register2ndReferrer.bind(this);
     this.updateSlotSize = this.updateSlotSize.bind(this);
+    this.createRound = this.createRound.bind(this);
+    this.updateRound = this.updateRound.bind(this);
+    this.deleteRound = this.deleteRound.bind(this);
   }
 
   burnTokens = async (
@@ -236,6 +312,75 @@ export class BurndropClient
       {
         update_slot_size: {
           slot_size: slotSize,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    );
+  };
+  createRound = async (
+    {
+      round,
+    }: {
+      round: SwapRound;
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        create_round: {
+          round,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    );
+  };
+  updateRound = async (
+    {
+      params,
+    }: {
+      params: UpdateRoundParams;
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        update_round: {
+          params,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    );
+  };
+  deleteRound = async (
+    {
+      id,
+    }: {
+      id: number;
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        delete_round: {
+          id,
         },
       },
       fee,

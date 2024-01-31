@@ -8,19 +8,40 @@ import { UseQueryOptions, useQuery } from 'react-query';
 import {
   Uint128,
   InstantiateMsg,
+  SwapRound,
+  LiquidityPair,
   ExecuteMsg,
+  UpdateRoundParams,
   QueryMsg,
+  OrderBy,
+  MigrateMsg,
   Addr,
   Config,
   Decimal,
   PriceResponse,
+  OutputTokenMapForDecimal,
+  RoundsResponse,
   SimulateBurnResponse,
+  OutputTokenMapForUint128,
   UserInfoResponse,
+  UsersInfoResponse,
 } from './Burndrop.types';
 import { BurndropQueryClient } from './Burndrop.client';
 export interface BurndropReactQuery<TResponse, TData = TResponse> {
   client: BurndropQueryClient;
   options?: UseQueryOptions<TResponse, Error, TData>;
+}
+export interface BurndropRoundsQuery<TData>
+  extends BurndropReactQuery<RoundsResponse, TData> {}
+export function useBurndropRoundsQuery<TData = RoundsResponse>({
+  client,
+  options,
+}: BurndropRoundsQuery<TData>) {
+  return useQuery<RoundsResponse, Error, TData>(
+    ['burndropRounds', client.contractAddress],
+    () => client.rounds(),
+    options,
+  );
 }
 export interface BurndropSimulateBurnQuery<TData>
   extends BurndropReactQuery<SimulateBurnResponse, TData> {
@@ -51,6 +72,30 @@ export function useBurndropCurrentPriceQuery<TData = PriceResponse>({
   return useQuery<PriceResponse, Error, TData>(
     ['burndropCurrentPrice', client.contractAddress],
     () => client.currentPrice(),
+    options,
+  );
+}
+export interface BurndropUsersInfoQuery<TData>
+  extends BurndropReactQuery<UsersInfoResponse, TData> {
+  args: {
+    limit?: number;
+    order?: OrderBy;
+    start?: string;
+  };
+}
+export function useBurndropUsersInfoQuery<TData = UsersInfoResponse>({
+  client,
+  args,
+  options,
+}: BurndropUsersInfoQuery<TData>) {
+  return useQuery<UsersInfoResponse, Error, TData>(
+    ['burndropUsersInfo', client.contractAddress, JSON.stringify(args)],
+    () =>
+      client.usersInfo({
+        limit: args.limit,
+        order: args.order,
+        start: args.start,
+      }),
     options,
   );
 }

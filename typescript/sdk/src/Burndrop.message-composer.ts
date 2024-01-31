@@ -11,14 +11,23 @@ import { toUtf8 } from '@cosmjs/encoding';
 import {
   Uint128,
   InstantiateMsg,
+  SwapRound,
+  LiquidityPair,
   ExecuteMsg,
+  UpdateRoundParams,
   QueryMsg,
+  OrderBy,
+  MigrateMsg,
   Addr,
   Config,
   Decimal,
   PriceResponse,
+  OutputTokenMapForDecimal,
+  RoundsResponse,
   SimulateBurnResponse,
+  OutputTokenMapForUint128,
   UserInfoResponse,
+  UsersInfoResponse,
 } from './Burndrop.types';
 export interface BurndropMsg {
   contractAddress: string;
@@ -57,6 +66,30 @@ export interface BurndropMsg {
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject;
+  createRound: (
+    {
+      round,
+    }: {
+      round: SwapRound;
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject;
+  updateRound: (
+    {
+      params,
+    }: {
+      params: UpdateRoundParams;
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject;
+  deleteRound: (
+    {
+      id,
+    }: {
+      id: number;
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject;
 }
 export class BurndropMsgComposer implements BurndropMsg {
   sender: string;
@@ -69,6 +102,9 @@ export class BurndropMsgComposer implements BurndropMsg {
     this.registerStartingUser = this.registerStartingUser.bind(this);
     this.register2ndReferrer = this.register2ndReferrer.bind(this);
     this.updateSlotSize = this.updateSlotSize.bind(this);
+    this.createRound = this.createRound.bind(this);
+    this.updateRound = this.updateRound.bind(this);
+    this.deleteRound = this.deleteRound.bind(this);
   }
 
   burnTokens = (
@@ -163,6 +199,78 @@ export class BurndropMsgComposer implements BurndropMsg {
           JSON.stringify({
             update_slot_size: {
               slot_size: slotSize,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    };
+  };
+  createRound = (
+    {
+      round,
+    }: {
+      round: SwapRound;
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            create_round: {
+              round,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    };
+  };
+  updateRound = (
+    {
+      params,
+    }: {
+      params: UpdateRoundParams;
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            update_round: {
+              params,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    };
+  };
+  deleteRound = (
+    {
+      id,
+    }: {
+      id: number;
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            delete_round: {
+              id,
             },
           }),
         ),
