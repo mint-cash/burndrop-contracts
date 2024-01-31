@@ -36,7 +36,6 @@ pub fn instantiate(
     let config = Config {
         owner: info.sender.clone(),
         slot_size: msg.initial_slot_size,
-        sale_amount: msg.sale_amount,
         max_query_limit: msg.max_query_limit,
         default_query_limit: msg.default_query_limit,
     };

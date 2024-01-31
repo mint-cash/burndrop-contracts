@@ -20,6 +20,9 @@ pub enum ContractError {
     #[error("Referrer is not initialized")]
     ReferrerNotInitialized {},
 
+    #[error("Overflow")]
+    Overflow {},
+
     #[error("Swap: zero amount")]
     NotAllowZeroAmount {},
 
@@ -28,9 +31,6 @@ pub enum ContractError {
 
     #[error("Swap: available cap exceeded")]
     AvailableCapExceeded { available: Uint128 },
-
-    #[error("Swap: pool size exceeded")]
-    PoolSizeExceeded { available: Uint128 },
 
     #[error("Swap: attempted division by zero")]
     DivisionByZeroError {},

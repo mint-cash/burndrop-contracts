@@ -76,8 +76,46 @@ fn success_during_period() {
 
     assert_eq!(query_res.burned, Uint128::new(100));
     assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(196)); // 200 - virtual_slippage (4)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(0));
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(96)); // 100 - virtual_slippage (4)
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(96)); // 100 - virtual_slippage (4)
+}
+
+#[test]
+fn success_odd_amount() {
+    let (mut app, burn_contract) = instantiate::default();
+    // Try to burn some tokens for a user with a referrer.
+    let burn_amount = Uint128::new(99);
+
+    let execute_res = execute_swap(
+        &mut app,
+        &burn_contract,
+        USER,
+        burn_amount,
+        REFERRER,
+        Some(1706001506),
+    );
+    assert!(execute_res.is_ok());
+
+    // Query the burn info after burning tokens for the user.
+    let query_res: UserInfoResponse = app
+        .wrap()
+        .query_wasm_smart(
+            burn_contract.addr(),
+            &QueryMsg::UserInfo {
+                address: USER.to_string(),
+            },
+        )
+        .unwrap();
+
+    // Perform assertions based on the expected state after burning tokens.
+    assert_eq!(query_res.slot_size, Uint128::new(1000));
+    assert_eq!(query_res.slots, Uint128::new(1));
+    assert_eq!(query_res.cap, Uint128::new(1000));
+
+    assert_eq!(query_res.burned, Uint128::new(98));
+    assert_eq!(query_res.burnable, Uint128::new(902));
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(94)); // 98 - virtual_slippage (4)
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(94)); // 98 - virtual_slippage (4)
 }
 
 #[test]
@@ -108,10 +146,9 @@ fn fail_not_modified_period() {
             id: 1,
             start_time: None,
             end_time: Some(1706001500), // modify end_time
-            output_token: None,
 
-            x_liquidity: None,
-            y_liquidity: None,
+            oppamint_liquidity: None,
+            ancs_liquidity: None,
         },
     };
     let cosmos_msg = burn_contract.call(modify_msg).unwrap();
@@ -142,10 +179,9 @@ fn success_during_modified_period() {
             id: 1,
             start_time: None,
             end_time: Some(1706001700), // modify end_time
-            output_token: None,
 
-            x_liquidity: None,
-            y_liquidity: None,
+            oppamint_liquidity: None,
+            ancs_liquidity: None,
         },
     };
     let cosmos_msg = burn_contract.call(modify_msg).unwrap();
@@ -182,6 +218,6 @@ fn success_during_modified_period() {
 
     assert_eq!(query_res.burned, Uint128::new(100));
     assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(196)); // 200 - virtual_slippage (4)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(0));
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(96)); // 100 - virtual_slippage (4)
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(96)); // 100 - virtual_slippage (4)
 }

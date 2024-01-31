@@ -3,7 +3,12 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::ContractError;
-use crate::types::output_token::OutputToken;
+
+#[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq, JsonSchema)]
+pub struct LiquidityPair {
+    pub x: Uint128,
+    pub y: Uint128,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct SwapRound {
@@ -11,10 +16,8 @@ pub struct SwapRound {
     pub start_time: u64,
     pub end_time: u64,
 
-    pub output_token: OutputToken,
-
-    pub x_liquidity: Uint128,
-    pub y_liquidity: Uint128,
+    pub oppamint_liquidity: LiquidityPair,
+    pub ancs_liquidity: LiquidityPair,
 }
 
 impl SwapRound {

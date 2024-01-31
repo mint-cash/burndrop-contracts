@@ -1,3 +1,4 @@
+use cosmwasm_std::Uint128;
 use cw_storage_plus::Item;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -7,8 +8,8 @@ use crate::types::swap_round::SwapRound;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct State {
-    pub total_swapped: OutputTokenMap,
-    pub total_claimed: OutputTokenMap,
+    pub total_swapped: OutputTokenMap<Uint128>,
+    pub total_claimed: OutputTokenMap<Uint128>,
 
     pub rounds: Vec<SwapRound>,
 }

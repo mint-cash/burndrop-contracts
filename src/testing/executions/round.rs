@@ -4,6 +4,7 @@ use cw_multi_test::Executor;
 use crate::executions::round::UpdateRoundParams;
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::testing::{instantiate, ADMIN};
+use crate::types::swap_round::LiquidityPair;
 
 #[test]
 fn update_active_round() {
@@ -23,10 +24,15 @@ fn update_active_round() {
             id: 1,
             start_time: None,
             end_time: None,
-            output_token: None,
 
-            x_liquidity: None,
-            y_liquidity: Some(Uint128::new(100_000)),
+            oppamint_liquidity: Some(LiquidityPair {
+                x: Uint128::new(1_000_000),
+                y: Uint128::new(100_000),
+            }),
+            ancs_liquidity: Some(LiquidityPair {
+                x: Uint128::new(1_000_000),
+                y: Uint128::new(100_000),
+            }),
         },
     };
     app.update_block(|block| {
