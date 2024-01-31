@@ -56,7 +56,6 @@ const config = new Config({
   endpoint: 'http://localhost:26657',
   mnemonic:
     'maid grocery wire attend bench physical merge case fringe drink group symbol embrace hurt such cost spray soon bullet produce minute lawsuit slab exhaust',
-  // 'notice oak worry limit wrap speak medal online prefer cluster roof addict wrist behave treat actual wasp year salad speed social layer crew genius',
 });
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
@@ -76,59 +75,30 @@ async function main() {
     { gasPrice: GasPrice.fromString('0.02uluna') },
   );
 
-  const block = await client.getBlock();
-  console.log(block);
-
-  console.log(WASM_PATH, sender);
   const wasm = fs.readFileSync(WASM_PATH);
-
-  const result = await client.upload(sender, wasm, 'auto');
-  console.log(result);
+  const uploadResult = await client.upload(sender, wasm, 'auto');
+  console.log(uploadResult);
 
   const instantiateMsg: InstantiateMsg = {
     initial_slot_size: '1000',
-
     rounds: [
       {
         id: 1,
-
         start_time: 1706001400,
         end_time: 1706001650,
-
-        oppamint_liquidity: {
-          x: '1000000',
-          y: '500000',
-        },
-        ancs_liquidity: {
-          x: '1000000',
-          y: '500000',
-        },
+        oppamint_liquidity: { x: '1000000', y: '500000' },
+        ancs_liquidity: { x: '1000000', y: '500000' },
       },
     ],
-
     max_query_limit: 30,
     default_query_limit: 10,
   };
-
-  // const gas = await client.simulate(sender, messages, undefined)
-
-  //   const instantiateContractMsg = {
-  //     typeUrl: "/cosmwasm.wasm.v1.MsgInstantiateContract",
-  //     value: tx_4.MsgInstantiateContract.fromPartial({
-  //         sender: senderAddress,
-  //         codeId: long_1.default.fromString(new math_1.Uint53(codeId).toString()),
-  //         label: label,
-  //         msg: (0, encoding_1.toUtf8)(JSON.stringify(msg)),
-  //         funds: [...(options.funds || [])],
-  //         admin: options.admin,
-  //     }),
-  // };
 
   const instantiateContractMsg = {
     typeUrl: '/cosmwasm.wasm.v1.MsgInstantiateContract',
     value: tx_4.MsgInstantiateContract.fromPartial({
       sender,
-      codeId: long.fromString(new math.Uint53(result.codeId).toString()),
+      codeId: long.fromString(new math.Uint53(uploadResult.codeId).toString()),
       label: 'burndrop',
       msg: encoding.toUtf8(JSON.stringify(instantiateMsg)),
       funds: [],
@@ -163,15 +133,15 @@ async function main() {
     GasPrice.fromString('0.02uluna'),
   );
 
-  const res = await client.instantiate(
+  const instantiateResult = await client.instantiate(
     sender,
-    result.codeId,
+    uploadResult.codeId,
     instantiateMsg,
     'burndrop',
     usedFee,
     { admin: sender },
   );
-  console.log(res);
+  console.log(instantiateResult);
 }
 
 main().catch(console.error);
