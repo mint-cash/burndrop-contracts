@@ -6,7 +6,7 @@
   "workspaces": [
     "typescript/*"
   ],
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "yarn@4.1.0",
   "dependencies": {
     "@cosmjs/amino": "^0.32.2",
     "@cosmjs/cosmwasm-stargate": "^0.32.2",
