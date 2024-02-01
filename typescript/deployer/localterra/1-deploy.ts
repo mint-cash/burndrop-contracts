@@ -53,9 +53,9 @@ class Config {
 }
 
 const config = new Config({
-  endpoint: 'http://localhost:26657',
-  mnemonic:
-    'maid grocery wire attend bench physical merge case fringe drink group symbol embrace hurt such cost spray soon bullet produce minute lawsuit slab exhaust',
+  endpoint: process.env.ENDPOINT || 'http://localhost:26657',
+  mnemonic: process.env.MNEMONIC,
+  privateKey: process.env.PRIVATE_KEY,
 });
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
@@ -66,6 +66,13 @@ const WASM_PATH = path.join(
 );
 
 async function main() {
+  if (!config.args.mnemonic && !config.args.privateKey) {
+    console.error(
+      'Error: Either mnemonic or privateKey must be provided via process.env',
+    );
+    return;
+  }
+
   const signer = await config.getSigner();
   const [{ address: sender }] = await signer.getAccounts();
 
@@ -142,6 +149,7 @@ async function main() {
     { admin: sender },
   );
   console.log(instantiateResult);
+  console.log(`Deployed at ${instantiateResult.contractAddress}`);
 }
 
 main().catch(console.error);
