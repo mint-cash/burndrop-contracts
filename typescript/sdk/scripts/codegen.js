@@ -25,11 +25,6 @@ const main = async () => {
       client: {
         enabled: true,
       },
-      reactQuery: {
-        enabled: true,
-        version: 'v5',
-        mutations: false,
-      },
       messageComposer: {
         enabled: true,
       },

@@ -1,17 +1,14 @@
 {
   "name": "@mint-cash/burndrop-sdk",
-  "version": "0.2.0",
+  "version": "0.4.2",
   "license": "Apache-2.0",
   "type": "commonjs",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
-  },
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "types"
+  ],
   "scripts": {
     "build": "rimraf ./dist && swc src --config-file .swcrc -d dist && tsc --emitDeclarationOnly",
     "codegen": "node ./scripts/codegen.js"

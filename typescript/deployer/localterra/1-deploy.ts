@@ -1,5 +1,5 @@
 import { OfflineSigner } from '@cosmjs/proto-signing';
-import { InstantiateMsg } from '@mint-cash/burndrop-sdk/dist/Burndrop.types';
+import { InstantiateMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice, calculateFee } from '@cosmjs/stargate';
 import math from '@cosmjs/math';
