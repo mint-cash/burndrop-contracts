@@ -60,7 +60,7 @@ systemctl restart docker
 docker-compose up -d
 ```
 
-##### Deploy to LocalTerra
+##### Deploy to local network
 
 ```bash
 cd typescript/sdk
