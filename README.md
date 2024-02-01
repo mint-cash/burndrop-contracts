@@ -34,9 +34,11 @@ docker run --rm -v "$(pwd)":/code \
   cosmwasm/rust-optimizer:0.12.11
 ```
 
-#### LocalTerra ([mint-cash/LocalTerra](https://github.com/mint-cash/LocalTerra))
+#### Local Network
 
 ##### Run the network
+
+If using [mint-cash/LocalTerra](https://github.com/mint-cash/LocalTerra):
 
 ```bash
 cd ~
@@ -44,6 +46,18 @@ git clone https://github.com/mint-cash/LocalTerra
 cd LocalTerra
 
 docker-compose up
+```
+
+If using [classic-terra/core](https://github.com/classic-terra/core)'s localnet:
+
+```bash
+cd ~
+git clone https://github.com/classic-terra/core terra-classic-core
+cd terra-classic-core
+
+make localnet-start
+systemctl restart docker
+docker-compose up -d
 ```
 
 ##### Deploy to LocalTerra
@@ -54,9 +68,12 @@ cd typescript/sdk
 # run deploy script
 # yarn start localterra/1-deploy.ts
 
-# when deploying to LocalTerra (pass creds via process.env)
+# when using LocalTerra (pass creds via process.env)
 MNEMONIC="notice oak worry limit wrap speak medal online prefer cluster roof addict wrist behave treat actual wasp year salad speed social layer crew genius" yarn start localterra/1-deploy.ts
 PRIVATE_KEY="..." yarn start localterra/1-deploy.ts
+
+# when using localnet
+MNEMONIC="typical hood basket desert stumble outside brisk blind total setup disorder side oblige engage prison wink reopen above welcome resource decade flight praise later" yarn start localterra/1-deploy.ts
 ```
 
 #### Mainnet
