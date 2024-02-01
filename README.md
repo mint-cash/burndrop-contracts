@@ -33,3 +33,43 @@ docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
   cosmwasm/rust-optimizer:0.12.11
 ```
+
+#### LocalTerra ([mint-cash/LocalTerra](https://github.com/mint-cash/LocalTerra))
+
+##### Run the network
+
+```bash
+cd ~
+git clone https://github.com/mint-cash/LocalTerra
+cd LocalTerra
+
+docker-compose up
+```
+
+##### Deploy to LocalTerra
+
+```bash
+cd typescript/sdk
+
+# run deploy script
+# yarn start localterra/1-deploy.ts
+
+# when deploying to LocalTerra (pass creds via process.env)
+MNEMONIC="notice oak worry limit wrap speak medal online prefer cluster roof addict wrist behave treat actual wasp year salad speed social layer crew genius" yarn start localterra/1-deploy.ts
+PRIVATE_KEY="..." yarn start localterra/1-deploy.ts
+```
+
+#### Mainnet
+
+##### Deploy to Mainnet
+
+WIP
+
+```bash
+cd typescript/sdk
+
+# run deploy script
+# yarn start localterra/1-deploy.ts
+
+# when deploying to mainnet (use .env files for security, WIP)
+```
