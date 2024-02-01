@@ -24,3 +24,12 @@ yarn workspace @mint-cash/burndrop-sdk build
 cd typescript/sdk
 yarn npm publish --access=public
 ```
+
+### Deploy
+
+```bash
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer:0.12.11
+```
