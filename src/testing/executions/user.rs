@@ -149,7 +149,7 @@ fn success_first_and_second_referral() {
 }
 
 #[test]
-fn fail_when_first_equals_second() {
+fn fail_when_first_referral_equals_second() {
     let (mut app, burn_contract) = instantiate::default();
 
     // user1 -> referrer1(REFERRER)
@@ -184,5 +184,55 @@ fn fail_when_first_equals_second() {
         &second_referral_msg,
         &[],
     );
+    assert!(second_referral_res.is_err());
+}
+
+#[test]
+fn fail_second_referral_with_no_first() {
+    let (mut app, burn_contract) = instantiate::default();
+
+    // user1 -> referrer1(REFERRER)
+    // user2 => referrer1(REFERRER)
+    // user2 => referrer1(REFERRER)
+    // -> : first , => : second
+
+    let msg = ExecuteMsg::RegisterStartingUser {
+        user: "user1".to_string(),
+    };
+
+    let cosmos_msg = burn_contract.call(msg).unwrap();
+    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+
+    let execute_res = execute_swap(
+        &mut app,
+        &burn_contract,
+        "user1",
+        Uint128::new(100),
+        REFERRER,
+        Some(1706001506),
+    );
+
+    assert!(execute_res.is_ok());
+
+    let msg = ExecuteMsg::RegisterStartingUser {
+        user: "user2".to_string(),
+    };
+
+    let cosmos_msg = burn_contract.call(msg).unwrap();
+    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+
+    assert!(execute_res.is_ok());
+
+    let second_referral_msg = ExecuteMsg::Register2ndReferrer {
+        referrer: REFERRER.to_string(),
+    };
+
+    let second_referral_res = app.execute_contract(
+        Addr::unchecked("user2"),
+        burn_contract.addr(),
+        &second_referral_msg,
+        &[],
+    );
+    println!("{:#?}", second_referral_res);
     assert!(second_referral_res.is_err());
 }

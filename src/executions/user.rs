@@ -26,13 +26,17 @@ pub fn ensure_user_initialized(
     Ok(())
 }
 
-pub fn process_first_referral(deps: DepsMut<'_>, user_addr: &Addr, referrer: &Option<String>) -> Result<(), ContractError> {
+pub fn process_first_referral(
+    deps: DepsMut<'_>,
+    user_addr: &Addr,
+    referrer: &Option<String>,
+) -> Result<(), ContractError> {
     let mut user = USER.load(deps.storage, user_addr.clone())?;
     if user.first_referrer.is_some() {
-        if let Some(_) = referrer {
-            return Err(ContractError::AlreadyRegistered {});
-        }
-        return Ok(());
+        return match referrer {
+            Some(_) => Err(ContractError::AlreadyRegistered {}),
+            None => Ok(()),
+        };
     }
 
     let referrer = match referrer {
@@ -58,14 +62,21 @@ pub fn process_first_referral(deps: DepsMut<'_>, user_addr: &Addr, referrer: &Op
     Ok(())
 }
 
-pub fn process_second_referral(deps: DepsMut<'_>, user_addr: &Addr, referrer: &str) -> Result<(), ContractError> {
+pub fn process_second_referral(
+    deps: DepsMut<'_>,
+    user_addr: &Addr,
+    referrer: &str,
+) -> Result<(), ContractError> {
     let referrer_addr = deps.api.addr_validate(referrer)?;
 
     let user = USER.load(deps.storage, user_addr.clone())?;
+
     if let Some(first_referrer) = &user.first_referrer {
         if referrer_addr == *first_referrer {
             return Err(ContractError::ReferrerAlreadyFirstReferrer {});
         }
+    } else {
+        return Err(ContractError::ShouldBurnBefore2ndReferral {});
     }
 
     let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
