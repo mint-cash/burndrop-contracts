@@ -95,7 +95,7 @@ async function main() {
   console.log(uploadResult);
 
   const instantiateMsg: InstantiateMsg = {
-    initial_slot_size: '1000',
+    initial_slot_size: (1000 * 10 ** 6).toString(),
     rounds: [
       {
         id: 1,
