@@ -93,8 +93,14 @@ async function main() {
         id: 1,
         start_time: 1706001400,
         end_time: 1706001650,
-        oppamint_liquidity: { x: '1000000', y: '500000' },
-        ancs_liquidity: { x: '1000000', y: '500000' },
+        oppamint_liquidity: {
+          x: '100000000',
+          y: '50000000',
+        },
+        ancs_liquidity: {
+          x: '3000000000',
+          y: '200000000',
+        },
       },
     ],
     max_query_limit: 30,
@@ -105,7 +111,7 @@ async function main() {
     typeUrl: '/cosmwasm.wasm.v1.MsgInstantiateContract',
     value: tx_4.MsgInstantiateContract.fromPartial({
       sender,
-      codeId: long.fromString(new math.Uint53(uploadResult.codeId).toString()),
+      codeId: BigInt(new math.Uint53(uploadResult.codeId).toString()),
       label: 'burndrop',
       msg: encoding.toUtf8(JSON.stringify(instantiateMsg)),
       funds: [],
