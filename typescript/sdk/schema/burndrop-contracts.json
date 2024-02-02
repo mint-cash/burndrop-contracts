@@ -96,21 +96,23 @@
       {
         "type": "object",
         "required": [
-          "burn_tokens"
+          "burn_uusd"
         ],
         "properties": {
-          "burn_tokens": {
+          "burn_uusd": {
             "type": "object",
             "required": [
-              "amount",
-              "referrer"
+              "amount"
             ],
             "properties": {
               "amount": {
                 "$ref": "#/definitions/Uint128"
               },
               "referrer": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
             "additionalProperties": false
