@@ -16,76 +16,45 @@ pub fn ensure_user_initialized(
                 oppamint: Uint128::zero(),
                 ancs: Uint128::zero(),
             },
-            referral_a: 0,
-            referral_b: false,
-            referral_c: false,
-            first_referrer: None,
+            referral_count: Uint128::zero(),
+            slots: Uint128::from(1u128), // initial slot is 1
+            second_referrer_registered: false,
         };
         USER.save(deps.storage, user_address.clone(), &new_user)?;
     }
     Ok(())
 }
 
-pub fn process_first_referral(
-    deps: DepsMut<'_>,
-    user_addr: &Addr,
-    referrer: &Option<String>,
-) -> Result<(), ContractError> {
-    let mut user = USER.load(deps.storage, user_addr.clone())?;
-    if user.first_referrer.is_some() {
-        return match referrer {
-            Some(_) => Err(ContractError::AlreadyRegistered {}),
-            None => Ok(()),
-        };
+// Double the slots for each referral up to the 8th and reset to 1 slot after the 8th referral
+pub fn calculate_new_slots(referral_count: Uint128) -> Uint128 {
+    let mut new_slots = Uint128::zero();
+
+    if referral_count == Uint128::zero() {
+        return new_slots;
     }
 
-    let referrer = match referrer {
-        Some(r) => r,
-        None => return Err(ContractError::ReferrerNotProvided {}),
-    };
+    if referral_count <= Uint128::from(8u128) {
+        new_slots = Uint128::from(2u128).pow(referral_count.u128() as u32);
+    } else {
+        new_slots = Uint128::from(2u128).pow(8u32);
+    }
 
-    let referrer_addr = deps.api.addr_validate(referrer)?;
-    let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
-        Some(state) => state,
-        None => return Err(ContractError::ReferrerNotInitialized {}),
-    };
-
-    // Update first referral count
-    referrer_user.referral_a += 1;
-
-    // Update user's first referrer
-    user.first_referrer = Some(referrer_addr.clone());
-
-    USER.save(deps.storage, referrer_addr, &referrer_user)?;
-    USER.save(deps.storage, user_addr.clone(), &user)?;
-
-    Ok(())
+    new_slots
 }
 
-pub fn process_second_referral(
-    deps: DepsMut<'_>,
-    user_addr: &Addr,
-    referrer: &str,
-) -> Result<(), ContractError> {
+pub fn process_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), ContractError> {
     let referrer_addr = deps.api.addr_validate(referrer)?;
-
-    let user = USER.load(deps.storage, user_addr.clone())?;
-
-    if let Some(first_referrer) = &user.first_referrer {
-        if referrer_addr == *first_referrer {
-            return Err(ContractError::ReferrerAlreadyFirstReferrer {});
-        }
-    } else {
-        return Err(ContractError::ShouldBurnBefore2ndReferral {});
-    }
-
     let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
         Some(state) => state,
         None => return Err(ContractError::ReferrerNotInitialized {}),
     };
 
-    // Update second referral flag
-    referrer_user.referral_b = true;
+    // Update referral count
+    referrer_user.referral_count += Uint128::from(1u8);
+
+    // Calculate new slots and update
+    let new_slots = calculate_new_slots(referrer_user.referral_count);
+    referrer_user.slots += new_slots;
 
     USER.save(deps.storage, referrer_addr, &referrer_user)?;
 
@@ -127,15 +96,20 @@ pub fn register_2nd_referrer(
     referrer: String,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
-    process_second_referral(deps.branch(), &info.sender, &referrer)?;
+    process_referral(deps.branch(), &referrer)?;
 
     let mut sender = USER.load(deps.storage, info.sender.clone())?;
 
     // Ensure the second referrer is registered only once
-    if sender.referral_c {
+    if sender.second_referrer_registered {
         return Err(ContractError::AlreadyRegistered {});
     }
-    sender.referral_c = true;
+    sender.second_referrer_registered = true;
+
+    // Logic similar to the first referrer, but without incrementing the referral count
+    // add one slot to the user
+    // FIXME: make it dynamic because this additional slot must be excluded from the doubling logic
+    sender.slots += Uint128::from(1u128);
 
     USER.save(deps.storage, info.sender, &sender)?;
 

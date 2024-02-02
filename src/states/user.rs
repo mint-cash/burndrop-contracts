@@ -2,36 +2,17 @@ use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::Map;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::cmp::min;
 
 use crate::types::output_token::OutputTokenMap;
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct User {
-    // number of users who registered this user for the first referral code
-    pub referral_a: u32,
-    // did someone register this user for the second referral code
-    pub referral_b: bool,
-    // did this user register someone for the second referral code
-    pub referral_c: bool,
+    pub slots: Uint128,
+    pub referral_count: Uint128,
+    pub second_referrer_registered: bool,
 
     pub burned_uusd: Uint128, // swapped_in
     pub swapped_out: OutputTokenMap<Uint128>,
-    pub first_referrer: Option<Addr>,
-}
-
-impl User {
-    // slots = 2^min(a,8) + b + c
-    pub fn slots(&self) -> Uint128 {
-        let mut slots = 2u128.pow(min(self.referral_a, 8));
-        if self.referral_b {
-            slots += 1;
-        }
-        if self.referral_c {
-            slots += 1;
-        }
-        Uint128::new(slots)
-    }
 }
 
 pub const USER: Map<Addr, User> = Map::new("user");

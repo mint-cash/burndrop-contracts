@@ -21,13 +21,13 @@ pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
     let user = USER.load(deps.storage, address)?;
 
     let previously_burned = user.burned_uusd;
-    let cap = config.slot_size * user.slots();
+    let cap = config.slot_size * user.slots;
 
     Ok(UserInfoResponse {
         burned: previously_burned,
         burnable: cap - previously_burned,
         cap,
-        slots: user.slots(),
+        slots: user.slots,
         slot_size: config.slot_size,
         swapped_out: user.swapped_out,
     })
@@ -58,7 +58,7 @@ pub fn query_users(
         .map(|item| {
             let (address, user) = item.unwrap();
             let previously_burned = user.burned_uusd;
-            let cap = config.slot_size * user.slots();
+            let cap = config.slot_size * user.slots;
 
             (
                 address.to_string(),
@@ -66,7 +66,7 @@ pub fn query_users(
                     burned: previously_burned,
                     burnable: cap - previously_burned,
                     cap,
-                    slots: user.slots(),
+                    slots: user.slots,
                     slot_size: config.slot_size,
                     swapped_out: user.swapped_out,
                 },

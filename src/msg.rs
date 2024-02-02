@@ -22,28 +22,13 @@ pub struct MigrateMsg {}
 
 #[cw_serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    BurnUusd {
-        amount: Uint128,
-        referrer: Option<String>,
-    },
-    RegisterStartingUser {
-        user: String,
-    },
-    Register2ndReferrer {
-        referrer: String,
-    },
-    UpdateSlotSize {
-        slot_size: Uint128,
-    },
-    CreateRound {
-        round: SwapRound,
-    },
-    UpdateRound {
-        params: UpdateRoundParams,
-    },
-    DeleteRound {
-        id: u64,
-    },
+    BurnUusd { amount: Uint128, referrer: String },
+    RegisterStartingUser { user: String },
+    Register2ndReferrer { referrer: String },
+    UpdateSlotSize { slot_size: Uint128 },
+    CreateRound { round: SwapRound },
+    UpdateRound { params: UpdateRoundParams },
+    DeleteRound { id: u64 },
 }
 
 #[cw_serde]

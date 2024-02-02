@@ -7,7 +7,7 @@ use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
 use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
 
-pub fn execute_swap(
+fn execute_swap(
     app: &mut App,
     burn_contract: &BurnContract,
     sender: &str,
@@ -27,7 +27,7 @@ pub fn execute_swap(
     // Create a burn tokens message
     let msg = ExecuteMsg::BurnUusd {
         amount,
-        referrer: Some(referrer.to_string()),
+        referrer: referrer.to_string(),
     };
     if let Some(time) = time {
         app.update_block(|block| {
