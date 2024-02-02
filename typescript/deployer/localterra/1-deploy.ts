@@ -99,8 +99,8 @@ async function main() {
     rounds: [
       {
         id: 1,
-        start_time: 1706001400,
-        end_time: 1706001650,
+        start_time: Math.floor(Date.now() / 1000),
+        end_time: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
         oppamint_liquidity: {
           x: '100000000',
           y: '50000000',
