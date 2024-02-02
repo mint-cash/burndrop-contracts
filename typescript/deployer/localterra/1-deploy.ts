@@ -58,11 +58,20 @@ const config = new Config({
 });
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
-const WASM_PATH = path.join(
+
+let WASM_PATH = path.join(
   YARN_WORKSPACE_ROOT!,
   'artifacts',
   'burndrop_contracts.wasm',
 );
+// if WASM_PATH doesn't exist, try `burndrop_contracts-aarch64.wasm`
+if (!fs.existsSync(WASM_PATH)) {
+  WASM_PATH = path.join(
+    YARN_WORKSPACE_ROOT!,
+    'artifacts',
+    'burndrop_contracts-aarch64.wasm',
+  );
+}
 
 async function main() {
   if (!config.args.mnemonic && !config.args.privateKey) {
