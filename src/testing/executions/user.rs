@@ -1,18 +1,35 @@
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
-use crate::testing::{ADMIN, instantiate, REFERRER};
-use cosmwasm_std::{Addr, Uint128};
-use cw_multi_test::Executor;
 use crate::testing::executions::swap::execute_swap;
+use crate::testing::{instantiate, ADMIN, REFERRER};
+use cosmwasm_std::{Addr, Uint128};
+use cw_multi_test::{App, Executor};
+use crate::helpers::BurnContract;
+
+fn assert_slots(app: &mut App, burn_contract: &BurnContract, user: &str, slots: Uint128) {
+    let query_res: UserInfoResponse = app
+        .wrap()
+        .query_wasm_smart(
+            burn_contract.addr(),
+            &QueryMsg::UserInfo {
+                address: user.to_string(),
+            },
+        )
+        .unwrap();
+
+    assert_eq!(query_res.slots, slots);
+}
 
 #[test]
 fn success_first_referral() {
-    let users = (1..=9).map(|i| format!("user{}", i)).collect::<Vec<String>>();
+    let users = (1..=9)
+        .map(|i| format!("user{}", i))
+        .collect::<Vec<String>>();
 
     let (mut app, burn_contract) = instantiate::default_with_users(users.clone());
 
     // (user1, user2, user3, ..., user8) -> referrer1(REFERRER)
     for i in 1..=8 {
-        let user= &users[i - 1];
+        let user = &users[i - 1];
         let msg = ExecuteMsg::RegisterStartingUser {
             user: user.to_string(),
         };
@@ -29,17 +46,7 @@ fn success_first_referral() {
         );
         assert!(execute_res.is_ok());
 
-        let query_res: UserInfoResponse = app
-            .wrap()
-            .query_wasm_smart(
-                burn_contract.addr(),
-                &QueryMsg::UserInfo {
-                    address: REFERRER.to_string(),
-                },
-            )
-            .unwrap();
-
-        assert_eq!(query_res.slots, Uint128::new(2u128.pow(i as u32))); // 2 ^ i
+        assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(2u128.pow(i as u32)));
     }
 
     let msg = ExecuteMsg::RegisterStartingUser {
@@ -58,15 +65,83 @@ fn success_first_referral() {
     );
     assert!(execute_res.is_ok());
 
-    let query_res: UserInfoResponse = app
-        .wrap()
-        .query_wasm_smart(
-            burn_contract.addr(),
-            &QueryMsg::UserInfo {
-                address: REFERRER.to_string(),
-            },
-        )
-        .unwrap();
+    assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(2u128.pow(8)));
+}
 
-    assert_eq!(query_res.slots, Uint128::new(2u128.pow(8))); // 2 ^ 8
+#[test]
+fn success_first_and_second_referral() {
+    let users = (1..=4)
+        .map(|i| format!("user{}", i))
+        .collect::<Vec<String>>();
+
+    let (mut app, burn_contract) = instantiate::default_with_users(users.clone());
+
+    // (user1, user2, user3) -> referrer1(REFERRER)
+    // user4 -> user2
+    // user2 => referrer1(REFERRER)
+    // user4 => referrer1(REFERRER)
+    // -> : first , => : second
+
+    for i in 1..=3 {
+        let user = &users[i - 1];
+        let msg = ExecuteMsg::RegisterStartingUser {
+            user: user.to_string(),
+        };
+        let cosmos_msg = burn_contract.call(msg).unwrap();
+        app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+
+        let execute_res = execute_swap(
+            &mut app,
+            &burn_contract,
+            &user,
+            Uint128::new(100),
+            REFERRER,
+            Some(1706001506),
+        );
+        assert!(execute_res.is_ok());
+
+        assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(2u128.pow(i as u32))); // 2 ^ i
+    }
+
+    let msg = ExecuteMsg::RegisterStartingUser {
+        user: "user4".to_string(),
+    };
+
+    let cosmos_msg = burn_contract.call(msg).unwrap();
+    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+
+    let execute_res = execute_swap(
+        &mut app,
+        &burn_contract,
+        "user4",
+        Uint128::new(100),
+        "user2",
+        Some(1706001506),
+    );
+    assert!(execute_res.is_ok());
+
+    let second_referral_msg = ExecuteMsg::Register2ndReferrer {
+        referrer: REFERRER.to_string(),
+    };
+    let second_referral_res = app.execute_contract(
+        Addr::unchecked("user2"),
+        burn_contract.addr(),
+        &second_referral_msg,
+        &[],
+    );
+    assert!(second_referral_res.is_ok());
+
+    let second_referral_msg = ExecuteMsg::Register2ndReferrer {
+        referrer: REFERRER.to_string(),
+    };
+    let second_referral_res = app.execute_contract(
+        Addr::unchecked("user4"),
+        burn_contract.addr(),
+        &second_referral_msg,
+        &[],
+    );
+    assert!(second_referral_res.is_ok());
+
+    assert_slots(&mut app, &burn_contract, "user2", Uint128::new(3)); // 2 ^ 1 + 1
+    assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(9)); // 2 ^ 3 + 1
 }

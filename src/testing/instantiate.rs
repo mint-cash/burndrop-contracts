@@ -39,16 +39,20 @@ fn mock_app(user_balances: Vec<UserBalance>) -> App {
 }
 
 pub fn default() -> (App, BurnContract) {
-    let mut app = mock_app(vec![UserBalance {
-        address: Addr::unchecked(USER),
-        balance: Uint128::new(1_000_000),
-    }, UserBalance {
-        address: Addr::unchecked(REFERRER),
-        balance: Uint128::new(500_000),
-    }, UserBalance {
-        address: Addr::unchecked(SECOND_REFERRER),
-        balance: Uint128::new(500_000),
-    }]);
+    let mut app = mock_app(vec![
+        UserBalance {
+            address: Addr::unchecked(USER),
+            balance: Uint128::new(1_000_000),
+        },
+        UserBalance {
+            address: Addr::unchecked(REFERRER),
+            balance: Uint128::new(500_000),
+        },
+        UserBalance {
+            address: Addr::unchecked(SECOND_REFERRER),
+            balance: Uint128::new(500_000),
+        },
+    ]);
 
     let contract_burn_id = app.store_code(contract_template());
 
