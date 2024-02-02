@@ -26,6 +26,9 @@ pub enum ContractError {
     #[error("Referrer already first referrer")]
     ReferrerAlreadyFirstReferrer {},
 
+    #[error("User should burn at least once before second referral")]
+    ShouldBurnBefore2ndReferral {},
+
     #[error("Overflow")]
     Overflow {},
 
