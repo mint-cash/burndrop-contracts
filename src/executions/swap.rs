@@ -1,7 +1,7 @@
 use cosmwasm_std::{attr, coin, BankMsg, DepsMut, Env, MessageInfo, Response, Uint128};
 
 use crate::error::ContractError;
-use crate::executions::user::{ensure_user_initialized, process_referral};
+use crate::executions::user::{ensure_user_initialized, process_first_referral};
 use crate::query::calculate_round_swap_result;
 use crate::states::config::CONFIG;
 use crate::states::state::STATE;
@@ -79,22 +79,20 @@ pub fn burn_uusd(
     env: Env,
     info: MessageInfo,
     amount: Uint128,
-    referrer: String,
+    referrer: Option<String>,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
-    process_referral(deps.branch(), &referrer)?;
+    process_first_referral(deps.branch(), &info.sender, &referrer)?;
+
+    let sender = USER.load(deps.storage, info.sender.clone())?;
 
     let config = CONFIG.load(deps.storage)?;
 
     {
-        let sender = USER.load(deps.storage, info.sender.clone())?;
         let previously_burned = sender.burned_uusd;
 
         // slots_by_user(address) * config.slot_size
-        let capped_uusd_by_user = {
-            let slots = sender.slots;
-            config.slot_size * slots
-        };
+        let capped_uusd_by_user = config.slot_size * sender.slots();
 
         if amount + previously_burned > capped_uusd_by_user {
             return Err(ContractError::CapExceeded {});
