@@ -17,6 +17,7 @@ pub struct User {
 
     pub burned_uusd: Uint128, // swapped_in
     pub swapped_out: OutputTokenMap<Uint128>,
+    pub first_referrer: Option<Addr>,
 }
 
 impl User {

@@ -27,7 +27,7 @@ pub fn execute_swap(
     // Create a burn tokens message
     let msg = ExecuteMsg::BurnTokens {
         amount,
-        referrer: referrer.to_string(),
+        referrer: Some(referrer.to_string()),
     };
     if let Some(time) = time {
         app.update_block(|block| {

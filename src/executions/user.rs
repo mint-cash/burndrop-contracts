@@ -19,13 +19,27 @@ pub fn ensure_user_initialized(
             referral_a: 0,
             referral_b: false,
             referral_c: false,
+            first_referrer: None,
         };
         USER.save(deps.storage, user_address.clone(), &new_user)?;
     }
     Ok(())
 }
 
-pub fn process_first_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), ContractError> {
+pub fn process_first_referral(deps: DepsMut<'_>, user_addr: &Addr, referrer: &Option<String>) -> Result<(), ContractError> {
+    let mut user = USER.load(deps.storage, user_addr.clone())?;
+    if user.first_referrer.is_some() {
+        if let Some(_) = referrer {
+            return Err(ContractError::AlreadyRegistered {});
+        }
+        return Ok(());
+    }
+
+    let referrer = match referrer {
+        Some(r) => r,
+        None => return Err(ContractError::ReferrerNotProvided {}),
+    };
+
     let referrer_addr = deps.api.addr_validate(referrer)?;
     let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
         Some(state) => state,
@@ -35,13 +49,25 @@ pub fn process_first_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), C
     // Update first referral count
     referrer_user.referral_a += 1;
 
+    // Update user's first referrer
+    user.first_referrer = Some(referrer_addr.clone());
+
     USER.save(deps.storage, referrer_addr, &referrer_user)?;
+    USER.save(deps.storage, user_addr.clone(), &user)?;
 
     Ok(())
 }
 
-pub fn process_second_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), ContractError> {
+pub fn process_second_referral(deps: DepsMut<'_>, user_addr: &Addr, referrer: &str) -> Result<(), ContractError> {
     let referrer_addr = deps.api.addr_validate(referrer)?;
+
+    let user = USER.load(deps.storage, user_addr.clone())?;
+    if let Some(first_referrer) = &user.first_referrer {
+        if referrer_addr == *first_referrer {
+            return Err(ContractError::ReferrerAlreadyFirstReferrer {});
+        }
+    }
+
     let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
         Some(state) => state,
         None => return Err(ContractError::ReferrerNotInitialized {}),
@@ -90,7 +116,7 @@ pub fn register_2nd_referrer(
     referrer: String,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
-    process_second_referral(deps.branch(), &referrer)?;
+    process_second_referral(deps.branch(), &info.sender, &referrer)?;
 
     let mut sender = USER.load(deps.storage, info.sender.clone())?;
 

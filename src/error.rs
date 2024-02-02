@@ -20,6 +20,12 @@ pub enum ContractError {
     #[error("Referrer is not initialized")]
     ReferrerNotInitialized {},
 
+    #[error("Referrer not provided")]
+    ReferrerNotProvided {},
+
+    #[error("Referrer already first referrer")]
+    ReferrerAlreadyFirstReferrer {},
+
     #[error("Overflow")]
     Overflow {},
 

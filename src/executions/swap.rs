@@ -79,15 +79,16 @@ pub fn burn_uusd(
     env: Env,
     info: MessageInfo,
     amount: Uint128,
-    referrer: String,
+    referrer: Option<String>,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
-    process_first_referral(deps.branch(), &referrer)?;
+    process_first_referral(deps.branch(), &info.sender, &referrer)?;
+
+    let sender = USER.load(deps.storage, info.sender.clone())?;
 
     let config = CONFIG.load(deps.storage)?;
 
     {
-        let sender = USER.load(deps.storage, info.sender.clone())?;
         let previously_burned = sender.burned_uusd;
 
         // slots_by_user(address) * config.slot_size
