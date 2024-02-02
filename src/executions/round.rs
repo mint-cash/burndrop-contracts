@@ -1,3 +1,4 @@
+use classic_bindings::TerraQuery;
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -20,7 +21,7 @@ pub fn sort_and_validate_rounds(rounds: &mut Vec<SwapRound>) -> Result<(), Contr
 }
 
 pub fn create_round(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     info: MessageInfo,
     round: SwapRound,
 ) -> Result<Response, ContractError> {
@@ -64,7 +65,7 @@ pub struct UpdateRoundParams {
 }
 
 pub fn update_round(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     env: Env,
     info: MessageInfo,
     UpdateRoundParams {
@@ -134,7 +135,7 @@ pub fn update_round(
 }
 
 pub fn delete_round(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     env: Env,
     info: MessageInfo,
     id: u64,

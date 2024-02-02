@@ -1,3 +1,4 @@
+use classic_bindings::TerraQuery;
 use cosmwasm_std::{attr, Addr, DepsMut, MessageInfo, Response, Uint128};
 
 use crate::error::ContractError;
@@ -5,7 +6,7 @@ use crate::states::{config::CONFIG, user::User, user::USER};
 use crate::types::output_token::OutputTokenMap;
 
 pub fn ensure_user_initialized(
-    deps: &mut DepsMut<'_>,
+    deps: &mut DepsMut<TerraQuery>,
     user_address: &Addr,
 ) -> Result<(), ContractError> {
     let user_exists = USER.may_load(deps.storage, user_address.clone())?.is_some();
@@ -27,7 +28,7 @@ pub fn ensure_user_initialized(
 }
 
 pub fn process_first_referral(
-    deps: DepsMut<'_>,
+    deps: DepsMut<TerraQuery>,
     user_addr: &Addr,
     referrer: &Option<String>,
 ) -> Result<(), ContractError> {
@@ -63,7 +64,7 @@ pub fn process_first_referral(
 }
 
 pub fn process_second_referral(
-    deps: DepsMut<'_>,
+    deps: DepsMut<TerraQuery>,
     user_addr: &Addr,
     referrer: &str,
 ) -> Result<(), ContractError> {
@@ -96,7 +97,7 @@ pub fn process_second_referral(
 // owner can allow specific address to bypass referral requirement
 // which means just init'ing the new User with initial slots is 1, so that the address can be used as referrer
 pub fn register_starting_user(
-    mut deps: DepsMut,
+    mut deps: DepsMut<TerraQuery>,
     info: MessageInfo,
     user: String,
 ) -> Result<Response, ContractError> {
@@ -122,7 +123,7 @@ pub fn register_starting_user(
 }
 
 pub fn register_2nd_referrer(
-    mut deps: DepsMut,
+    mut deps: DepsMut<TerraQuery>,
     info: MessageInfo,
     referrer: String,
 ) -> Result<Response, ContractError> {

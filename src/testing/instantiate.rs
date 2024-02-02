@@ -1,4 +1,5 @@
-use cosmwasm_std::{Addr, Coin, Empty, Uint128};
+use classic_bindings::TerraQuery;
+use cosmwasm_std::{Addr, Coin, Uint128};
 use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
 
 use crate::helpers::BurnContract;
@@ -6,7 +7,7 @@ use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::testing::{ADMIN, NATIVE_DENOM, REFERRER, SECOND_REFERRER, USER};
 use crate::types::swap_round::{LiquidityPair, SwapRound};
 
-fn contract_template() -> Box<dyn Contract<Empty>> {
+fn contract_template() -> Box<dyn Contract<TerraQuery>> {
     let contract = ContractWrapper::new(
         crate::contract::execute,
         crate::contract::instantiate,
