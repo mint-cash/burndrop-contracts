@@ -125,7 +125,7 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
 export interface BurndropInterface extends BurndropReadOnlyInterface {
   contractAddress: string;
   sender: string;
-  burnTokens: (
+  burnUusd: (
     {
       amount,
       referrer,
@@ -215,7 +215,7 @@ export class BurndropClient
     this.client = client;
     this.sender = sender;
     this.contractAddress = contractAddress;
-    this.burnTokens = this.burnTokens.bind(this);
+    this.burnUusd = this.burnUusd.bind(this);
     this.registerStartingUser = this.registerStartingUser.bind(this);
     this.register2ndReferrer = this.register2ndReferrer.bind(this);
     this.updateSlotSize = this.updateSlotSize.bind(this);
@@ -224,7 +224,7 @@ export class BurndropClient
     this.deleteRound = this.deleteRound.bind(this);
   }
 
-  burnTokens = async (
+  burnUusd = async (
     {
       amount,
       referrer,
@@ -240,7 +240,7 @@ export class BurndropClient
       this.sender,
       this.contractAddress,
       {
-        burn_tokens: {
+        burn_uusd: {
           amount,
           referrer,
         },

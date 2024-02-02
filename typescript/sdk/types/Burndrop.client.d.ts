@@ -45,7 +45,7 @@ export declare class BurndropQueryClient implements BurndropReadOnlyInterface {
 export interface BurndropInterface extends BurndropReadOnlyInterface {
     contractAddress: string;
     sender: string;
-    burnTokens: ({ amount, referrer, }: {
+    burnUusd: ({ amount, referrer, }: {
         amount: Uint128;
         referrer: string;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
@@ -73,7 +73,7 @@ export declare class BurndropClient extends BurndropQueryClient implements Burnd
     sender: string;
     contractAddress: string;
     constructor(client: SigningCosmWasmClient, sender: string, contractAddress: string);
-    burnTokens: ({ amount, referrer, }: {
+    burnUusd: ({ amount, referrer, }: {
         amount: Uint128;
         referrer: string;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
