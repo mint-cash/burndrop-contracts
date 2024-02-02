@@ -20,5 +20,3 @@ artifacts
 node_modules
 dist
 *.log
-
-.yarn
