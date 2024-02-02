@@ -58,11 +58,20 @@ const config = new Config({
 });
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
-const WASM_PATH = path.join(
+
+let WASM_PATH = path.join(
   YARN_WORKSPACE_ROOT!,
   'artifacts',
   'burndrop_contracts.wasm',
 );
+// if WASM_PATH doesn't exist, try `burndrop_contracts-aarch64.wasm`
+if (!fs.existsSync(WASM_PATH)) {
+  WASM_PATH = path.join(
+    YARN_WORKSPACE_ROOT!,
+    'artifacts',
+    'burndrop_contracts-aarch64.wasm',
+  );
+}
 
 async function main() {
   if (!config.args.mnemonic && !config.args.privateKey) {
@@ -86,12 +95,12 @@ async function main() {
   console.log(uploadResult);
 
   const instantiateMsg: InstantiateMsg = {
-    initial_slot_size: '1000',
+    initial_slot_size: (1000 * 10 ** 6).toString(),
     rounds: [
       {
         id: 1,
-        start_time: 1706001400,
-        end_time: 1706001650,
+        start_time: Math.floor(Date.now() / 1000),
+        end_time: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
         oppamint_liquidity: {
           x: '100000000',
           y: '50000000',
