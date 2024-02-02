@@ -26,7 +26,7 @@ export interface LiquidityPair {
 export type ExecuteMsg = {
     burn_uusd: {
         amount: Uint128;
-        referrer: string;
+        referrer?: string | null;
     };
 } | {
     register_starting_user: {

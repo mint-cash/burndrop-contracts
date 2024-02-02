@@ -11,7 +11,7 @@ export interface BurndropMsg {
     sender: string;
     burnUusd: ({ amount, referrer, }: {
         amount: Uint128;
-        referrer: string;
+        referrer?: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     registerStartingUser: ({ user, }: {
         user: string;
@@ -38,7 +38,7 @@ export declare class BurndropMsgComposer implements BurndropMsg {
     constructor(sender: string, contractAddress: string);
     burnUusd: ({ amount, referrer, }: {
         amount: Uint128;
-        referrer: string;
+        referrer?: string | undefined;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     registerStartingUser: ({ user, }: {
         user: string;

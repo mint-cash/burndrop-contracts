@@ -38,7 +38,7 @@ export interface BurndropMsg {
       referrer,
     }: {
       amount: Uint128;
-      referrer: string;
+      referrer?: string;
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject;
@@ -113,7 +113,7 @@ export class BurndropMsgComposer implements BurndropMsg {
       referrer,
     }: {
       amount: Uint128;
-      referrer: string;
+      referrer?: string;
     },
     _funds?: Coin[],
   ): MsgExecuteContractEncodeObject => {

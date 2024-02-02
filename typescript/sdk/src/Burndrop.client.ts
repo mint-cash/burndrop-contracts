@@ -131,7 +131,7 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
       referrer,
     }: {
       amount: Uint128;
-      referrer: string;
+      referrer?: string;
     },
     fee?: number | StdFee | 'auto',
     memo?: string,
@@ -230,7 +230,7 @@ export class BurndropClient
       referrer,
     }: {
       amount: Uint128;
-      referrer: string;
+      referrer?: string;
     },
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,

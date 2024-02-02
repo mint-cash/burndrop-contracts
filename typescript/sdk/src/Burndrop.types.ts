@@ -28,7 +28,7 @@ export type ExecuteMsg =
   | {
       burn_uusd: {
         amount: Uint128;
-        referrer: string;
+        referrer?: string | null;
       };
     }
   | {
