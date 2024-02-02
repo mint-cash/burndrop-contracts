@@ -1,3 +1,4 @@
+use std::cmp::min;
 use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::Map;
 use schemars::JsonSchema;
@@ -21,7 +22,7 @@ pub struct User {
 impl User {
     // slots = 2^a + b + c
     pub fn slots(&self) -> Uint128 {
-        let mut slots = 2u128.pow(self.referral_a);
+        let mut slots = 2u128.pow(min(self.referral_a, 8));
         if self.referral_b {
             slots += 1;
         }

@@ -91,10 +91,7 @@ pub fn burn_uusd(
         let previously_burned = sender.burned_uusd;
 
         // slots_by_user(address) * config.slot_size
-        let capped_uusd_by_user = {
-            let slots = sender.slots();
-            config.slot_size * slots
-        };
+        let capped_uusd_by_user = config.slot_size * sender.slots();
 
         if amount + previously_burned > capped_uusd_by_user {
             return Err(ContractError::CapExceeded {});

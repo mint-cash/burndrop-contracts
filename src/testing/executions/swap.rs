@@ -7,7 +7,7 @@ use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
 use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
 
-fn execute_swap(
+pub fn execute_swap(
     app: &mut App,
     burn_contract: &BurnContract,
     sender: &str,

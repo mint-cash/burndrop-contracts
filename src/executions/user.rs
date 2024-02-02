@@ -1,4 +1,3 @@
-use std::cmp::min;
 use cosmwasm_std::{attr, Addr, DepsMut, MessageInfo, Response, Uint128};
 
 use crate::error::ContractError;
@@ -34,7 +33,7 @@ pub fn process_first_referral(deps: DepsMut<'_>, referrer: &str) -> Result<(), C
     };
 
     // Update first referral count
-    referrer_user.referral_a = min(referrer_user.referral_a + 1, 8);
+    referrer_user.referral_a += 1;
 
     USER.save(deps.storage, referrer_addr, &referrer_user)?;
 
