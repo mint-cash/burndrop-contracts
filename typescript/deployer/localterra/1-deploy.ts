@@ -3,7 +3,6 @@ import { InstantiateMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice, calculateFee } from '@cosmjs/stargate';
 import math from '@cosmjs/math';
-import long from 'long';
 import fs from 'fs';
 import amino from '@cosmjs/amino';
 import findWorkspaceRoot from 'find-yarn-workspace-root';
