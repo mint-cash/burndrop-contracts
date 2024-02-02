@@ -25,7 +25,7 @@ fn execute_swap(
     );
 
     // Create a burn tokens message
-    let msg = ExecuteMsg::BurnTokens {
+    let msg = ExecuteMsg::BurnUusd {
         amount,
         referrer: referrer.to_string(),
     };

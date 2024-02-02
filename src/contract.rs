@@ -98,7 +98,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::BurnTokens { amount, referrer } => burn_uusd(deps, env, info, amount, referrer),
+        ExecuteMsg::BurnUusd { amount, referrer } => burn_uusd(deps, env, info, amount, referrer),
         ExecuteMsg::RegisterStartingUser { user } => register_starting_user(deps, info, user),
         ExecuteMsg::Register2ndReferrer { referrer } => register_2nd_referrer(deps, info, referrer),
 
