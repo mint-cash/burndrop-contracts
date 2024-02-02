@@ -32,7 +32,7 @@ import {
 export interface BurndropMsg {
   contractAddress: string;
   sender: string;
-  burnTokens: (
+  burnUusd: (
     {
       amount,
       referrer,
@@ -98,7 +98,7 @@ export class BurndropMsgComposer implements BurndropMsg {
   constructor(sender: string, contractAddress: string) {
     this.sender = sender;
     this.contractAddress = contractAddress;
-    this.burnTokens = this.burnTokens.bind(this);
+    this.burnUusd = this.burnUusd.bind(this);
     this.registerStartingUser = this.registerStartingUser.bind(this);
     this.register2ndReferrer = this.register2ndReferrer.bind(this);
     this.updateSlotSize = this.updateSlotSize.bind(this);
@@ -107,7 +107,7 @@ export class BurndropMsgComposer implements BurndropMsg {
     this.deleteRound = this.deleteRound.bind(this);
   }
 
-  burnTokens = (
+  burnUusd = (
     {
       amount,
       referrer,
@@ -124,7 +124,7 @@ export class BurndropMsgComposer implements BurndropMsg {
         contract: this.contractAddress,
         msg: toUtf8(
           JSON.stringify({
-            burn_tokens: {
+            burn_uusd: {
               amount,
               referrer,
             },

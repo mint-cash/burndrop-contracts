@@ -26,7 +26,7 @@ export interface LiquidityPair {
 }
 export type ExecuteMsg =
   | {
-      burn_tokens: {
+      burn_uusd: {
         amount: Uint128;
         referrer: string;
       };

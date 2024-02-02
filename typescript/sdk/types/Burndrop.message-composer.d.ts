@@ -9,7 +9,7 @@ import { Uint128, SwapRound, UpdateRoundParams } from './Burndrop.types';
 export interface BurndropMsg {
     contractAddress: string;
     sender: string;
-    burnTokens: ({ amount, referrer, }: {
+    burnUusd: ({ amount, referrer, }: {
         amount: Uint128;
         referrer: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
@@ -36,7 +36,7 @@ export declare class BurndropMsgComposer implements BurndropMsg {
     sender: string;
     contractAddress: string;
     constructor(sender: string, contractAddress: string);
-    burnTokens: ({ amount, referrer, }: {
+    burnUusd: ({ amount, referrer, }: {
         amount: Uint128;
         referrer: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
