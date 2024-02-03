@@ -7,22 +7,12 @@ use classic_bindings::{TerraMsg, TerraQuery};
 use cosmwasm_std::{Addr, Coin, Uint128};
 use cw_multi_test::{Contract, ContractWrapper, Executor};
 
-// fn contract_template() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
-//     let contract = ContractWrapper::new(
-//         crate::contract::execute,
-//         crate::contract::instantiate,
-//         crate::contract::query,
-//     );
-//     Box::new(contract)
-// }
-
-fn contract_template() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
+fn contract_burndrop() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
     let contract = ContractWrapper::new(
         crate::contract::execute,
         crate::contract::instantiate,
         crate::contract::query,
     );
-    // .with_sudo(crate::contract::sudo);
     Box::new(contract)
 }
 
@@ -69,7 +59,7 @@ pub fn default() -> (TerraApp, BurnContract) {
         },
     ]);
 
-    let contract_burn_id = app.store_code(contract_template());
+    let contract_burn_id = app.store_code(contract_burndrop());
 
     let instantiate_msg: InstantiateMsg = InstantiateMsg {
         initial_slot_size: Uint128::new(1_000),
@@ -126,7 +116,7 @@ pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
 
     let mut app = mock_app(user_balances);
 
-    let contract_burn_id = app.store_code(contract_template());
+    let contract_burn_id = app.store_code(contract_burndrop());
 
     let instantiate_msg: InstantiateMsg = InstantiateMsg {
         initial_slot_size: Uint128::new(1_000),
