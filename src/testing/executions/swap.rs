@@ -1,14 +1,15 @@
 use cosmwasm_std::testing::mock_info;
 use cosmwasm_std::{Addr, Coin, Timestamp, Uint128};
-use cw_multi_test::{App, AppResponse, Executor};
+use cw_multi_test::{AppResponse, Executor};
 
 use crate::executions::round::UpdateRoundParams;
 use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
+use crate::testing::terra_bindings::TerraApp;
 use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
 
 pub fn execute_swap(
-    app: &mut App,
+    app: &mut TerraApp,
     burn_contract: &BurnContract,
     sender: &str,
     amount: Uint128,
@@ -151,8 +152,12 @@ fn fail_not_modified_period() {
             ancs_liquidity: None,
         },
     };
-    let cosmos_msg = burn_contract.call(modify_msg).unwrap();
-    let modify_res = app.execute(Addr::unchecked(ADMIN), cosmos_msg);
+    let modify_res = app.execute_contract(
+        Addr::unchecked(ADMIN),
+        burn_contract.addr(),
+        &modify_msg,
+        &[],
+    );
     assert!(modify_res.is_ok());
 
     // Try to burn some tokens for a user with a referrer.
@@ -184,8 +189,12 @@ fn success_during_modified_period() {
             ancs_liquidity: None,
         },
     };
-    let cosmos_msg = burn_contract.call(modify_msg).unwrap();
-    let modify_res = app.execute(Addr::unchecked(ADMIN), cosmos_msg);
+    let modify_res = app.execute_contract(
+        Addr::unchecked(ADMIN),
+        burn_contract.addr(),
+        &modify_msg,
+        &[],
+    );
     assert!(modify_res.is_ok());
 
     // Try to burn some tokens for a user with a referrer.

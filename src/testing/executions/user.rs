@@ -1,11 +1,12 @@
 use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
 use crate::testing::executions::swap::execute_swap;
+use crate::testing::terra_bindings::TerraApp;
 use crate::testing::{instantiate, ADMIN, REFERRER};
 use cosmwasm_std::{Addr, Uint128};
-use cw_multi_test::{App, Executor};
+use cw_multi_test::Executor;
 
-fn assert_slots(app: &mut App, burn_contract: &BurnContract, user: &str, slots: Uint128) {
+fn assert_slots(app: &mut TerraApp, burn_contract: &BurnContract, user: &str, slots: Uint128) {
     let query_res: UserInfoResponse = app
         .wrap()
         .query_wasm_smart(
@@ -33,8 +34,8 @@ fn success_first_referral() {
         let msg = ExecuteMsg::RegisterStartingUser {
             user: user.to_string(),
         };
-        let cosmos_msg = burn_contract.call(msg).unwrap();
-        app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+        app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+            .unwrap();
 
         let execute_res = execute_swap(
             &mut app,
@@ -57,8 +58,8 @@ fn success_first_referral() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user9".to_string(),
     };
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     let execute_res = execute_swap(
         &mut app,
@@ -96,8 +97,8 @@ fn success_first_and_second_referral() {
         let msg = ExecuteMsg::RegisterStartingUser {
             user: user.to_string(),
         };
-        let cosmos_msg = burn_contract.call(msg).unwrap();
-        app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+        app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+            .unwrap();
 
         let execute_res = execute_swap(
             &mut app,
@@ -120,9 +121,8 @@ fn success_first_and_second_referral() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user4".to_string(),
     };
-
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     let execute_res = execute_swap(
         &mut app,
@@ -159,9 +159,8 @@ fn fail_when_first_referral_equals_second() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user1".to_string(),
     };
-
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     let execute_res = execute_swap(
         &mut app,
@@ -199,9 +198,8 @@ fn fail_second_referral_with_no_first() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user1".to_string(),
     };
-
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     let execute_res = execute_swap(
         &mut app,
@@ -217,9 +215,8 @@ fn fail_second_referral_with_no_first() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user2".to_string(),
     };
-
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     assert!(execute_res.is_ok());
 

@@ -1,8 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    attr, to_json_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdError,
-    StdResult, Uint128,
+    attr, to_json_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, StdError, StdResult,
+    Uint128,
 };
 use cw2::{get_contract_version, set_contract_version};
 use semver::Version;
@@ -19,6 +19,9 @@ use crate::query::{
 };
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
+use classic_bindings::{TerraMsg, TerraQuery};
+
+pub type Response = cosmwasm_std::Response<TerraMsg>;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:burndrop-contracts";
@@ -26,7 +29,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     _env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
@@ -92,7 +95,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, Contra
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
@@ -123,7 +126,7 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
         QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),

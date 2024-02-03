@@ -1,11 +1,13 @@
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-
 use crate::error::ContractError;
 use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::types::swap_round::{LiquidityPair, SwapRound};
+use classic_bindings::{TerraMsg, TerraQuery};
+use cosmwasm_std::{DepsMut, Env, MessageInfo};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+pub type Response = cosmwasm_std::Response<TerraMsg>;
 
 pub fn sort_and_validate_rounds(rounds: &mut Vec<SwapRound>) -> Result<(), ContractError> {
     // Ensure the rounds are sorted by start time, and not overlapping.
@@ -20,7 +22,7 @@ pub fn sort_and_validate_rounds(rounds: &mut Vec<SwapRound>) -> Result<(), Contr
 }
 
 pub fn create_round(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     info: MessageInfo,
     round: SwapRound,
 ) -> Result<Response, ContractError> {
@@ -64,7 +66,7 @@ pub struct UpdateRoundParams {
 }
 
 pub fn update_round(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     env: Env,
     info: MessageInfo,
     UpdateRoundParams {
@@ -134,7 +136,7 @@ pub fn update_round(
 }
 
 pub fn delete_round(
-    deps: DepsMut,
+    deps: DepsMut<TerraQuery>,
     env: Env,
     info: MessageInfo,
     id: u64,

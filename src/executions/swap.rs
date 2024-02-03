@@ -1,4 +1,4 @@
-use cosmwasm_std::{attr, coin, BankMsg, DepsMut, Env, MessageInfo, Response, Uint128};
+use cosmwasm_std::{attr, coin, BankMsg, Decimal, DepsMut, Env, Fraction, MessageInfo, Uint128};
 
 use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_first_referral};
@@ -7,13 +7,20 @@ use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::states::user::USER;
 use crate::types::output_token::OutputTokenMap;
+use classic_bindings::{TerraMsg, TerraQuerier, TerraQuery};
+
+pub type Response = cosmwasm_std::Response<TerraMsg>;
 
 pub struct SwapResult {
     pub swapped_in: Uint128,
     pub swapped_out: OutputTokenMap<Uint128>,
 }
 
-pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, ContractError> {
+pub fn swap(
+    deps: DepsMut<TerraQuery>,
+    env: Env,
+    info: MessageInfo,
+) -> Result<SwapResult, ContractError> {
     let mut state = STATE.load(deps.storage)?;
 
     let now = env.block.time.seconds();
@@ -74,8 +81,25 @@ pub fn swap(deps: DepsMut, env: Env, info: MessageInfo) -> Result<SwapResult, Co
     Ok(deposit_result)
 }
 
+pub fn reverse_decimal(decimal: Decimal) -> Decimal {
+    decimal.inv().unwrap_or_default()
+}
+
+pub fn deduct_tax(deps: &DepsMut<TerraQuery>, amount: Uint128) -> Result<Uint128, ContractError> {
+    let terra_querier = TerraQuerier::new(&deps.querier);
+    let tax_rate = (terra_querier.query_tax_rate()?).rate;
+    let tax_cap = (terra_querier.query_tax_cap("uusd")?).cap;
+
+    let tax = std::cmp::min(
+        amount - amount * reverse_decimal(Decimal::one() + tax_rate),
+        tax_cap,
+    );
+
+    Ok(amount.checked_sub(tax)?)
+}
+
 pub fn burn_uusd(
-    mut deps: DepsMut,
+    mut deps: DepsMut<TerraQuery>,
     env: Env,
     info: MessageInfo,
     amount: Uint128,
@@ -99,10 +123,14 @@ pub fn burn_uusd(
         }
     }
 
+    let amount_with_deducted_tax = match deduct_tax(&deps, amount) {
+        Ok(v) => v,
+        Err(e) => return Err(e),
+    };
     let burn_address = "terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu";
     let burn_msg = BankMsg::Send {
         to_address: burn_address.to_string(),
-        amount: vec![coin(amount.u128(), "uusd")],
+        amount: vec![coin(amount_with_deducted_tax.u128(), "uusd")],
     };
 
     let res = swap(deps, env, info);

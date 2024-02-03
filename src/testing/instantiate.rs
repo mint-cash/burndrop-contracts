@@ -1,12 +1,13 @@
-use cosmwasm_std::{Addr, Coin, Empty, Uint128};
-use cw_multi_test::{App, AppBuilder, Contract, ContractWrapper, Executor};
-
+use super::terra_bindings::TerraApp;
 use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::testing::{ADMIN, NATIVE_DENOM, REFERRER, SECOND_REFERRER, USER};
 use crate::types::swap_round::{LiquidityPair, SwapRound};
+use classic_bindings::{TerraMsg, TerraQuery};
+use cosmwasm_std::{Addr, Coin, Uint128};
+use cw_multi_test::{Contract, ContractWrapper, Executor};
 
-fn contract_template() -> Box<dyn Contract<Empty>> {
+fn contract_burndrop() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
     let contract = ContractWrapper::new(
         crate::contract::execute,
         crate::contract::instantiate,
@@ -20,8 +21,10 @@ struct UserBalance {
     balance: Uint128,
 }
 
-fn mock_app(user_balances: Vec<UserBalance>) -> App {
-    AppBuilder::new().build(|router, _, storage| {
+fn mock_app(user_balances: Vec<UserBalance>) -> TerraApp {
+    let mut app = TerraApp::new(Addr::unchecked(ADMIN).as_str());
+
+    app.init_modules(|router, _, storage| {
         for user_balance in user_balances {
             router
                 .bank
@@ -35,10 +38,12 @@ fn mock_app(user_balances: Vec<UserBalance>) -> App {
                 )
                 .unwrap();
         }
-    })
+    });
+
+    app
 }
 
-pub fn default() -> (App, BurnContract) {
+pub fn default() -> (TerraApp, BurnContract) {
     let mut app = mock_app(vec![
         UserBalance {
             address: Addr::unchecked(USER),
@@ -54,7 +59,7 @@ pub fn default() -> (App, BurnContract) {
         },
     ]);
 
-    let contract_burn_id = app.store_code(contract_template());
+    let contract_burn_id = app.store_code(contract_burndrop());
 
     let instantiate_msg: InstantiateMsg = InstantiateMsg {
         initial_slot_size: Uint128::new(1_000),
@@ -94,13 +99,13 @@ pub fn default() -> (App, BurnContract) {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: REFERRER.to_string(),
     };
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     (app, burn_contract)
 }
 
-pub fn default_with_users(users: Vec<String>) -> (App, BurnContract) {
+pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
     let user_balances = users
         .iter()
         .map(|user| UserBalance {
@@ -111,7 +116,7 @@ pub fn default_with_users(users: Vec<String>) -> (App, BurnContract) {
 
     let mut app = mock_app(user_balances);
 
-    let contract_burn_id = app.store_code(contract_template());
+    let contract_burn_id = app.store_code(contract_burndrop());
 
     let instantiate_msg: InstantiateMsg = InstantiateMsg {
         initial_slot_size: Uint128::new(1_000),
@@ -151,8 +156,8 @@ pub fn default_with_users(users: Vec<String>) -> (App, BurnContract) {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: REFERRER.to_string(),
     };
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     (app, burn_contract)
 }
