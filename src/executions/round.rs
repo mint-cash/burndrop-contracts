@@ -1,12 +1,14 @@
-use classic_bindings::TerraQuery;
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-
 use crate::error::ContractError;
 use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::types::swap_round::{LiquidityPair, SwapRound};
+use classic_bindings::TerraMsg;
+use classic_bindings::TerraQuery;
+use cosmwasm_std::{DepsMut, Env, MessageInfo};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+pub type Response = cosmwasm_std::Response<TerraMsg>;
 
 pub fn sort_and_validate_rounds(rounds: &mut Vec<SwapRound>) -> Result<(), ContractError> {
     // Ensure the rounds are sorted by start time, and not overlapping.

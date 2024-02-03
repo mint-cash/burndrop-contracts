@@ -13,14 +13,16 @@ fn test_query_users() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: SECOND_REFERRER.to_string(),
     };
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    // let cosmos_msg = burn_contract.call(msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     let msg = ExecuteMsg::RegisterStartingUser {
         user: USER.to_string(),
     };
-    let cosmos_msg = burn_contract.call(msg).unwrap();
-    app.execute(Addr::unchecked(ADMIN), cosmos_msg).unwrap();
+    // let cosmos_msg = burn_contract.call(msg).unwrap();
+    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
+        .unwrap();
 
     let query_res: UsersInfoResponse = app
         .wrap()

@@ -1,6 +1,3 @@
-use cosmwasm_std::{Decimal, Deps, Env, Order, StdResult, Uint128};
-use cw_storage_plus::Bound;
-
 use crate::error::ContractError;
 use crate::msg::{
     PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse,
@@ -8,14 +5,17 @@ use crate::msg::{
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::output_token::OutputTokenMap;
 use crate::types::swap_round::{LiquidityPair, SwapRound};
+use classic_bindings::TerraQuery;
+use cosmwasm_std::{Decimal, Deps, Env, Order, StdResult, Uint128};
+use cw_storage_plus::Bound;
 
-pub fn query_config(deps: Deps) -> StdResult<Config> {
+pub fn query_config(deps: Deps<TerraQuery>) -> StdResult<Config> {
     let config = CONFIG.load(deps.storage)?;
 
     Ok(config)
 }
 
-pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
+pub fn query_user(deps: Deps<TerraQuery>, address: String) -> StdResult<UserInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
     let address = deps.api.addr_validate(&address)?;
     let user = USER.load(deps.storage, address)?;
@@ -34,7 +34,7 @@ pub fn query_user(deps: Deps, address: String) -> StdResult<UserInfoResponse> {
 }
 
 pub fn query_users(
-    deps: Deps,
+    deps: Deps<TerraQuery>,
     start: Option<String>,
     limit: Option<u32>,
     order: Option<Order>,
@@ -92,7 +92,7 @@ pub fn calculate_current_price(state: &State, now: u64) -> OutputTokenMap<Decima
     calculate_round_price(round)
 }
 
-pub fn query_current_price(deps: Deps, env: Env) -> StdResult<PriceResponse> {
+pub fn query_current_price(deps: Deps<TerraQuery>, env: Env) -> StdResult<PriceResponse> {
     let state = STATE.load(deps.storage)?;
     let now = env.block.time.seconds();
 
@@ -143,7 +143,7 @@ pub fn calculate_round_swap_result(
 }
 
 pub fn query_simulate_burn(
-    deps: Deps,
+    deps: Deps<TerraQuery>,
     env: Env,
     amount: Uint128,
 ) -> StdResult<SimulateBurnResponse> {
@@ -167,7 +167,7 @@ pub fn query_simulate_burn(
     })
 }
 
-pub fn query_rounds(deps: Deps) -> StdResult<RoundsResponse> {
+pub fn query_rounds(deps: Deps<TerraQuery>) -> StdResult<RoundsResponse> {
     let state = STATE.load(deps.storage)?;
 
     Ok(RoundsResponse {

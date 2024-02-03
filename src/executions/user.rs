@@ -1,9 +1,11 @@
-use classic_bindings::TerraQuery;
-use cosmwasm_std::{attr, Addr, DepsMut, MessageInfo, Response, Uint128};
-
 use crate::error::ContractError;
 use crate::states::{config::CONFIG, user::User, user::USER};
 use crate::types::output_token::OutputTokenMap;
+use classic_bindings::TerraMsg;
+use classic_bindings::TerraQuery;
+use cosmwasm_std::{attr, Addr, DepsMut, MessageInfo, Uint128};
+
+pub type Response = cosmwasm_std::Response<TerraMsg>;
 
 pub fn ensure_user_initialized(
     deps: &mut DepsMut<TerraQuery>,

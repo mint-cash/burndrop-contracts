@@ -1,4 +1,4 @@
-use cosmwasm_std::{attr, coin, BankMsg, Decimal, DepsMut, Env, MessageInfo, Response, Uint128};
+use cosmwasm_std::{attr, coin, BankMsg, Decimal, DepsMut, Env, MessageInfo, Uint128};
 
 use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_first_referral};
@@ -7,7 +7,10 @@ use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::states::user::USER;
 use crate::types::output_token::OutputTokenMap;
-use classic_bindings::{TerraQuerier, TerraQuery};
+use classic_bindings::TerraQuery;
+use classic_bindings::{TerraMsg, TerraQuerier};
+
+pub type Response = cosmwasm_std::Response<TerraMsg>;
 
 pub struct SwapResult {
     pub swapped_in: Uint128,
