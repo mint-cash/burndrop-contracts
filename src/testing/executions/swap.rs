@@ -152,7 +152,6 @@ fn fail_not_modified_period() {
             ancs_liquidity: None,
         },
     };
-    // let cosmos_msg = burn_contract.call(modify_msg).unwrap();
     let modify_res = app.execute_contract(
         Addr::unchecked(ADMIN),
         burn_contract.addr(),
@@ -190,7 +189,6 @@ fn success_during_modified_period() {
             ancs_liquidity: None,
         },
     };
-    // let cosmos_msg = burn_contract.call(modify_msg).unwrap();
     let modify_res = app.execute_contract(
         Addr::unchecked(ADMIN),
         burn_contract.addr(),

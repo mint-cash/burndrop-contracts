@@ -34,7 +34,6 @@ fn success_first_referral() {
         let msg = ExecuteMsg::RegisterStartingUser {
             user: user.to_string(),
         };
-        // let cosmos_msg = burn_contract.call(msg).unwrap();
         app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
             .unwrap();
 
@@ -59,7 +58,6 @@ fn success_first_referral() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user9".to_string(),
     };
-    // let cosmos_msg = burn_contract.call(msg).unwrap();
     app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
         .unwrap();
 
@@ -99,7 +97,6 @@ fn success_first_and_second_referral() {
         let msg = ExecuteMsg::RegisterStartingUser {
             user: user.to_string(),
         };
-        // let cosmos_msg = burn_contract.call(msg).unwrap();
         app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
             .unwrap();
 
@@ -124,8 +121,6 @@ fn success_first_and_second_referral() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user4".to_string(),
     };
-
-    // let cosmos_msg = burn_contract.call(msg).unwrap();
     app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
         .unwrap();
 
@@ -164,8 +159,6 @@ fn fail_when_first_referral_equals_second() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user1".to_string(),
     };
-
-    // let cosmos_msg = burn_contract.call(msg).unwrap();
     app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
         .unwrap();
 
@@ -205,8 +198,6 @@ fn fail_second_referral_with_no_first() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user1".to_string(),
     };
-
-    // let cosmos_msg = burn_contract.call(msg).unwrap();
     app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
         .unwrap();
 
@@ -224,8 +215,6 @@ fn fail_second_referral_with_no_first() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user2".to_string(),
     };
-
-    // let cosmos_msg = burn_contract.call(msg).unwrap();
     app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
         .unwrap();
 
