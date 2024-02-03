@@ -1,8 +1,7 @@
 use crate::error::ContractError;
 use crate::states::{config::CONFIG, user::User, user::USER};
 use crate::types::output_token::OutputTokenMap;
-use classic_bindings::TerraMsg;
-use classic_bindings::TerraQuery;
+use classic_bindings::{TerraMsg, TerraQuery};
 use cosmwasm_std::{attr, Addr, DepsMut, MessageInfo, Uint128};
 
 pub type Response = cosmwasm_std::Response<TerraMsg>;

@@ -32,7 +32,7 @@ struct UserBalance {
 }
 
 fn mock_app(user_balances: Vec<UserBalance>) -> TerraApp {
-    let mut app = TerraApp::new(Addr::unchecked(ADMIN).as_str());
+    let app = TerraApp::new(Addr::unchecked(ADMIN).as_str());
 
     // FIXME: Make this alternative
     // Tr::new().build(|router, _, storage| {

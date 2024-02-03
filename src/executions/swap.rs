@@ -7,8 +7,7 @@ use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::states::user::USER;
 use crate::types::output_token::OutputTokenMap;
-use classic_bindings::TerraQuery;
-use classic_bindings::{TerraMsg, TerraQuerier};
+use classic_bindings::{TerraMsg, TerraQuerier, TerraQuery};
 
 pub type Response = cosmwasm_std::Response<TerraMsg>;
 

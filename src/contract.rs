@@ -1,4 +1,3 @@
-use classic_bindings::TerraMsg;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -20,7 +19,7 @@ use crate::query::{
 };
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
-use classic_bindings::TerraQuery;
+use classic_bindings::{TerraMsg, TerraQuery};
 
 pub type Response = cosmwasm_std::Response<TerraMsg>;
 
