@@ -1,4 +1,4 @@
-use cosmwasm_std::{attr, coin, BankMsg, Decimal, DepsMut, Env, MessageInfo, Uint128};
+use cosmwasm_std::{attr, coin, BankMsg, Decimal, DepsMut, Env, Fraction, MessageInfo, Uint128};
 
 use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_first_referral};
@@ -81,14 +81,21 @@ pub fn swap(
     Ok(deposit_result)
 }
 
-pub fn deduct_tax(deps: &DepsMut<TerraQuery>, amount: Uint128) -> Result<Uint128, ContractError> {
-    let amount = Decimal::new(amount);
-    let querier = TerraQuerier::new(&deps.querier);
+pub fn reverse_decimal(decimal: Decimal) -> Decimal {
+    decimal.inv().unwrap_or_default()
+}
 
-    let tax_rate = querier.query_tax_rate()?.rate;
-    let tax = tax_rate.checked_mul(amount)?;
-    let amount_with_deducted_tax = amount.checked_sub(tax)?.to_uint_floor();
-    Ok(amount_with_deducted_tax)
+pub fn deduct_tax(deps: &DepsMut<TerraQuery>, amount: Uint128) -> Result<Uint128, ContractError> {
+    let terra_querier = TerraQuerier::new(&deps.querier);
+    let tax_rate = (terra_querier.query_tax_rate()?).rate;
+    let tax_cap = (terra_querier.query_tax_cap("uusd")?).cap;
+
+    let tax = std::cmp::min(
+        amount - amount * reverse_decimal(Decimal::one() + tax_rate),
+        tax_cap,
+    );
+
+    Ok(amount.checked_sub(tax)?)
 }
 
 pub fn burn_uusd(

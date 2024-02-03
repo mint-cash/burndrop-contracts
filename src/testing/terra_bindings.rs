@@ -12,7 +12,6 @@ use schemars::JsonSchema;
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
-use std::str::FromStr;
 
 pub struct TerraModule {}
 
@@ -70,11 +69,11 @@ impl Module for TerraModule {
     ) -> AnyResult<Binary> {
         match request {
             TerraQuery::TaxCap { denom: _ } => Ok(to_json_binary(&TaxCapResponse {
-                cap: Uint128::new(100),
+                cap: Uint128::from(1000000u128),
             })
             .unwrap()),
             TerraQuery::TaxRate {} => Ok(to_json_binary(&TaxRateResponse {
-                rate: Decimal::from_str("0.01").unwrap(),
+                rate: Decimal::percent(5),
             })
             .unwrap()),
             TerraQuery::ExchangeRates {
