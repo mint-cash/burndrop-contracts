@@ -4,7 +4,7 @@ use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::testing::{ADMIN, NATIVE_DENOM, REFERRER, SECOND_REFERRER, USER};
 use crate::types::swap_round::{LiquidityPair, SwapRound};
 use classic_bindings::{TerraMsg, TerraQuery};
-use cosmwasm_std::{Addr, Uint128};
+use cosmwasm_std::{Addr, Coin, Uint128};
 use cw_multi_test::{Contract, ContractWrapper, Executor};
 
 // fn contract_template() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
@@ -32,26 +32,24 @@ struct UserBalance {
 }
 
 fn mock_app(user_balances: Vec<UserBalance>) -> TerraApp {
-    let app = TerraApp::new(Addr::unchecked(ADMIN).as_str());
+    let mut app = TerraApp::new(Addr::unchecked(ADMIN).as_str());
 
-    // FIXME: Make this alternative
-    // Tr::new().build(|router, _, storage| {
-    //     for user_balance in user_balances {
-    //         router
-    //             .bank
-    //             .init_balance(
-    //                 storage,
-    //                 &user_balance.address,
-    //                 vec![Coin {
-    //                     denom: NATIVE_DENOM.to_string(),
-    //                     amount: user_balance.balance,
-    //                 }],
-    //             )
-    //             .unwrap();
-    //     }
-    // })
+    app.init_modules(|router, _, storage| {
+        for user_balance in user_balances {
+            router
+                .bank
+                .init_balance(
+                    storage,
+                    &user_balance.address,
+                    vec![Coin {
+                        denom: NATIVE_DENOM.to_string(),
+                        amount: user_balance.balance,
+                    }],
+                )
+                .unwrap();
+        }
+    });
 
-    // router
     app
 }
 
