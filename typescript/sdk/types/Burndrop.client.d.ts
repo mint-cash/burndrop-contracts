@@ -5,7 +5,7 @@
  */
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from '@cosmjs/cosmwasm-stargate';
 import { Coin, StdFee } from '@cosmjs/amino';
-import { Uint128, SwapRound, UpdateRoundParams, OrderBy, Config, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse } from './Burndrop.types';
+import { Uint128, SwapRound, OutputTokenMapForUint128, UpdateRoundParams, OrderBy, Config, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse } from './Burndrop.types';
 export interface BurndropReadOnlyInterface {
     contractAddress: string;
     config: () => Promise<Config>;
@@ -45,8 +45,9 @@ export declare class BurndropQueryClient implements BurndropReadOnlyInterface {
 export interface BurndropInterface extends BurndropReadOnlyInterface {
     contractAddress: string;
     sender: string;
-    burnUusd: ({ amount, referrer, }: {
+    burnUusd: ({ amount, minAmountOut, referrer, }: {
         amount: Uint128;
+        minAmountOut?: OutputTokenMapForUint128;
         referrer?: string;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     registerStartingUser: ({ user, }: {
@@ -73,8 +74,9 @@ export declare class BurndropClient extends BurndropQueryClient implements Burnd
     sender: string;
     contractAddress: string;
     constructor(client: SigningCosmWasmClient, sender: string, contractAddress: string);
-    burnUusd: ({ amount, referrer, }: {
+    burnUusd: ({ amount, minAmountOut, referrer, }: {
         amount: Uint128;
+        minAmountOut?: OutputTokenMapForUint128 | undefined;
         referrer?: string | undefined;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     registerStartingUser: ({ user, }: {

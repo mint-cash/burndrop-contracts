@@ -28,6 +28,7 @@ export type ExecuteMsg =
   | {
       burn_uusd: {
         amount: Uint128;
+        min_amount_out?: OutputTokenMapForUint128 | null;
         referrer?: string | null;
       };
     }
@@ -61,6 +62,11 @@ export type ExecuteMsg =
         id: number;
       };
     };
+export interface OutputTokenMapForUint128 {
+  ancs: Uint128;
+  oppamint: Uint128;
+  [k: string]: unknown;
+}
 export interface UpdateRoundParams {
   ancs_liquidity?: LiquidityPair | null;
   end_time?: number | null;
@@ -122,11 +128,6 @@ export interface SimulateBurnResponse {
   final_amount: Uint128;
   swapped_out: OutputTokenMapForUint128;
   virtual_slippage: OutputTokenMapForUint128;
-}
-export interface OutputTokenMapForUint128 {
-  ancs: Uint128;
-  oppamint: Uint128;
-  [k: string]: unknown;
 }
 export interface UserInfoResponse {
   burnable: Uint128;
