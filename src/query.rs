@@ -108,11 +108,11 @@ pub fn calculate_swap_result(
 ) -> StdResult<(Uint128, Uint128)> {
     let k = pair.x * pair.y;
 
-    if pair.y + amount == Uint128::zero() {
+    if pair.x + amount == Uint128::zero() {
         return Err(ContractError::DivisionByZeroError {}.into());
     }
 
-    let swapped_out = pair.x - (k / (pair.y + amount));
+    let swapped_out = pair.y - (k / (pair.x + amount));
     let virtual_slippage = (swapped_out * price) / amount;
 
     Ok((swapped_out, virtual_slippage))
