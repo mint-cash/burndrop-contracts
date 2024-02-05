@@ -2,7 +2,6 @@ use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::Map;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::cmp::min;
 
 use crate::types::output_token::OutputTokenMap;
 
@@ -21,15 +20,13 @@ pub struct User {
 }
 
 impl User {
-    // slots = 2^min(a,8) + b + c
+    // slots = 511q + 2^(r+1) + b + c - 1, where a = 9q + r (0 <= r < 9)
     pub fn slots(&self) -> Uint128 {
-        let mut slots = 2u128.pow(min(self.referral_a, 8));
-        if self.referral_b {
-            slots += 1;
-        }
-        if self.referral_c {
-            slots += 1;
-        }
+        let q = (self.referral_a / 9) as u128;
+        let r = self.referral_a % 9;
+        let b = u128::from(self.referral_b);
+        let c = u128::from(self.referral_c);
+        let slots = 511 * q + 2_u128.pow(r + 1) + b + c - 1;
         Uint128::new(slots)
     }
 }
