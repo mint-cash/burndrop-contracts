@@ -79,6 +79,17 @@ fn success_during_period() {
     assert_eq!(query_res.burnable, Uint128::new(900));
     assert_eq!(query_res.swapped_out.oppamint, Uint128::new(96)); // 100 - virtual_slippage (4)
     assert_eq!(query_res.swapped_out.ancs, Uint128::new(96)); // 100 - virtual_slippage (4)
+
+    // balance of burn address terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu
+    let balance = app
+        .wrap()
+        .query_balance(
+            Addr::unchecked("terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu"),
+            "uusd",
+        )
+        .unwrap();
+    assert_eq!(balance.denom, "uusd");
+    assert_eq!(balance.amount, Uint128::new(95)); // 5% deducted tax
 }
 
 #[test]
