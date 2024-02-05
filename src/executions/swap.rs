@@ -73,10 +73,7 @@ pub fn swap(
 
     let deposit_result = SwapResult {
         swapped_in: half_swapped_in * Uint128::new(2),
-        swapped_out: OutputTokenMap {
-            oppamint: swapped_out.oppamint,
-            ancs: swapped_out.ancs,
-        },
+        swapped_out: user.swapped_out.clone(),
     };
     Ok(deposit_result)
 }
