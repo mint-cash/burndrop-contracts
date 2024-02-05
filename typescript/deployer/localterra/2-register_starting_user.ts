@@ -8,7 +8,8 @@ import tx_4 from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { config } from '../utils/config';
 
 const BURNDROP_CONTRACT_ADDRESS =
-  'terra13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qgeyjkp';
+  process.env.BURNDROP_CONTRACT_ADDRESS ||
+  'terra1657pee2jhf4jk8pq6yq64e758ngvum45gl866knmjkd83w6jgn3syqe77g';
 
 async function main() {
   const signer = await config.getSigner();
@@ -26,7 +27,8 @@ async function main() {
 
   const msg: ExecuteMsg = {
     register_starting_user: {
-      user: 'terra17tv2hvwpg0ukqgd2y5ct2w54fyan7z0zxrm2f9',
+      // user: 'terra17tv2hvwpg0ukqgd2y5ct2w54fyan7z0zxrm2f9',
+      user: sender, // self
     },
   };
   const executeMsg = {

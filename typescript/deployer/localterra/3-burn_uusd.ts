@@ -9,7 +9,8 @@ import { config } from '../utils/config';
 import sdk from '@mint-cash/burndrop-sdk';
 
 const BURNDROP_CONTRACT_ADDRESS =
-  'terra13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qgeyjkp';
+  process.env.BURNDROP_CONTRACT_ADDRESS ||
+  'terra1657pee2jhf4jk8pq6yq64e758ngvum45gl866knmjkd83w6jgn3syqe77g';
 
 async function main() {
   const signer = await config.getSigner();
@@ -19,7 +20,7 @@ async function main() {
   const client = await SigningCosmWasmClient.connectWithSigner(
     config.args.endpoint,
     signer,
-    { gasPrice: GasPrice.fromString('0.02uluna') },
+    { gasPrice: GasPrice.fromString('0.15uluna') },
   );
 
   const block = await client.getBlock();
@@ -39,8 +40,8 @@ async function main() {
 
   const msg: ExecuteMsg = {
     burn_uusd: {
-      amount: (600 * 10 ** 6).toString(), // 600 USTC
-      referrer: undefined,
+      amount: (1 * 10 ** 6).toString(), // 600 USTC
+      referrer: userInfo.burned === '0' ? sender : undefined, // self-ref if script 2 is run
     },
   };
   const executeMsg = {

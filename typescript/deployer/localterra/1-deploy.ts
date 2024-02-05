@@ -48,12 +48,12 @@ async function main() {
         start_time: Math.floor(Date.now() / 1000),
         end_time: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
         oppamint_liquidity: {
-          x: '100000000',
-          y: '50000000',
+          x: '50000000',
+          y: '100000000',
         },
         ancs_liquidity: {
-          x: '3000000000',
-          y: '200000000',
+          x: '200000000',
+          y: '3000000000',
         },
       },
     ],
