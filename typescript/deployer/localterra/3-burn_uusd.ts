@@ -6,6 +6,7 @@ import amino from '@cosmjs/amino';
 import encoding from '@cosmjs/encoding';
 import tx_4 from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { config } from '../utils/config';
+import sdk from '@mint-cash/burndrop-sdk';
 
 const BURNDROP_CONTRACT_ADDRESS =
   'terra13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qgeyjkp';
@@ -24,9 +25,22 @@ async function main() {
   const block = await client.getBlock();
   console.log(block.header.height, block.header.chainId);
 
+  const burndropQueryClient = new sdk.contracts.Burndrop.BurndropQueryClient(
+    client,
+    BURNDROP_CONTRACT_ADDRESS,
+  );
+  const userInfo = await burndropQueryClient.userInfo({ address: sender });
+  console.log(userInfo);
+
+  const {
+    rounds: [round],
+  } = await burndropQueryClient.rounds();
+  console.log(round);
+
   const msg: ExecuteMsg = {
-    register_starting_user: {
-      user: 'terra17tv2hvwpg0ukqgd2y5ct2w54fyan7z0zxrm2f9',
+    burn_uusd: {
+      amount: (600 * 10 ** 6).toString(), // 600 USTC
+      referrer: undefined,
     },
   };
   const executeMsg = {
@@ -35,7 +49,7 @@ async function main() {
       sender,
       contract: BURNDROP_CONTRACT_ADDRESS,
       msg: encoding.toUtf8(JSON.stringify(msg)),
-      funds: [],
+      funds: [{ denom: 'uusd', amount: msg.burn_uusd.amount }],
     }),
   };
 
