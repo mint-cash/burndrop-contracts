@@ -29,6 +29,7 @@ fn success_first_referral() {
     let (mut app, burn_contract) = instantiate::default_with_users(users.clone());
 
     // (user1, user2, user3, ..., user8) -> referrer1(REFERRER)
+    let mut slots = 1;
     for i in 1..=8 {
         let user = &users[i - 1];
         let msg = ExecuteMsg::RegisterStartingUser {
@@ -47,12 +48,9 @@ fn success_first_referral() {
         );
         assert!(execute_res.is_ok());
 
-        assert_slots(
-            &mut app,
-            &burn_contract,
-            REFERRER,
-            Uint128::new(2u128.pow(i as u32)),
-        );
+        slots += 2u128.pow(i as u32);
+
+        assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(slots));
     }
 
     let msg = ExecuteMsg::RegisterStartingUser {
@@ -71,12 +69,7 @@ fn success_first_referral() {
     );
     assert!(execute_res.is_ok());
 
-    assert_slots(
-        &mut app,
-        &burn_contract,
-        REFERRER,
-        Uint128::new(2u128.pow(8)),
-    );
+    assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(512));
 }
 
 #[test]
@@ -92,6 +85,7 @@ fn success_first_and_second_referral() {
     // user4 => referrer1(REFERRER)
     // -> : first , => : second
 
+    let mut slots = 1;
     for i in 1..=3 {
         let user = &users[i - 1];
         let msg = ExecuteMsg::RegisterStartingUser {
@@ -110,12 +104,9 @@ fn success_first_and_second_referral() {
         );
         assert!(execute_res.is_ok());
 
-        assert_slots(
-            &mut app,
-            &burn_contract,
-            REFERRER,
-            Uint128::new(2u128.pow(i as u32)),
-        ); // 2 ^ i
+        slots += 2u128.pow(i as u32);
+
+        assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(slots)); // 2 ^ i
     }
 
     let msg = ExecuteMsg::RegisterStartingUser {
@@ -145,7 +136,7 @@ fn success_first_and_second_referral() {
     );
     assert!(second_referral_res.is_ok());
 
-    assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(9)); // 2 ^ 3 + 1
+    assert_slots(&mut app, &burn_contract, REFERRER, Uint128::new(16)); // (1 + 2 + 4 + 8) + 1 = 16
 }
 
 #[test]
@@ -215,8 +206,7 @@ fn fail_second_referral_with_no_first() {
     let msg = ExecuteMsg::RegisterStartingUser {
         user: "user2".to_string(),
     };
-    app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
-        .unwrap();
+    let execute_res = app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[]);
 
     assert!(execute_res.is_ok());
 
@@ -230,6 +220,5 @@ fn fail_second_referral_with_no_first() {
         &second_referral_msg,
         &[],
     );
-    println!("{:#?}", second_referral_res);
     assert!(second_referral_res.is_err());
 }
