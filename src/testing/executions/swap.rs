@@ -29,6 +29,7 @@ pub fn execute_swap(
     let msg = ExecuteMsg::BurnUusd {
         amount,
         referrer: Some(referrer.to_string()),
+        min_amount_out: None,
     };
     if let Some(time) = time {
         app.update_block(|block| {

@@ -104,6 +104,7 @@ pub fn burn_uusd(
     info: MessageInfo,
     amount: Uint128,
     referrer: Option<String>,
+    min_amount_out: Option<OutputTokenMap<Uint128>>,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
     process_first_referral(deps.branch(), &info.sender, &referrer)?;
@@ -133,16 +134,21 @@ pub fn burn_uusd(
         amount: vec![coin(amount_with_deducted_tax.u128(), "uusd")],
     };
 
-    let res = swap(deps, env, info);
+    let res = swap(deps, env, info)?;
 
-    match res {
-        Ok(res) => Ok(Response::new().add_message(burn_msg).add_attributes(vec![
-            attr("action", "burn_uusd"),
-            attr("amount", amount.to_string()),
-            attr("swapped_in", res.swapped_in.to_string()),
-            attr("swapped_out_oppamint", res.swapped_out.oppamint.to_string()),
-            attr("swapped_out_ancs", res.swapped_out.ancs.to_string()),
-        ])),
-        Err(e) => Err(e),
+    if let Some(min_amount_out) = min_amount_out {
+        if res.swapped_out.oppamint < min_amount_out.oppamint
+            || res.swapped_out.ancs < min_amount_out.ancs
+        {
+            return Err(ContractError::UnderMinAmountOut {});
+        }
     }
+
+    Ok(Response::new().add_message(burn_msg).add_attributes(vec![
+        attr("action", "burn_uusd"),
+        attr("amount", amount.to_string()),
+        attr("swapped_in", res.swapped_in.to_string()),
+        attr("swapped_out_oppamint", res.swapped_out.oppamint.to_string()),
+        attr("swapped_out_ancs", res.swapped_out.ancs.to_string()),
+    ]))
 }

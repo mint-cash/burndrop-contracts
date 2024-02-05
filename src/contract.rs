@@ -101,7 +101,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::BurnUusd { amount, referrer } => burn_uusd(deps, env, info, amount, referrer),
+        ExecuteMsg::BurnUusd { amount, referrer, min_amount_out } => burn_uusd(deps, env, info, amount, referrer, min_amount_out),
         ExecuteMsg::RegisterStartingUser { user } => register_starting_user(deps, info, user),
         ExecuteMsg::Register2ndReferrer { referrer } => register_2nd_referrer(deps, info, referrer),
 
