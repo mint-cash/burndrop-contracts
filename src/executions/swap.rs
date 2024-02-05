@@ -58,7 +58,7 @@ pub fn swap(
     let (swapped_out, virtual_slippage) = calculate_round_swap_result(half_swapped_in, round)?;
 
     user.burned_uusd += half_swapped_in * Uint128::new(2);
-    user.swapped_out += swapped_out.clone().checked_sub(virtual_slippage)?;
+    user.swapped_out += swapped_out.clone().checked_sub(virtual_slippage.clone())?;
 
     state.total_swapped += swapped_out.clone();
 
@@ -73,7 +73,7 @@ pub fn swap(
 
     let deposit_result = SwapResult {
         swapped_in: half_swapped_in * Uint128::new(2),
-        swapped_out: user.swapped_out.clone(),
+        swapped_out: swapped_out.clone().checked_sub(virtual_slippage)?,
     };
     Ok(deposit_result)
 }
