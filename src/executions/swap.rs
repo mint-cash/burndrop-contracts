@@ -1,4 +1,6 @@
-use cosmwasm_std::{attr, coin, BankMsg, Decimal, DepsMut, Env, Fraction, MessageInfo, Uint128};
+use cosmwasm_std::{
+    attr, coin, BankMsg, Decimal, Deps, DepsMut, Env, Fraction, MessageInfo, Uint128,
+};
 
 use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_first_referral};
@@ -85,7 +87,7 @@ pub fn reverse_decimal(decimal: Decimal) -> Decimal {
     decimal.inv().unwrap_or_default()
 }
 
-pub fn deduct_tax(deps: &DepsMut<TerraQuery>, amount: Uint128) -> Result<Uint128, ContractError> {
+pub fn deduct_tax(deps: &Deps<TerraQuery>, amount: Uint128) -> Result<Uint128, ContractError> {
     let terra_querier = TerraQuerier::new(&deps.querier);
     let tax_rate = (terra_querier.query_tax_rate()?).rate;
     let tax_cap = (terra_querier.query_tax_cap("uusd")?).cap;
@@ -123,7 +125,7 @@ pub fn burn_uusd(
         }
     }
 
-    let amount_with_deducted_tax = match deduct_tax(&deps, amount) {
+    let amount_with_deducted_tax = match deduct_tax(&deps.as_ref(), amount) {
         Ok(v) => v,
         Err(e) => return Err(e),
     };
