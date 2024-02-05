@@ -7,6 +7,7 @@ use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
 use crate::testing::terra_bindings::TerraApp;
 use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
+use crate::types::output_token::OutputTokenMap;
 
 pub fn execute_swap(
     app: &mut TerraApp,
@@ -15,6 +16,7 @@ pub fn execute_swap(
     amount: Uint128,
     referrer: &str,
     time: Option<u64>,
+    min_amount_out: Option<OutputTokenMap<Uint128>>,
 ) -> anyhow::Result<AppResponse> {
     // Try to burn some tokens for a user with a referrer.
     let sender_info = mock_info(
@@ -29,7 +31,7 @@ pub fn execute_swap(
     let msg = ExecuteMsg::BurnUusd {
         amount,
         referrer: Some(referrer.to_string()),
-        min_amount_out: None,
+        min_amount_out,
     };
     if let Some(time) = time {
         app.update_block(|block| {
@@ -57,6 +59,7 @@ fn success_during_period() {
         burn_amount,
         REFERRER,
         Some(1706001506),
+        None,
     );
     assert!(execute_res.is_ok());
 
@@ -95,6 +98,7 @@ fn success_odd_amount() {
         burn_amount,
         REFERRER,
         Some(1706001506),
+        None,
     );
     assert!(execute_res.is_ok());
 
@@ -134,6 +138,7 @@ fn fail_not_period() {
         burn_amount,
         REFERRER,
         Some(1706001653),
+        None,
     );
     assert!(execute_res.is_err());
 }
@@ -170,6 +175,7 @@ fn fail_not_modified_period() {
         burn_amount,
         REFERRER,
         Some(1706001506),
+        None,
     );
 
     assert!(burn_res.is_err());
@@ -207,6 +213,7 @@ fn success_during_modified_period() {
         burn_amount,
         REFERRER,
         Some(1706001506),
+        None,
     );
     assert!(burn_res.is_ok());
 
@@ -230,4 +237,67 @@ fn success_during_modified_period() {
     assert_eq!(query_res.burnable, Uint128::new(900));
     assert_eq!(query_res.swapped_out.oppamint, Uint128::new(96)); // 100 - virtual_slippage (4)
     assert_eq!(query_res.swapped_out.ancs, Uint128::new(96)); // 100 - virtual_slippage (4)
+}
+
+#[test]
+pub fn success_over_min_amount_out() {
+    let (mut app, burn_contract) = instantiate::default();
+    // Try to burn some tokens for a user with a referrer.
+    let burn_amount = Uint128::new(100);
+
+    let execute_res = execute_swap(
+        &mut app,
+        &burn_contract,
+        USER,
+        burn_amount,
+        REFERRER,
+        Some(1706001506),
+        Some(OutputTokenMap {
+            oppamint: Uint128::new(95),
+            ancs: Uint128::new(95),
+        }),
+    );
+    assert!(execute_res.is_ok());
+
+    // Query the burn info after burning tokens for the user.
+    let query_res: UserInfoResponse = app
+        .wrap()
+        .query_wasm_smart(
+            burn_contract.addr(),
+            &QueryMsg::UserInfo {
+                address: USER.to_string(),
+            },
+        )
+        .unwrap();
+
+    // Perform assertions based on the expected state after burning tokens.
+    assert_eq!(query_res.slot_size, Uint128::new(1000));
+    assert_eq!(query_res.slots, Uint128::new(1));
+    assert_eq!(query_res.cap, Uint128::new(1000));
+
+    assert_eq!(query_res.burned, Uint128::new(100));
+    assert_eq!(query_res.burnable, Uint128::new(900));
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(96)); // 100 - virtual_slippage (4)
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(96)); // 100 - virtual_slippage (4)
+}
+
+#[test]
+pub fn fail_under_min_amount_out() {
+    let (mut app, burn_contract) = instantiate::default();
+    // Try to burn some tokens for a user with a referrer.
+    let burn_amount = Uint128::new(100);
+
+    let execute_res = execute_swap(
+        &mut app,
+        &burn_contract,
+        USER,
+        burn_amount,
+        REFERRER,
+        Some(1706001506),
+        Some(OutputTokenMap {
+            oppamint: Uint128::new(97),
+            ancs: Uint128::new(97),
+        }),
+    );
+    assert!(execute_res.is_err());
 }
