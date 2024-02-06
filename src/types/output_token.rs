@@ -19,7 +19,7 @@ pub struct OutputTokenMap<T> {
 }
 
 impl OutputTokenMap<Uint128> {
-    pub fn checked_sub(&mut self, rhs: Self) -> Result<Self, ContractError> {
+    pub fn checked_sub(&self, rhs: Self) -> Result<Self, ContractError> {
         let oppamint = self.oppamint.checked_sub(rhs.oppamint)?;
         let ancs = self.ancs.checked_sub(rhs.ancs)?;
         Ok(OutputTokenMap { oppamint, ancs })

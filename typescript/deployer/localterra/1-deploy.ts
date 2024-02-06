@@ -1,4 +1,3 @@
-import { OfflineSigner } from '@cosmjs/proto-signing';
 import { InstantiateMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice, calculateFee } from '@cosmjs/stargate';
@@ -7,55 +6,9 @@ import fs from 'fs';
 import amino from '@cosmjs/amino';
 import findWorkspaceRoot from 'find-yarn-workspace-root';
 import path from 'path';
-import { Secp256k1HdWallet, Secp256k1Wallet } from '@cosmjs/amino';
-import { stringToPath } from '@cosmjs/crypto';
 import encoding from '@cosmjs/encoding';
 import tx_4 from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-
-const chainId = 'localterra' as const;
-type ConfigArgs = {
-  mnemonic?: string;
-  privateKey?: string;
-  endpoint: string;
-};
-
-class Config {
-  prefix = 'terra';
-
-  constructor(public args: ConfigArgs) {}
-
-  async getSigner(): Promise<OfflineSigner> {
-    let signer: Secp256k1HdWallet | Secp256k1Wallet | undefined = undefined;
-
-    if (this.args.mnemonic) {
-      signer = await Secp256k1HdWallet.fromMnemonic(this.args.mnemonic, {
-        prefix: this.prefix,
-        hdPaths: [stringToPath("m/44'/330'/0'/0/0")],
-      });
-    } else if (this.args.privateKey) {
-      signer = await Secp256k1Wallet.fromKey(
-        Buffer.from(this.args.privateKey, 'hex'),
-        this.prefix,
-      );
-    }
-
-    if (!signer) {
-      throw Error('no mnemonic or privkey');
-    }
-
-    return signer;
-  }
-
-  get command(): string {
-    return `terrad --node ${this.args.endpoint} --chain-id ${chainId}`;
-  }
-}
-
-const config = new Config({
-  endpoint: process.env.ENDPOINT || 'http://localhost:26657',
-  mnemonic: process.env.MNEMONIC,
-  privateKey: process.env.PRIVATE_KEY,
-});
+import { config } from '../utils/config';
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
 
@@ -74,13 +27,6 @@ if (!fs.existsSync(WASM_PATH)) {
 }
 
 async function main() {
-  if (!config.args.mnemonic && !config.args.privateKey) {
-    console.error(
-      'Error: Either mnemonic or privateKey must be provided via process.env',
-    );
-    return;
-  }
-
   const signer = await config.getSigner();
   const [{ address: sender }] = await signer.getAccounts();
 
@@ -102,12 +48,12 @@ async function main() {
         start_time: Math.floor(Date.now() / 1000),
         end_time: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
         oppamint_liquidity: {
-          x: '100000000',
-          y: '50000000',
+          x: '50000000',
+          y: '100000000',
         },
         ancs_liquidity: {
-          x: '3000000000',
-          y: '200000000',
+          x: '200000000',
+          y: '3000000000',
         },
       },
     ],
@@ -148,9 +94,9 @@ async function main() {
   const gasEstimation = math.Uint53.fromString(
     gasInfo?.gasUsed.toString() || '0',
   ).toNumber();
-  const multiplier = 2.3;
+  const gasAdjustment = 1.4;
   const usedFee = calculateFee(
-    Math.round(gasEstimation * multiplier),
+    Math.round(gasEstimation * gasAdjustment),
     GasPrice.fromString('0.02uluna'),
   );
 
