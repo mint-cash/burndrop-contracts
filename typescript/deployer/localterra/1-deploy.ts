@@ -94,9 +94,9 @@ async function main() {
   const gasEstimation = math.Uint53.fromString(
     gasInfo?.gasUsed.toString() || '0',
   ).toNumber();
-  const multiplier = 2.3;
+  const gasAdjustment = 1.4;
   const usedFee = calculateFee(
-    Math.round(gasEstimation * multiplier),
+    Math.round(gasEstimation * gasAdjustment),
     GasPrice.fromString('0.02uluna'),
   );
 
