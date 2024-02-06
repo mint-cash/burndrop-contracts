@@ -5,8 +5,52 @@ on: push
 name: Basic
 
 jobs:
-  check:
-    name: Check
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.65.0
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Run unit tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: unit-test
+          args: --locked
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: Compile WASM contract
+        uses: actions-rs/cargo@v1
+        with:
+          command: wasm
+          args: --locked
+        env:
+          RUSTFLAGS: '-C link-arg=-s'
+
+  lints:
+    name: Lints
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -34,26 +78,16 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Run cargo fmt
-        run: cargo fmt --all -- --check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
 
       - name: Run cargo clippy
-        run: cargo clippy -- -D warnings
-
-      - name: Run unit tests
         uses: actions-rs/cargo@v1
         with:
-          command: unit-test
-          args: --locked
-        env:
-          RUST_BACKTRACE: 1
-
-      - name: Compile WASM contract
-        uses: actions-rs/cargo@v1
-        with:
-          command: wasm
-          args: --locked
-        env:
-          RUSTFLAGS: '-C link-arg=-s'
+          command: clippy
+          args: -- -D warnings
 
       - name: Generate Schema
         uses: actions-rs/cargo@v1
