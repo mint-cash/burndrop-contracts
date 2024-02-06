@@ -5,12 +5,13 @@
  */
 import { Coin } from '@cosmjs/amino';
 import { MsgExecuteContractEncodeObject } from '@cosmjs/cosmwasm-stargate';
-import { Uint128, SwapRound, UpdateRoundParams } from './Burndrop.types';
+import { Uint128, SwapRound, OutputTokenMapForUint128, UpdateRoundParams } from './Burndrop.types';
 export interface BurndropMsg {
     contractAddress: string;
     sender: string;
-    burnUusd: ({ amount, referrer, }: {
+    burnUusd: ({ amount, minAmountOut, referrer, }: {
         amount: Uint128;
+        minAmountOut?: OutputTokenMapForUint128;
         referrer?: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     registerStartingUser: ({ user, }: {
@@ -36,8 +37,9 @@ export declare class BurndropMsgComposer implements BurndropMsg {
     sender: string;
     contractAddress: string;
     constructor(sender: string, contractAddress: string);
-    burnUusd: ({ amount, referrer, }: {
+    burnUusd: ({ amount, minAmountOut, referrer, }: {
         amount: Uint128;
+        minAmountOut?: OutputTokenMapForUint128 | undefined;
         referrer?: string | undefined;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     registerStartingUser: ({ user, }: {

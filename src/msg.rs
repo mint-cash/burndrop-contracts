@@ -25,6 +25,7 @@ pub enum ExecuteMsg {
     BurnUusd {
         amount: Uint128,
         referrer: Option<String>,
+        min_amount_out: Option<OutputTokenMap<Uint128>>,
     },
     RegisterStartingUser {
         user: String,

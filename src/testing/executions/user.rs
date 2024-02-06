@@ -45,6 +45,7 @@ fn success_first_referral() {
             Uint128::new(100),
             REFERRER,
             Some(1706001506),
+            None,
         );
         assert!(execute_res.is_ok());
 
@@ -66,6 +67,7 @@ fn success_first_referral() {
         Uint128::new(100),
         REFERRER,
         Some(1706001506),
+        None,
     );
     assert!(execute_res.is_ok());
 
@@ -101,6 +103,7 @@ fn success_first_and_second_referral() {
             Uint128::new(100),
             REFERRER,
             Some(1706001506),
+            None,
         );
         assert!(execute_res.is_ok());
 
@@ -122,6 +125,7 @@ fn success_first_and_second_referral() {
         Uint128::new(100),
         "user2",
         Some(1706001506),
+        None,
     );
     assert!(execute_res.is_ok());
 
@@ -160,6 +164,7 @@ fn fail_when_first_referral_equals_second() {
         Uint128::new(100),
         REFERRER,
         Some(1706001506),
+        None,
     );
 
     assert!(execute_res.is_ok());
@@ -199,6 +204,7 @@ fn fail_second_referral_with_no_first() {
         Uint128::new(100),
         REFERRER,
         Some(1706001506),
+        None,
     );
 
     assert!(execute_res.is_ok());

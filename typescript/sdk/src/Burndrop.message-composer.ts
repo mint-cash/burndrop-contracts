@@ -14,6 +14,7 @@ import {
   SwapRound,
   LiquidityPair,
   ExecuteMsg,
+  OutputTokenMapForUint128,
   UpdateRoundParams,
   QueryMsg,
   OrderBy,
@@ -25,7 +26,6 @@ import {
   OutputTokenMapForDecimal,
   RoundsResponse,
   SimulateBurnResponse,
-  OutputTokenMapForUint128,
   UserInfoResponse,
   UsersInfoResponse,
 } from './Burndrop.types';
@@ -35,9 +35,11 @@ export interface BurndropMsg {
   burnUusd: (
     {
       amount,
+      minAmountOut,
       referrer,
     }: {
       amount: Uint128;
+      minAmountOut?: OutputTokenMapForUint128;
       referrer?: string;
     },
     _funds?: Coin[],
@@ -110,9 +112,11 @@ export class BurndropMsgComposer implements BurndropMsg {
   burnUusd = (
     {
       amount,
+      minAmountOut,
       referrer,
     }: {
       amount: Uint128;
+      minAmountOut?: OutputTokenMapForUint128;
       referrer?: string;
     },
     _funds?: Coin[],
@@ -126,6 +130,7 @@ export class BurndropMsgComposer implements BurndropMsg {
           JSON.stringify({
             burn_uusd: {
               amount,
+              min_amount_out: minAmountOut,
               referrer,
             },
           }),
