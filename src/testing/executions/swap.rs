@@ -264,8 +264,8 @@ pub fn success_over_min_amount_out() {
         REFERRER,
         Some(1706001506),
         Some(OutputTokenMap {
-            oppamint: Uint128::new(95),
-            ancs: Uint128::new(95),
+            oppamint: Uint128::new(98),
+            ancs: Uint128::new(98),
         }),
     );
     assert!(execute_res.is_ok());
@@ -288,8 +288,8 @@ pub fn success_over_min_amount_out() {
 
     assert_eq!(query_res.burned, Uint128::new(100));
     assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(96)); // 100 - virtual_slippage (4)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(96)); // 100 - virtual_slippage (4)
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(99)); // 100 - virtual_slippage (1)
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(99)); // 100 - virtual_slippage (1)
 }
 
 #[test]
@@ -306,8 +306,8 @@ pub fn fail_under_min_amount_out() {
         REFERRER,
         Some(1706001506),
         Some(OutputTokenMap {
-            oppamint: Uint128::new(97),
-            ancs: Uint128::new(97),
+            oppamint: Uint128::new(100),
+            ancs: Uint128::new(100),
         }),
     );
     assert!(execute_res.is_err());
