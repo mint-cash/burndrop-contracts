@@ -1,8 +1,8 @@
 import { ExecuteMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { GasPrice, calculateFee } from '@cosmjs/stargate';
-import math from '@cosmjs/math';
-import amino from '@cosmjs/amino';
+import { GasPrice } from '@cosmjs/stargate';
+import { Uint53 } from '@cosmjs/math';
+import amino, { coin } from '@cosmjs/amino';
 import encoding from '@cosmjs/encoding';
 import tx_4 from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { config } from '../utils/config';
@@ -72,19 +72,29 @@ async function main() {
   );
   console.log(gasInfo);
 
-  const gasEstimation = math.Uint53.fromString(
+  const gasUsed = Uint53.fromString(
     gasInfo?.gasUsed.toString() || '0',
   ).toNumber();
   const gasAdjustment = 1.4;
-  const usedFee = calculateFee(
-    Math.round(gasEstimation * gasAdjustment),
-    GasPrice.fromString('0.02uluna'),
-  );
+  const gasLimit = Math.round(gasUsed * gasAdjustment);
+
+  // 0.01133uluna,0.15uusd
+  const gasPrices = [
+    GasPrice.fromString('0.01133uluna'),
+    GasPrice.fromString('0.15uusd'),
+  ];
+  const calculatedFee = {
+    amount: gasPrices.map(({ amount, denom }) => {
+      const fee = amount.multiply(new Uint53(gasLimit)).ceil().toString();
+      return coin(fee, denom);
+    }),
+    gas: gasLimit.toString(),
+  };
 
   const executeResult = await client.signAndBroadcast(
     sender,
     [executeMsg],
-    usedFee,
+    calculatedFee,
   );
   console.log(executeResult);
   console.log(executeResult.gasUsed, executeResult.gasWanted);
