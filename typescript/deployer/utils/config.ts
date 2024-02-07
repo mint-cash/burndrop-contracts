@@ -8,10 +8,12 @@ type ConfigArgs = {
   mnemonic?: string;
   privateKey?: string;
   endpoint: string;
+  contractAddress: string;
 };
 
 class Config {
   prefix = 'terra';
+  contractAddress: string = '';
 
   constructor(public args: ConfigArgs) {
     if (!args.mnemonic && !args.privateKey) {
@@ -20,6 +22,7 @@ class Config {
       );
       return;
     }
+    this.contractAddress = args.contractAddress;
   }
 
   async getSigner(): Promise<OfflineSigner> {
@@ -53,4 +56,7 @@ export const config = new Config({
   endpoint: process.env.ENDPOINT || 'http://localhost:26657',
   mnemonic: process.env.MNEMONIC,
   privateKey: process.env.PRIVATE_KEY,
+  contractAddress:
+    process.env.BURNDROP_CONTRACT_ADDRESS ||
+    'terra1657pee2jhf4jk8pq6yq64e758ngvum45gl866knmjkd83w6jgn3syqe77g',
 });

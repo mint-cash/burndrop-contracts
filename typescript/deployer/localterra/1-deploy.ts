@@ -1,14 +1,15 @@
 import { InstantiateMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { GasPrice, calculateFee } from '@cosmjs/stargate';
-import math from '@cosmjs/math';
+import { GasPrice } from '@cosmjs/stargate';
 import fs from 'fs';
-import amino from '@cosmjs/amino';
 import findWorkspaceRoot from 'find-yarn-workspace-root';
 import path from 'path';
-import encoding from '@cosmjs/encoding';
-import tx_4 from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { config } from '../utils/config';
+import {
+  calculateFee,
+  encodeInstantiateMsg,
+  trySimulateExecuteMsg,
+} from '../cosmos/tx';
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
 
@@ -61,55 +62,32 @@ async function main() {
     default_query_limit: 10,
   };
 
-  const instantiateContractMsg = {
-    typeUrl: '/cosmwasm.wasm.v1.MsgInstantiateContract',
-    value: tx_4.MsgInstantiateContract.fromPartial({
-      sender,
-      codeId: BigInt(new math.Uint53(uploadResult.codeId).toString()),
-      label: 'burndrop',
-      msg: encoding.toUtf8(JSON.stringify(instantiateMsg)),
-      funds: [],
-      admin: sender,
-    }),
-  };
-
-  const accountFromSigner = (await signer.getAccounts()).find(
-    (account) => account.address === sender,
-  )!;
-  const pubkey = amino.encodeSecp256k1Pubkey(accountFromSigner.pubkey);
-  const anyMsgs = [instantiateContractMsg].map((m) =>
-    client.registry.encodeAsAny(m),
-  );
-  const { sequence } = await client.getSequence(sender);
-  // @ts-ignore
-  const queryClient = client.forceGetQueryClient();
-  const { gasInfo } = await queryClient.tx.simulate(
-    anyMsgs,
-    '',
-    pubkey,
-    sequence,
-  );
+  const instantiateContractMsg = encodeInstantiateMsg({
+    sender,
+    msg: instantiateMsg,
+    label: 'burndrop',
+    codeId: uploadResult.codeId,
+  });
+  const gasInfo = await trySimulateExecuteMsg({
+    sender,
+    encodedMsg: instantiateContractMsg,
+    signingCosmwasmClient: client,
+  });
   console.log(gasInfo);
 
-  const gasEstimation = math.Uint53.fromString(
-    gasInfo?.gasUsed.toString() || '0',
-  ).toNumber();
-  const gasAdjustment = 1.4;
-  const usedFee = calculateFee(
-    Math.round(gasEstimation * gasAdjustment),
-    GasPrice.fromString('0.02uluna'),
-  );
-
-  const instantiateResult = await client.instantiate(
+  const calculatedFee = calculateFee(gasInfo?.gasUsed);
+  const instantiateResult = await client.signAndBroadcast(
     sender,
-    uploadResult.codeId,
-    instantiateMsg,
-    'burndrop',
-    usedFee,
-    { admin: sender },
+    [instantiateContractMsg],
+    calculatedFee,
   );
-  console.log(instantiateResult);
-  console.log(`Deployed at ${instantiateResult.contractAddress}`);
+  const instantiateEvent = instantiateResult.events.find(
+    (v) => v.type === 'instantiate',
+  );
+  const contractAddress = instantiateEvent?.attributes.find(
+    (attr) => attr.key === '_contract_address',
+  )?.value;
+  console.log(`Deployed at ${contractAddress}`);
 }
 
 main().catch(console.error);
