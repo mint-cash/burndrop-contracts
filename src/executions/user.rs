@@ -119,6 +119,7 @@ pub fn register_starting_user(
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_starting_user"),
+        attr("sender", info.sender),
         attr("referrer", user),
     ]))
 }
@@ -139,10 +140,11 @@ pub fn register_2nd_referrer(
     }
     sender.referral_c = true;
 
-    USER.save(deps.storage, info.sender, &sender)?;
+    USER.save(deps.storage, info.sender.clone(), &sender)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "register_2nd_referrer"),
+        attr("sender", info.sender),
         attr("referrer", referrer),
         attr("new_slot", "1"),
     ]))

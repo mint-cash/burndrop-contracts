@@ -21,7 +21,7 @@ pub struct SwapResult {
 pub fn swap(
     deps: DepsMut<TerraQuery>,
     env: Env,
-    info: MessageInfo,
+    info: &MessageInfo,
 ) -> Result<SwapResult, ContractError> {
     let mut state = STATE.load(deps.storage)?;
 
@@ -70,7 +70,7 @@ pub fn swap(
     round.ancs_liquidity.x += half_swapped_in;
     round.ancs_liquidity.y -= swapped_out.ancs;
 
-    USER.save(deps.storage, info.sender, &user)?;
+    USER.save(deps.storage, info.sender.clone(), &user)?;
     STATE.save(deps.storage, &state)?;
 
     let deposit_result = SwapResult {
@@ -133,7 +133,7 @@ pub fn burn_uusd(
         amount: vec![coin(amount_with_deducted_tax.u128(), "uusd")],
     };
 
-    let res = swap(deps, env, info)?;
+    let res = swap(deps, env, &info)?;
 
     if let Some(min_amount_out) = min_amount_out {
         if res.swapped_out.oppamint < min_amount_out.oppamint
@@ -145,6 +145,7 @@ pub fn burn_uusd(
 
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
+        attr("sender", info.sender),
         attr("amount", amount.to_string()),
         attr("swapped_in", res.swapped_in.to_string()),
         attr("swapped_out_oppamint", res.swapped_out.oppamint.to_string()),
