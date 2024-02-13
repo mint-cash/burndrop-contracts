@@ -4,7 +4,7 @@ use cosmwasm_std::{
 
 use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_first_referral};
-use crate::query::calculate_round_swap_result;
+use crate::query::{calculate_round_swap_result, split_swapped_in};
 use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::states::user::USER;
@@ -36,13 +36,13 @@ pub fn swap(
     let input_token_denom = "uusd";
 
     // burned_uusd
-    let swapped_in = info
+    let total_swapped_in = info
         .funds
         .iter()
         .find(|c| c.denom == input_token_denom)
         .map(|c| c.amount)
         .unwrap_or_else(Uint128::zero);
-    if swapped_in.is_zero() {
+    if total_swapped_in.is_zero() {
         return Err(ContractError::NotAllowZeroAmount {});
     }
     if info.funds.len() > 1 {
@@ -55,27 +55,26 @@ pub fn swap(
 
     // TODO: Add cap check
 
-    let half_swapped_in = swapped_in / Uint128::new(2);
+    let swapped_in = split_swapped_in(total_swapped_in, round.oppamint_weight, round.ancs_weight);
+    let swapped_out = calculate_round_swap_result(&swapped_in, round)?;
 
-    let (swapped_out, virtual_slippage) = calculate_round_swap_result(half_swapped_in, round)?;
-
-    user.burned_uusd += half_swapped_in * Uint128::new(2);
-    user.swapped_out += swapped_out.checked_sub(virtual_slippage.clone())?;
+    user.burned_uusd += swapped_in.oppamint + swapped_in.ancs;
+    user.swapped_out += swapped_out.clone();
 
     state.total_swapped += swapped_out.clone();
 
-    round.oppamint_liquidity.x += half_swapped_in;
+    round.oppamint_liquidity.x += swapped_in.oppamint;
     round.oppamint_liquidity.y -= swapped_out.oppamint;
 
-    round.ancs_liquidity.x += half_swapped_in;
+    round.ancs_liquidity.x += swapped_in.ancs;
     round.ancs_liquidity.y -= swapped_out.ancs;
 
     USER.save(deps.storage, info.sender.clone(), &user)?;
     STATE.save(deps.storage, &state)?;
 
     let deposit_result = SwapResult {
-        swapped_in: half_swapped_in * Uint128::new(2),
-        swapped_out: swapped_out.checked_sub(virtual_slippage)?,
+        swapped_in: swapped_in.oppamint + swapped_in.ancs,
+        swapped_out,
     };
     Ok(deposit_result)
 }

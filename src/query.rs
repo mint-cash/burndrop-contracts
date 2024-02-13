@@ -101,11 +101,7 @@ pub fn query_current_price(deps: Deps<TerraQuery>, env: Env) -> StdResult<PriceR
     })
 }
 
-pub fn calculate_swap_result(
-    amount: Uint128,
-    pair: &LiquidityPair,
-    price: Decimal,
-) -> StdResult<(Uint128, Uint128)> {
+pub fn calculate_swap_result(amount: Uint128, pair: &LiquidityPair) -> StdResult<Uint128> {
     let k = pair.x * pair.y;
 
     if pair.x + amount == Uint128::zero() {
@@ -113,39 +109,36 @@ pub fn calculate_swap_result(
     }
 
     let swapped_out = pair.y - (k / (pair.x + amount));
-    let virtual_slippage = (swapped_out * price) / amount;
 
-    Ok((swapped_out, virtual_slippage))
+    Ok(swapped_out)
 }
 
 pub fn calculate_round_swap_result(
-    half_amount: Uint128,
+    amount: &OutputTokenMap<Uint128>,
     round: &SwapRound,
-) -> StdResult<(OutputTokenMap<Uint128>, OutputTokenMap<Uint128>)> {
-    let price = calculate_round_price(round);
+) -> StdResult<OutputTokenMap<Uint128>> {
+    Ok(OutputTokenMap {
+        oppamint: calculate_swap_result(amount.oppamint, &round.oppamint_liquidity)?,
+        ancs: calculate_swap_result(amount.ancs, &round.ancs_liquidity)?,
+    })
+}
 
-    let (swapped_out_oppamint, virtual_slippage_oppamint) =
-        calculate_swap_result(half_amount, &round.oppamint_liquidity, price.oppamint)?;
-
-    let (swapped_out_ancs, virtual_slippage_ancs) =
-        calculate_swap_result(half_amount, &round.ancs_liquidity, price.ancs)?;
-
-    Ok((
-        OutputTokenMap {
-            oppamint: swapped_out_oppamint,
-            ancs: swapped_out_ancs,
-        },
-        OutputTokenMap {
-            oppamint: virtual_slippage_oppamint,
-            ancs: virtual_slippage_ancs,
-        },
-    ))
+pub fn split_swapped_in(
+    total: Uint128,
+    oppamint_weight: u32,
+    ancs_weight: u32,
+) -> OutputTokenMap<Uint128> {
+    let denominator = Uint128::new(oppamint_weight as u128 + ancs_weight as u128);
+    OutputTokenMap {
+        oppamint: total * Uint128::new(oppamint_weight as u128) / denominator,
+        ancs: total * Uint128::new(ancs_weight as u128) / denominator,
+    }
 }
 
 pub fn query_simulate_burn(
     deps: Deps<TerraQuery>,
     env: Env,
-    amount: Uint128,
+    total_amount: Uint128,
 ) -> StdResult<SimulateBurnResponse> {
     let state = STATE.load(deps.storage)?;
 
@@ -154,16 +147,13 @@ pub fn query_simulate_burn(
         .recent_active_round(now)
         .ok_or(ContractError::NoActiveSwapRound {})?;
 
-    let half_amount = amount / Uint128::new(2);
+    let amount = split_swapped_in(total_amount, round.oppamint_weight, round.ancs_weight);
 
-    let (swapped_out, virtual_slippage) = calculate_round_swap_result(half_amount, round)?;
+    let swapped_out = calculate_round_swap_result(&amount, round)?;
 
     Ok(SimulateBurnResponse {
         swapped_out,
-        virtual_slippage: virtual_slippage.clone(),
-        final_amount: (half_amount * Uint128::new(2))
-            - virtual_slippage.oppamint
-            - virtual_slippage.ancs,
+        final_amount: amount.oppamint + amount.ancs,
     })
 }
 
