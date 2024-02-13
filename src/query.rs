@@ -142,11 +142,11 @@ pub fn calculate_round_swap_result(
     ))
 }
 
-pub fn split_swapped_in(total: Uint128, oppamint_term: u32, ancs_term: u32) -> OutputTokenMap<Uint128> {
-    let denom = Uint128::new(oppamint_term as u128 + ancs_term as u128);
+pub fn split_swapped_in(total: Uint128, oppamint_weight: u32, ancs_weight: u32) -> OutputTokenMap<Uint128> {
+    let denom = Uint128::new(oppamint_weight as u128 + ancs_weight as u128);
     OutputTokenMap {
-        oppamint: total * Uint128::new(oppamint_term as u128) / denom,
-        ancs: total * Uint128::new(ancs_term as u128) / denom,
+        oppamint: total * Uint128::new(oppamint_weight as u128) / denom,
+        ancs: total * Uint128::new(ancs_weight as u128) / denom,
     }
 }
 
@@ -162,7 +162,7 @@ pub fn query_simulate_burn(
         .recent_active_round(now)
         .ok_or(ContractError::NoActiveSwapRound {})?;
 
-    let amount = split_swapped_in(total_amount, round.oppamint_term, round.ancs_term);
+    let amount = split_swapped_in(total_amount, round.oppamint_weight, round.ancs_weight);
 
     let (swapped_out, virtual_slippage) = calculate_round_swap_result(&amount, round)?;
 

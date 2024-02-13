@@ -55,7 +55,7 @@ pub fn swap(
 
     // TODO: Add cap check
 
-    let swapped_in = split_swapped_in(total_swapped_in, round.oppamint_term, round.ancs_term);
+    let swapped_in = split_swapped_in(total_swapped_in, round.oppamint_weight, round.ancs_weight);
     let (swapped_out, virtual_slippage) = calculate_round_swap_result(&swapped_in, round)?;
 
     user.burned_uusd += swapped_in.oppamint + swapped_in.ancs;

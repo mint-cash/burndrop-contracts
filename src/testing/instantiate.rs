@@ -79,8 +79,8 @@ pub fn default() -> (TerraApp, BurnContract) {
                 y: Uint128::new(750_000),
             },
 
-            oppamint_term: 3,
-            ancs_term: 2,
+            oppamint_weight: 3,
+            ancs_weight: 2,
         }],
 
         max_query_limit: 30,
@@ -139,8 +139,8 @@ pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
                 y: Uint128::new(750_000),
             },
 
-            oppamint_term: 3,
-            ancs_term: 2,
+            oppamint_weight: 3,
+            ancs_weight: 2,
         }],
 
         max_query_limit: 30,
