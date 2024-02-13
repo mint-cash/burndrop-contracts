@@ -167,7 +167,7 @@ pub fn query_simulate_burn(
     let (swapped_out, virtual_slippage) = calculate_round_swap_result(&amount, round)?;
 
     Ok(SimulateBurnResponse {
-        swapped_out,
+        swapped_out: swapped_out.checked_sub(virtual_slippage.clone())?,
         virtual_slippage: virtual_slippage.clone(),
         final_amount: amount.oppamint + amount.ancs
             - virtual_slippage.oppamint
