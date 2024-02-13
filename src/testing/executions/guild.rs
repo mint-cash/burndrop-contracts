@@ -9,7 +9,7 @@ use cw_multi_test::Executor;
 // 2. USER1 : `create_guild` then check guild index and `guild_contributed_uusd` of user
 // 3. USER1 : burn 200 uusd then check `guild_contributed_uusd` of USER1 and `burned_uusd` of guild
 #[test]
-fn create_guild() {
+fn success_create_guild() {
     let (mut app, burn_contract) = instantiate::default();
 
     // Burn 100 uusd for the user
@@ -125,7 +125,7 @@ fn create_guild() {
 // 5. USER2 : `migrate_guild` to guild_id=1 then check guild index and `guild_contributed_uusd`
 // 6. USER2 : burn 300 uusd then check `guild_contributed_uusd` of USER2 and `burned_uusd` of guild
 #[test]
-fn migrate_guild() {
+fn success_migrate_guild() {
     let (mut app, burn_contract) = instantiate::default();
 
     let msg = ExecuteMsg::RegisterStartingUser {
