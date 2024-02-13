@@ -15,7 +15,10 @@ use crate::executions::round::{
 use crate::executions::swap::burn_uusd;
 use crate::executions::user::register_starting_user;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::query::{query_config, query_current_price, query_guild, query_rounds, query_simulate_burn, query_user, query_users};
+use crate::query::{
+    query_config, query_current_price, query_guild, query_rounds, query_simulate_burn, query_user,
+    query_users,
+};
 use crate::states::guild::{Guild, GUILD};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
@@ -59,7 +62,7 @@ pub fn instantiate(
             ancs: Uint128::zero(),
         },
         rounds,
-        guild_count: 1,
+        guild_count: 0,
     };
     STATE.save(deps.storage, &state)?;
 
@@ -133,8 +136,14 @@ pub fn execute(
         ExecuteMsg::CreateRound { round } => create_round(deps, info, round),
         ExecuteMsg::UpdateRound { params } => update_round(deps, env, info, params),
         ExecuteMsg::DeleteRound { id } => delete_round(deps, env, info, id),
-        ExecuteMsg::CreateGuild { name, slug } => create_guild(deps, info, name, slug),
-        ExecuteMsg::MigrateGuild { guild_id } => migrate_guild(deps, info, guild_id),
+        ExecuteMsg::CreateGuild {
+            name,
+            slug,
+            referrer,
+        } => create_guild(deps, info, name, slug, referrer),
+        ExecuteMsg::MigrateGuild { guild_id, referrer } => {
+            migrate_guild(deps, info, guild_id, referrer)
+        }
     }
 }
 
@@ -153,6 +162,6 @@ pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binar
             to_json_binary(&query_simulate_burn(deps, env, amount)?)
         }
         QueryMsg::Rounds {} => to_json_binary(&query_rounds(deps)?),
-        QueryMsg::GuildInfo { guild_id} => to_json_binary(&query_guild(deps, guild_id)?),
+        QueryMsg::GuildInfo { guild_id } => to_json_binary(&query_guild(deps, guild_id)?),
     }
 }

@@ -1,6 +1,6 @@
 use crate::contract::Response;
 use crate::error::ContractError;
-use crate::executions::user::ensure_user_initialized;
+use crate::executions::user::{ensure_user_initialized, process_first_referral};
 use crate::states::guild::{Guild, GUILD};
 use crate::states::state::STATE;
 use crate::states::user::USER;
@@ -12,8 +12,10 @@ pub fn create_guild(
     info: MessageInfo,
     name: String,
     slug: String,
+    referrer: Option<String>,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
+    process_first_referral(deps.branch(), &info.sender, &referrer)?;
 
     let mut state = STATE.load(deps.storage)?;
     state.guild_count += 1;
@@ -30,6 +32,7 @@ pub fn create_guild(
 
     let mut user = USER.load(deps.storage, info.sender.clone())?;
     user.guild_id = state.guild_count;
+    user.guild_contributed_uusd = Uint128::zero();
     USER.save(deps.storage, info.sender, &user)?;
 
     Ok(Response::new().add_attributes(vec![
@@ -42,8 +45,10 @@ pub fn migrate_guild(
     mut deps: DepsMut<TerraQuery>,
     info: MessageInfo,
     guild_id: u64,
+    referrer: Option<String>,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
+    process_first_referral(deps.branch(), &info.sender, &referrer)?;
 
     let mut user = USER.load(deps.storage, info.sender.clone())?;
 

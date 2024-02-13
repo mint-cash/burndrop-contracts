@@ -81,6 +81,7 @@ pub fn swap(
 
     USER.save(deps.storage, info.sender.clone(), &user)?;
     STATE.save(deps.storage, &state)?;
+    GUILD.save(deps.storage, user.guild_id, &guild)?;
 
     let deposit_result = SwapResult {
         swapped_in: total_swapped_in,

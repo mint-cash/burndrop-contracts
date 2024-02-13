@@ -48,9 +48,11 @@ pub enum ExecuteMsg {
     CreateGuild {
         name: String,
         slug: String,
+        referrer: Option<String>,
     },
     MigrateGuild {
         guild_id: u64,
+        referrer: Option<String>,
     },
 }
 

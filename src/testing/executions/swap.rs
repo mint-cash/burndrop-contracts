@@ -14,7 +14,7 @@ pub fn execute_swap(
     burn_contract: &BurnContract,
     sender: &str,
     amount: Uint128,
-    referrer: &str,
+    referrer: Option<&str>,
     time: Option<u64>,
     min_amount_out: Option<OutputTokenMap<Uint128>>,
 ) -> anyhow::Result<AppResponse> {
@@ -30,7 +30,7 @@ pub fn execute_swap(
     // Create a burn tokens message
     let msg = ExecuteMsg::BurnUusd {
         amount,
-        referrer: Some(referrer.to_string()),
+        referrer: referrer.map(String::from),
         min_amount_out,
     };
     if let Some(time) = time {
@@ -57,7 +57,7 @@ fn success_during_period() {
         &burn_contract,
         USER,
         burn_amount,
-        REFERRER,
+        Some(REFERRER),
         Some(1706001506),
         None,
     );
@@ -107,7 +107,7 @@ fn success_odd_amount() {
         &burn_contract,
         USER,
         burn_amount,
-        REFERRER,
+        Some(REFERRER),
         Some(1706001506),
         None,
     );
@@ -147,7 +147,7 @@ fn fail_not_period() {
         &burn_contract,
         USER,
         burn_amount,
-        REFERRER,
+        Some(REFERRER),
         Some(1706001653),
         None,
     );
@@ -184,7 +184,7 @@ fn fail_not_modified_period() {
         &burn_contract,
         USER,
         burn_amount,
-        REFERRER,
+        Some(REFERRER),
         Some(1706001506),
         None,
     );
@@ -222,7 +222,7 @@ fn success_during_modified_period() {
         &burn_contract,
         USER,
         burn_amount,
-        REFERRER,
+        Some(REFERRER),
         Some(1706001506),
         None,
     );
@@ -261,7 +261,7 @@ pub fn success_over_min_amount_out() {
         &burn_contract,
         USER,
         burn_amount,
-        REFERRER,
+        Some(REFERRER),
         Some(1706001506),
         Some(OutputTokenMap {
             oppamint: Uint128::new(98),
@@ -303,7 +303,7 @@ pub fn fail_under_min_amount_out() {
         &burn_contract,
         USER,
         burn_amount,
-        REFERRER,
+        Some(REFERRER),
         Some(1706001506),
         Some(OutputTokenMap {
             oppamint: Uint128::new(120),

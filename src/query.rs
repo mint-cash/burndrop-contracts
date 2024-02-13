@@ -1,12 +1,15 @@
 use crate::error::ContractError;
-use crate::msg::{GuildInfoResponse, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse};
+use crate::msg::{
+    GuildInfoResponse, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse,
+    UsersInfoResponse,
+};
+use crate::states::guild::GUILD;
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::output_token::OutputTokenMap;
 use crate::types::swap_round::{LiquidityPair, SwapRound};
 use classic_bindings::TerraQuery;
 use cosmwasm_std::{Decimal, Deps, Env, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
-use crate::states::guild::GUILD;
 
 pub fn query_config(deps: Deps<TerraQuery>) -> StdResult<Config> {
     let config = CONFIG.load(deps.storage)?;

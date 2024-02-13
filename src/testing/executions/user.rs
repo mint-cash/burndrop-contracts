@@ -43,7 +43,7 @@ fn success_first_referral() {
             &burn_contract,
             &user,
             Uint128::new(100),
-            REFERRER,
+            Some(REFERRER),
             Some(1706001506),
             None,
         );
@@ -65,7 +65,7 @@ fn success_first_referral() {
         &burn_contract,
         "user9",
         Uint128::new(100),
-        REFERRER,
+        Some(REFERRER),
         Some(1706001506),
         None,
     );
