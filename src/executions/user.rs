@@ -20,6 +20,8 @@ pub fn ensure_user_initialized(
             },
             referral_a: 0,
             first_referrer: None,
+            guild_id: 0,    // genesis guild
+            guild_contributed_uusd: Uint128::zero(),
         };
         USER.save(deps.storage, user_address.clone(), &new_user)?;
     }

@@ -59,6 +59,7 @@ pub fn instantiate(
             ancs: Uint128::zero(),
         },
         rounds,
+        guild_count: 1,
     };
 
     STATE.save(deps.storage, &state)?;

@@ -12,6 +12,7 @@ pub struct State {
     pub total_claimed: OutputTokenMap<Uint128>,
 
     pub rounds: Vec<SwapRound>,
+    pub guild_count: u64,
 }
 
 impl State {
