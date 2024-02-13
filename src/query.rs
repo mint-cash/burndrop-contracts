@@ -128,10 +128,10 @@ pub fn split_swapped_in(
     oppamint_weight: u32,
     ancs_weight: u32,
 ) -> OutputTokenMap<Uint128> {
-    let denom = Uint128::new(oppamint_weight as u128 + ancs_weight as u128);
+    let denominator = Uint128::new(oppamint_weight as u128 + ancs_weight as u128);
     OutputTokenMap {
-        oppamint: total * Uint128::new(oppamint_weight as u128) / denom,
-        ancs: total * Uint128::new(ancs_weight as u128) / denom,
+        oppamint: total * Uint128::new(oppamint_weight as u128) / denominator,
+        ancs: total * Uint128::new(ancs_weight as u128) / denominator,
     }
 }
 
