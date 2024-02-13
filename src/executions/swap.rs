@@ -59,6 +59,7 @@ pub fn swap(
     let swapped_out = calculate_round_swap_result(&swapped_in, round)?;
 
     user.burned_uusd += swapped_in.oppamint + swapped_in.ancs;
+    user.guild_contributed_uusd += swapped_in.oppamint + swapped_in.ancs;
     user.swapped_out += swapped_out.clone();
 
     state.total_swapped += swapped_out.clone();

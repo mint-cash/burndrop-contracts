@@ -8,6 +8,7 @@ use cw2::{get_contract_version, set_contract_version};
 use semver::Version;
 
 use crate::error::ContractError;
+use crate::executions::guild::{create_guild, migrate_guild};
 use crate::executions::round::{
     create_round, delete_round, sort_and_validate_rounds, update_round,
 };
@@ -20,6 +21,7 @@ use crate::query::{
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
 use classic_bindings::{TerraMsg, TerraQuery};
+use crate::states::guild::{Guild, GUILD};
 
 pub type Response = cosmwasm_std::Response<TerraMsg>;
 
@@ -61,8 +63,15 @@ pub fn instantiate(
         rounds,
         guild_count: 1,
     };
-
     STATE.save(deps.storage, &state)?;
+
+    let genesis_guild = Guild {
+        slug: msg.genesis_guild_slug.clone(),
+        name: msg.genesis_guild_name.clone(),
+        users: vec![],
+        burned_uusd: Uint128::zero(),
+    };
+    GUILD.save(deps.storage, 0, &genesis_guild)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "instantiate"),
@@ -126,6 +135,8 @@ pub fn execute(
         ExecuteMsg::CreateRound { round } => create_round(deps, info, round),
         ExecuteMsg::UpdateRound { params } => update_round(deps, env, info, params),
         ExecuteMsg::DeleteRound { id } => delete_round(deps, env, info, id),
+        ExecuteMsg::CreateGuild { name, slug } => create_guild(deps, info, name, slug),
+        ExecuteMsg::MigrateGuild { guild_id } => migrate_guild(deps, info, guild_id),
     }
 }
 

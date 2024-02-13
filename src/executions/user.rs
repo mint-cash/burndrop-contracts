@@ -13,6 +13,7 @@ pub fn ensure_user_initialized(
     let user_exists = USER.may_load(deps.storage, user_address.clone())?.is_some();
     if !user_exists {
         let new_user = User {
+            address: user_address.clone(),
             burned_uusd: Uint128::zero(),
             swapped_out: OutputTokenMap {
                 oppamint: Uint128::zero(),
@@ -20,7 +21,7 @@ pub fn ensure_user_initialized(
             },
             referral_a: 0,
             first_referrer: None,
-            guild_id: 0,    // genesis guild
+            guild_id: 0, // genesis guild
             guild_contributed_uusd: Uint128::zero(),
         };
         USER.save(deps.storage, user_address.clone(), &new_user)?;

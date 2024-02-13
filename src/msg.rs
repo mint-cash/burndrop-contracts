@@ -15,6 +15,9 @@ pub struct InstantiateMsg {
 
     pub max_query_limit: u32,
     pub default_query_limit: u32,
+
+    pub genesis_guild_name: String,
+    pub genesis_guild_slug: String,
 }
 
 #[cw_serde]
@@ -41,6 +44,13 @@ pub enum ExecuteMsg {
     },
     DeleteRound {
         id: u64,
+    },
+    CreateGuild {
+        name: String,
+        slug: String,
+    },
+    MigrateGuild {
+        guild_id: u64,
     },
 }
 

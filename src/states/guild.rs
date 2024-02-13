@@ -1,8 +1,8 @@
+use crate::states::user::User;
 use cosmwasm_std::Uint128;
 use cw_storage_plus::Map;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::states::user::User;
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Guild {

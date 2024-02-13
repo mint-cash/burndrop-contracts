@@ -5,8 +5,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::output_token::OutputTokenMap;
 
-#[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct User {
+    pub address: Addr,
+
     // number of users who registered this user for the first referral code
     pub referral_a: u32,
 
