@@ -56,10 +56,10 @@ pub fn swap(
     // TODO: Add cap check
 
     let swapped_in = split_swapped_in(total_swapped_in, round.oppamint_weight, round.ancs_weight);
-    let (swapped_out, virtual_slippage) = calculate_round_swap_result(&swapped_in, round)?;
+    let swapped_out = calculate_round_swap_result(&swapped_in, round)?;
 
     user.burned_uusd += swapped_in.oppamint + swapped_in.ancs;
-    user.swapped_out += swapped_out.checked_sub(virtual_slippage.clone())?;
+    user.swapped_out += swapped_out.clone();
 
     state.total_swapped += swapped_out.clone();
 
@@ -74,7 +74,7 @@ pub fn swap(
 
     let deposit_result = SwapResult {
         swapped_in: swapped_in.oppamint + swapped_in.ancs,
-        swapped_out: swapped_out.checked_sub(virtual_slippage)?,
+        swapped_out,
     };
     Ok(deposit_result)
 }

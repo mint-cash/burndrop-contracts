@@ -96,7 +96,6 @@ pub struct PriceResponse {
 #[cw_serde]
 pub struct SimulateBurnResponse {
     pub swapped_out: OutputTokenMap<Uint128>,
-    pub virtual_slippage: OutputTokenMap<Uint128>,
     pub final_amount: Uint128,
 }
 

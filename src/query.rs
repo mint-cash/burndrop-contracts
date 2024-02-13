@@ -101,11 +101,7 @@ pub fn query_current_price(deps: Deps<TerraQuery>, env: Env) -> StdResult<PriceR
     })
 }
 
-pub fn calculate_swap_result(
-    amount: Uint128,
-    pair: &LiquidityPair,
-    price: Decimal,
-) -> StdResult<(Uint128, Uint128)> {
+pub fn calculate_swap_result(amount: Uint128, pair: &LiquidityPair) -> StdResult<Uint128> {
     let k = pair.x * pair.y;
 
     if pair.x + amount == Uint128::zero() {
@@ -113,33 +109,18 @@ pub fn calculate_swap_result(
     }
 
     let swapped_out = pair.y - (k / (pair.x + amount));
-    let virtual_slippage = (swapped_out * price) / amount;
 
-    Ok((swapped_out, virtual_slippage))
+    Ok(swapped_out)
 }
 
 pub fn calculate_round_swap_result(
     amount: &OutputTokenMap<Uint128>,
     round: &SwapRound,
-) -> StdResult<(OutputTokenMap<Uint128>, OutputTokenMap<Uint128>)> {
-    let price = calculate_round_price(round);
-
-    let (swapped_out_oppamint, virtual_slippage_oppamint) =
-        calculate_swap_result(amount.oppamint, &round.oppamint_liquidity, price.oppamint)?;
-
-    let (swapped_out_ancs, virtual_slippage_ancs) =
-        calculate_swap_result(amount.ancs, &round.ancs_liquidity, price.ancs)?;
-
-    Ok((
-        OutputTokenMap {
-            oppamint: swapped_out_oppamint,
-            ancs: swapped_out_ancs,
-        },
-        OutputTokenMap {
-            oppamint: virtual_slippage_oppamint,
-            ancs: virtual_slippage_ancs,
-        },
-    ))
+) -> StdResult<OutputTokenMap<Uint128>> {
+    Ok(OutputTokenMap {
+        oppamint: calculate_swap_result(amount.oppamint, &round.oppamint_liquidity)?,
+        ancs: calculate_swap_result(amount.ancs, &round.ancs_liquidity)?,
+    })
 }
 
 pub fn split_swapped_in(
@@ -168,14 +149,11 @@ pub fn query_simulate_burn(
 
     let amount = split_swapped_in(total_amount, round.oppamint_weight, round.ancs_weight);
 
-    let (swapped_out, virtual_slippage) = calculate_round_swap_result(&amount, round)?;
+    let swapped_out = calculate_round_swap_result(&amount, round)?;
 
     Ok(SimulateBurnResponse {
-        swapped_out: swapped_out.checked_sub(virtual_slippage.clone())?,
-        virtual_slippage: virtual_slippage.clone(),
-        final_amount: amount.oppamint + amount.ancs
-            - virtual_slippage.oppamint
-            - virtual_slippage.ancs,
+        swapped_out,
+        final_amount: amount.oppamint + amount.ancs,
     })
 }
 

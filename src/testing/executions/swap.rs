@@ -81,8 +81,8 @@ fn success_during_period() {
 
     assert_eq!(query_res.burned, Uint128::new(100));
     assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(119)); // 120 - virtual_slippage (1)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(120)); // 120 - virtual_slippage (0)
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(120));
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(120));
 
     // balance of burn address terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu
     let balance = app
@@ -131,8 +131,8 @@ fn success_odd_amount() {
 
     assert_eq!(query_res.burned, Uint128::new(98));
     assert_eq!(query_res.burnable, Uint128::new(902));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(117)); // 118 - virtual_slippage (1)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(117)); // 117 - virtual_slippage (0)
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(118));
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(117));
 }
 
 #[test]
@@ -246,8 +246,8 @@ fn success_during_modified_period() {
 
     assert_eq!(query_res.burned, Uint128::new(100));
     assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(119)); // 120 - virtual_slippage (1)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(120)); // 120 - virtual_slippage (0)
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(120));
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(120));
 }
 
 #[test]
@@ -288,8 +288,8 @@ pub fn success_over_min_amount_out() {
 
     assert_eq!(query_res.burned, Uint128::new(100));
     assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(119)); // 120 - virtual_slippage (1)
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(120)); // 120 - virtual_slippage (0)
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(120));
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(120));
 }
 
 #[test]
