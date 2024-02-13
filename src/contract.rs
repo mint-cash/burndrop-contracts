@@ -18,10 +18,10 @@ use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{
     query_config, query_current_price, query_rounds, query_simulate_burn, query_user, query_users,
 };
+use crate::states::guild::{Guild, GUILD};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
 use classic_bindings::{TerraMsg, TerraQuery};
-use crate::states::guild::{Guild, GUILD};
 
 pub type Response = cosmwasm_std::Response<TerraMsg>;
 

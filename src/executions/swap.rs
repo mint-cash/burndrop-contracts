@@ -6,6 +6,7 @@ use crate::error::ContractError;
 use crate::executions::user::{ensure_user_initialized, process_first_referral};
 use crate::query::{calculate_round_swap_result, split_swapped_in};
 use crate::states::config::CONFIG;
+use crate::states::guild::GUILD;
 use crate::states::state::STATE;
 use crate::states::user::USER;
 use crate::types::output_token::OutputTokenMap;
@@ -36,13 +37,13 @@ pub fn swap(
     let input_token_denom = "uusd";
 
     // burned_uusd
-    let total_swapped_in = info
+    let tentative_swapped_in = info
         .funds
         .iter()
         .find(|c| c.denom == input_token_denom)
         .map(|c| c.amount)
         .unwrap_or_else(Uint128::zero);
-    if total_swapped_in.is_zero() {
+    if tentative_swapped_in.is_zero() {
         return Err(ContractError::NotAllowZeroAmount {});
     }
     if info.funds.len() > 1 {
@@ -52,14 +53,22 @@ pub fn swap(
     }
 
     let mut user = USER.load(deps.storage, info.sender.clone())?;
+    let mut guild = GUILD.load(deps.storage, user.guild_id)?;
 
     // TODO: Add cap check
 
-    let swapped_in = split_swapped_in(total_swapped_in, round.oppamint_weight, round.ancs_weight);
+    let swapped_in = split_swapped_in(
+        tentative_swapped_in,
+        round.oppamint_weight,
+        round.ancs_weight,
+    );
     let swapped_out = calculate_round_swap_result(&swapped_in, round)?;
 
-    user.burned_uusd += swapped_in.oppamint + swapped_in.ancs;
-    user.guild_contributed_uusd += swapped_in.oppamint + swapped_in.ancs;
+    let total_swapped_in = swapped_in.oppamint + swapped_in.ancs;
+
+    user.burned_uusd += total_swapped_in;
+    user.guild_contributed_uusd += total_swapped_in;
+    guild.burned_uusd += total_swapped_in;
     user.swapped_out += swapped_out.clone();
 
     state.total_swapped += swapped_out.clone();
@@ -74,7 +83,7 @@ pub fn swap(
     STATE.save(deps.storage, &state)?;
 
     let deposit_result = SwapResult {
-        swapped_in: swapped_in.oppamint + swapped_in.ancs,
+        swapped_in: total_swapped_in,
         swapped_out,
     };
     Ok(deposit_result)
