@@ -75,8 +75,8 @@ pub fn default() -> (TerraApp, BurnContract) {
                 y: Uint128::new(1_000_000),
             },
             ancs_liquidity: LiquidityPair {
-                x: Uint128::new(500_000),
-                y: Uint128::new(1_000_000),
+                x: Uint128::new(250_000),
+                y: Uint128::new(750_000),
             },
 
             oppamint_term: 3,
@@ -131,12 +131,12 @@ pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
             end_time: 1706001650,
 
             oppamint_liquidity: LiquidityPair {
-                x: Uint128::new(1_000_000),
-                y: Uint128::new(500_000),
+                x: Uint128::new(500_000),
+                y: Uint128::new(1_000_000),
             },
             ancs_liquidity: LiquidityPair {
-                x: Uint128::new(1_000_000),
-                y: Uint128::new(500_000),
+                x: Uint128::new(250_000),
+                y: Uint128::new(750_000),
             },
 
             oppamint_term: 3,
