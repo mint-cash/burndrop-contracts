@@ -15,6 +15,9 @@ pub struct InstantiateMsg {
 
     pub max_query_limit: u32,
     pub default_query_limit: u32,
+
+    pub genesis_guild_name: String,
+    pub genesis_guild_slug: String,
 }
 
 #[cw_serde]
@@ -30,9 +33,6 @@ pub enum ExecuteMsg {
     RegisterStartingUser {
         user: String,
     },
-    Register2ndReferrer {
-        referrer: String,
-    },
     UpdateSlotSize {
         slot_size: Uint128,
     },
@@ -44,6 +44,15 @@ pub enum ExecuteMsg {
     },
     DeleteRound {
         id: u64,
+    },
+    CreateGuild {
+        name: String,
+        slug: String,
+        referrer: Option<String>,
+    },
+    MigrateGuild {
+        guild_id: u64,
+        referrer: Option<String>,
     },
 }
 
@@ -71,6 +80,9 @@ pub enum QueryMsg {
 
     #[returns(RoundsResponse)]
     Rounds {},
+
+    #[returns(GuildInfoResponse)]
+    GuildInfo { guild_id: u64 },
 }
 
 #[cw_serde]
@@ -81,6 +93,8 @@ pub struct UserInfoResponse {
     pub slots: Uint128,
     pub slot_size: Uint128,
     pub swapped_out: OutputTokenMap<Uint128>,
+    pub guild_id: u64,
+    pub guild_contributed_uusd: Uint128,
 }
 
 #[cw_serde]
@@ -102,4 +116,9 @@ pub struct SimulateBurnResponse {
 #[cw_serde]
 pub struct RoundsResponse {
     pub rounds: Vec<SwapRound>,
+}
+
+#[cw_serde]
+pub struct GuildInfoResponse {
+    pub burned_uusd: Uint128,
 }

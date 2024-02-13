@@ -8,15 +8,18 @@ use cw2::{get_contract_version, set_contract_version};
 use semver::Version;
 
 use crate::error::ContractError;
+use crate::executions::guild::{create_guild, migrate_guild};
 use crate::executions::round::{
     create_round, delete_round, sort_and_validate_rounds, update_round,
 };
 use crate::executions::swap::burn_uusd;
-use crate::executions::user::{register_2nd_referrer, register_starting_user};
+use crate::executions::user::register_starting_user;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{
-    query_config, query_current_price, query_rounds, query_simulate_burn, query_user, query_users,
+    query_config, query_current_price, query_guild, query_rounds, query_simulate_burn, query_user,
+    query_users,
 };
+use crate::states::guild::{Guild, GUILD};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
 use classic_bindings::{TerraMsg, TerraQuery};
@@ -59,9 +62,17 @@ pub fn instantiate(
             ancs: Uint128::zero(),
         },
         rounds,
+        guild_count: 0,
     };
-
     STATE.save(deps.storage, &state)?;
+
+    let genesis_guild = Guild {
+        slug: msg.genesis_guild_slug.clone(),
+        name: msg.genesis_guild_name.clone(),
+        users: vec![],
+        burned_uusd: Uint128::zero(),
+    };
+    GUILD.save(deps.storage, 0, &genesis_guild)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "instantiate"),
@@ -107,7 +118,6 @@ pub fn execute(
             min_amount_out,
         } => burn_uusd(deps, env, info, amount, referrer, min_amount_out),
         ExecuteMsg::RegisterStartingUser { user } => register_starting_user(deps, info, user),
-        ExecuteMsg::Register2ndReferrer { referrer } => register_2nd_referrer(deps, info, referrer),
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {
             // Ensure only the owner can update the slot size.
@@ -126,6 +136,14 @@ pub fn execute(
         ExecuteMsg::CreateRound { round } => create_round(deps, info, round),
         ExecuteMsg::UpdateRound { params } => update_round(deps, env, info, params),
         ExecuteMsg::DeleteRound { id } => delete_round(deps, env, info, id),
+        ExecuteMsg::CreateGuild {
+            name,
+            slug,
+            referrer,
+        } => create_guild(deps, info, name, slug, referrer),
+        ExecuteMsg::MigrateGuild { guild_id, referrer } => {
+            migrate_guild(deps, info, guild_id, referrer)
+        }
     }
 }
 
@@ -144,5 +162,6 @@ pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binar
             to_json_binary(&query_simulate_burn(deps, env, amount)?)
         }
         QueryMsg::Rounds {} => to_json_binary(&query_rounds(deps)?),
+        QueryMsg::GuildInfo { guild_id } => to_json_binary(&query_guild(deps, guild_id)?),
     }
 }
