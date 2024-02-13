@@ -78,6 +78,9 @@ pub enum QueryMsg {
 
     #[returns(RoundsResponse)]
     Rounds {},
+
+    #[returns(GuildInfoResponse)]
+    GuildInfo { guild_id: u64 },
 }
 
 #[cw_serde]
@@ -88,6 +91,8 @@ pub struct UserInfoResponse {
     pub slots: Uint128,
     pub slot_size: Uint128,
     pub swapped_out: OutputTokenMap<Uint128>,
+    pub guild_id: u64,
+    pub guild_contributed_uusd: Uint128,
 }
 
 #[cw_serde]
@@ -109,4 +114,9 @@ pub struct SimulateBurnResponse {
 #[cw_serde]
 pub struct RoundsResponse {
     pub rounds: Vec<SwapRound>,
+}
+
+#[cw_serde]
+pub struct GuildInfoResponse {
+    pub burned_uusd: Uint128,
 }

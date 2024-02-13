@@ -1,13 +1,12 @@
 use crate::error::ContractError;
-use crate::msg::{
-    PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse,
-};
+use crate::msg::{GuildInfoResponse, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::output_token::OutputTokenMap;
 use crate::types::swap_round::{LiquidityPair, SwapRound};
 use classic_bindings::TerraQuery;
 use cosmwasm_std::{Decimal, Deps, Env, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
+use crate::states::guild::GUILD;
 
 pub fn query_config(deps: Deps<TerraQuery>) -> StdResult<Config> {
     let config = CONFIG.load(deps.storage)?;
@@ -30,6 +29,8 @@ pub fn query_user(deps: Deps<TerraQuery>, address: String) -> StdResult<UserInfo
         slots: user.slots(),
         slot_size: config.slot_size,
         swapped_out: user.swapped_out,
+        guild_id: user.guild_id,
+        guild_contributed_uusd: user.guild_contributed_uusd,
     })
 }
 
@@ -69,6 +70,8 @@ pub fn query_users(
                     slots: user.slots(),
                     slot_size: config.slot_size,
                     swapped_out: user.swapped_out,
+                    guild_id: user.guild_id,
+                    guild_contributed_uusd: user.guild_contributed_uusd,
                 },
             )
         })
@@ -162,5 +165,13 @@ pub fn query_rounds(deps: Deps<TerraQuery>) -> StdResult<RoundsResponse> {
 
     Ok(RoundsResponse {
         rounds: state.rounds,
+    })
+}
+
+pub fn query_guild(deps: Deps<TerraQuery>, guild_id: u64) -> StdResult<GuildInfoResponse> {
+    let guild = GUILD.load(deps.storage, guild_id)?;
+
+    Ok(GuildInfoResponse {
+        burned_uusd: guild.burned_uusd,
     })
 }
