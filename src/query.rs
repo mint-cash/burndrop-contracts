@@ -142,7 +142,11 @@ pub fn calculate_round_swap_result(
     ))
 }
 
-pub fn split_swapped_in(total: Uint128, oppamint_weight: u32, ancs_weight: u32) -> OutputTokenMap<Uint128> {
+pub fn split_swapped_in(
+    total: Uint128,
+    oppamint_weight: u32,
+    ancs_weight: u32,
+) -> OutputTokenMap<Uint128> {
     let denom = Uint128::new(oppamint_weight as u128 + ancs_weight as u128);
     OutputTokenMap {
         oppamint: total * Uint128::new(oppamint_weight as u128) / denom,
