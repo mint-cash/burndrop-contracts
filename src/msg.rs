@@ -30,9 +30,6 @@ pub enum ExecuteMsg {
     RegisterStartingUser {
         user: String,
     },
-    Register2ndReferrer {
-        referrer: String,
-    },
     UpdateSlotSize {
         slot_size: Uint128,
     },

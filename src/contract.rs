@@ -12,7 +12,7 @@ use crate::executions::round::{
     create_round, delete_round, sort_and_validate_rounds, update_round,
 };
 use crate::executions::swap::burn_uusd;
-use crate::executions::user::{register_2nd_referrer, register_starting_user};
+use crate::executions::user::register_starting_user;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{
     query_config, query_current_price, query_rounds, query_simulate_burn, query_user, query_users,
@@ -107,7 +107,6 @@ pub fn execute(
             min_amount_out,
         } => burn_uusd(deps, env, info, amount, referrer, min_amount_out),
         ExecuteMsg::RegisterStartingUser { user } => register_starting_user(deps, info, user),
-        ExecuteMsg::Register2ndReferrer { referrer } => register_2nd_referrer(deps, info, referrer),
 
         ExecuteMsg::UpdateSlotSize { slot_size } => {
             // Ensure only the owner can update the slot size.

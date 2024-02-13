@@ -19,8 +19,6 @@ pub fn ensure_user_initialized(
                 ancs: Uint128::zero(),
             },
             referral_a: 0,
-            referral_b: false,
-            referral_c: false,
             first_referrer: None,
         };
         USER.save(deps.storage, user_address.clone(), &new_user)?;
@@ -64,36 +62,6 @@ pub fn process_first_referral(
     Ok(())
 }
 
-pub fn process_second_referral(
-    deps: DepsMut<TerraQuery>,
-    user_addr: &Addr,
-    referrer: &str,
-) -> Result<(), ContractError> {
-    let referrer_addr = deps.api.addr_validate(referrer)?;
-
-    let user = USER.load(deps.storage, user_addr.clone())?;
-
-    if let Some(first_referrer) = &user.first_referrer {
-        if referrer_addr == *first_referrer {
-            return Err(ContractError::ReferrerAlreadyFirstReferrer {});
-        }
-    } else {
-        return Err(ContractError::ShouldBurnBefore2ndReferral {});
-    }
-
-    let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
-        Some(state) => state,
-        None => return Err(ContractError::ReferrerNotInitialized {}),
-    };
-
-    // Update second referral flag
-    referrer_user.referral_b = true;
-
-    USER.save(deps.storage, referrer_addr, &referrer_user)?;
-
-    Ok(())
-}
-
 // fn register_starting_user (only owner)
 // owner can allow specific address to bypass referral requirement
 // which means just init'ing the new User with initial slots is 1, so that the address can be used as referrer
@@ -121,31 +89,5 @@ pub fn register_starting_user(
         attr("action", "register_starting_user"),
         attr("sender", info.sender),
         attr("referrer", user),
-    ]))
-}
-
-pub fn register_2nd_referrer(
-    mut deps: DepsMut<TerraQuery>,
-    info: MessageInfo,
-    referrer: String,
-) -> Result<Response, ContractError> {
-    ensure_user_initialized(&mut deps, &info.sender)?;
-    process_second_referral(deps.branch(), &info.sender, &referrer)?;
-
-    let mut sender = USER.load(deps.storage, info.sender.clone())?;
-
-    // Ensure the second referrer is registered only once
-    if sender.referral_c {
-        return Err(ContractError::AlreadyRegistered {});
-    }
-    sender.referral_c = true;
-
-    USER.save(deps.storage, info.sender.clone(), &sender)?;
-
-    Ok(Response::new().add_attributes(vec![
-        attr("action", "register_2nd_referrer"),
-        attr("sender", info.sender),
-        attr("referrer", referrer),
-        attr("new_slot", "1"),
     ]))
 }

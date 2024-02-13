@@ -9,10 +9,6 @@ use crate::types::output_token::OutputTokenMap;
 pub struct User {
     // number of users who registered this user for the first referral code
     pub referral_a: u32,
-    // did someone register this user for the second referral code
-    pub referral_b: bool,
-    // did this user register someone for the second referral code
-    pub referral_c: bool,
 
     pub burned_uusd: Uint128, // swapped_in
     pub swapped_out: OutputTokenMap<Uint128>,
@@ -20,13 +16,11 @@ pub struct User {
 }
 
 impl User {
-    // slots = 511q + 2^(r+1) + b + c - 1, where a = 9q + r (0 <= r < 9)
+    // slots = 511q + 2^(r+1) - 1, where a = 9q + r (0 <= r < 9)
     pub fn slots(&self) -> Uint128 {
         let q = (self.referral_a / 9) as u128;
         let r = self.referral_a % 9;
-        let b = u128::from(self.referral_b);
-        let c = u128::from(self.referral_c);
-        let slots = 511 * q + 2_u128.pow(r + 1) + b + c - 1;
+        let slots = 511 * q + 2_u128.pow(r + 1) - 1;
         Uint128::new(slots)
     }
 }
