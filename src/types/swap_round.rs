@@ -18,6 +18,9 @@ pub struct SwapRound {
 
     pub oppamint_liquidity: LiquidityPair,
     pub ancs_liquidity: LiquidityPair,
+
+    pub oppamint_term: u32,
+    pub ancs_term: u32,
 }
 
 impl SwapRound {

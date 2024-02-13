@@ -119,16 +119,16 @@ pub fn calculate_swap_result(
 }
 
 pub fn calculate_round_swap_result(
-    half_amount: Uint128,
+    amount: &OutputTokenMap<Uint128>,
     round: &SwapRound,
 ) -> StdResult<(OutputTokenMap<Uint128>, OutputTokenMap<Uint128>)> {
     let price = calculate_round_price(round);
 
     let (swapped_out_oppamint, virtual_slippage_oppamint) =
-        calculate_swap_result(half_amount, &round.oppamint_liquidity, price.oppamint)?;
+        calculate_swap_result(amount.oppamint, &round.oppamint_liquidity, price.oppamint)?;
 
     let (swapped_out_ancs, virtual_slippage_ancs) =
-        calculate_swap_result(half_amount, &round.ancs_liquidity, price.ancs)?;
+        calculate_swap_result(amount.ancs, &round.ancs_liquidity, price.ancs)?;
 
     Ok((
         OutputTokenMap {
@@ -142,10 +142,18 @@ pub fn calculate_round_swap_result(
     ))
 }
 
+pub fn split_swapped_in(total: Uint128, oppamint_term: u32, ancs_term: u32) -> OutputTokenMap<Uint128> {
+    let denom = Uint128::new(oppamint_term as u128 + ancs_term as u128);
+    OutputTokenMap {
+        oppamint: total * Uint128::new(oppamint_term as u128) / denom,
+        ancs: total * Uint128::new(ancs_term as u128) / denom,
+    }
+}
+
 pub fn query_simulate_burn(
     deps: Deps<TerraQuery>,
     env: Env,
-    amount: Uint128,
+    total_amount: Uint128,
 ) -> StdResult<SimulateBurnResponse> {
     let state = STATE.load(deps.storage)?;
 
@@ -154,14 +162,14 @@ pub fn query_simulate_burn(
         .recent_active_round(now)
         .ok_or(ContractError::NoActiveSwapRound {})?;
 
-    let half_amount = amount / Uint128::new(2);
+    let amount = split_swapped_in(total_amount, round.oppamint_term, round.ancs_term);
 
-    let (swapped_out, virtual_slippage) = calculate_round_swap_result(half_amount, round)?;
+    let (swapped_out, virtual_slippage) = calculate_round_swap_result(&amount, round)?;
 
     Ok(SimulateBurnResponse {
         swapped_out,
         virtual_slippage: virtual_slippage.clone(),
-        final_amount: (half_amount * Uint128::new(2))
+        final_amount: amount.oppamint + amount.ancs
             - virtual_slippage.oppamint
             - virtual_slippage.ancs,
     })
