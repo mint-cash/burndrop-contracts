@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct Guild {
-    pub slug: String,
     pub name: String,
     pub users: Vec<User>,
     pub burned_uusd: Uint128,

@@ -87,7 +87,6 @@ pub fn default() -> (TerraApp, BurnContract) {
         default_query_limit: 10,
 
         genesis_guild_name: "Genesis Guild".to_string(),
-        genesis_guild_slug: "genesis".to_string(),
     };
     let contract_addr = app
         .instantiate_contract(
@@ -150,7 +149,6 @@ pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
         default_query_limit: 10,
 
         genesis_guild_name: "Genesis Guild".to_string(),
-        genesis_guild_slug: "genesis".to_string(),
     };
     let contract_addr = app
         .instantiate_contract(

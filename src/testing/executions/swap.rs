@@ -1,11 +1,12 @@
 use cosmwasm_std::testing::mock_info;
-use cosmwasm_std::{Addr, Coin, Timestamp, Uint128};
+use cosmwasm_std::{Addr, Coin, Event, Timestamp, Uint128};
 use cw_multi_test::{AppResponse, Executor};
 
 use crate::executions::round::UpdateRoundParams;
 use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
 use crate::testing::terra_bindings::TerraApp;
+use crate::testing::utils::assert_strict_event_attributes;
 use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
 use crate::types::output_token::OutputTokenMap;
 
@@ -62,6 +63,21 @@ fn success_during_period() {
         None,
     );
     assert!(execute_res.is_ok());
+    assert_strict_event_attributes(
+        execute_res.unwrap(),
+        "wasm",
+        vec![
+            ("action", "burn_uusd"),
+            ("sender", USER),
+            ("sender_guild_id", "0"),
+            ("referrer", REFERRER),
+            ("amount", &burn_amount.to_string()),
+            ("swapped_in", "100"),
+            ("swapped_out_oppamint", "120"),
+            ("swapped_out_ancs", "120"),
+            ("_contract_address", burn_contract.addr().as_str()),
+        ],
+    );
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app
@@ -112,6 +128,18 @@ fn success_odd_amount() {
         None,
     );
     assert!(execute_res.is_ok());
+    execute_res
+        .unwrap()
+        .assert_event(&Event::new("wasm").add_attributes(vec![
+            ("action", "burn_uusd"),
+            ("sender", USER),
+            ("sender_guild_id", "0"),
+            ("referrer", REFERRER),
+            ("amount", &burn_amount.to_string()),
+            ("swapped_in", "98"),
+            ("swapped_out_oppamint", "118"),
+            ("swapped_out_ancs", "117"),
+        ]));
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app
@@ -227,6 +255,21 @@ fn success_during_modified_period() {
         None,
     );
     assert!(burn_res.is_ok());
+    assert_strict_event_attributes(
+        burn_res.unwrap(),
+        "wasm",
+        vec![
+            ("action", "burn_uusd"),
+            ("sender", USER),
+            ("sender_guild_id", "0"),
+            ("referrer", REFERRER),
+            ("amount", &burn_amount.to_string()),
+            ("swapped_in", "100"),
+            ("swapped_out_oppamint", "120"),
+            ("swapped_out_ancs", "120"),
+            ("_contract_address", burn_contract.addr().as_str()),
+        ],
+    );
 
     // Query the burn info after burning tokens for the user.
     let query_res: crate::msg::UserInfoResponse = app
@@ -269,6 +312,21 @@ pub fn success_over_min_amount_out() {
         }),
     );
     assert!(execute_res.is_ok());
+    assert_strict_event_attributes(
+        execute_res.unwrap(),
+        "wasm",
+        vec![
+            ("action", "burn_uusd"),
+            ("sender", USER),
+            ("sender_guild_id", "0"),
+            ("referrer", REFERRER),
+            ("amount", &burn_amount.to_string()),
+            ("swapped_in", "100"),
+            ("swapped_out_oppamint", "120"),
+            ("swapped_out_ancs", "120"),
+            ("_contract_address", burn_contract.addr().as_str()),
+        ],
+    );
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app

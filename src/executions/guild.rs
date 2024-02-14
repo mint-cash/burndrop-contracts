@@ -11,7 +11,6 @@ pub fn create_guild(
     mut deps: DepsMut<TerraQuery>,
     info: MessageInfo,
     name: String,
-    slug: String,
     referrer: Option<String>,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
@@ -22,7 +21,6 @@ pub fn create_guild(
     STATE.save(deps.storage, &state)?;
 
     let new_guild = Guild {
-        slug,
         name,
         users: vec![],
         burned_uusd: Uint128::zero(),
@@ -37,12 +35,20 @@ pub fn create_guild(
     user.guild_contributed_uusd = Uint128::zero();
     USER.save(deps.storage, info.sender.clone(), &user)?;
 
-    Ok(Response::new().add_attributes(vec![
+    let mut attributes = vec![
         attr("action", "create_guild"),
         attr("sender", info.sender),
         attr("old_guild_id", old_guild_id.to_string()),
         attr("new_guild_id", state.guild_count.to_string()),
-    ]))
+        attr("new_guild_name", new_guild.name),
+    ];
+
+    if let Some(referrer) = referrer {
+        attributes.push(attr("referrer", referrer));
+    }
+
+    Ok(Response::new() //
+        .add_attributes(attributes))
 }
 
 pub fn migrate_guild(
@@ -69,10 +75,17 @@ pub fn migrate_guild(
     guild.users.push(user);
     GUILD.save(deps.storage, guild_id, &guild)?;
 
-    Ok(Response::new().add_attributes(vec![
+    let mut attributes = vec![
         attr("action", "migrate_guild"),
         attr("sender", info.sender),
         attr("old_guild_id", old_guild_id.to_string()),
         attr("new_guild_id", guild_id.to_string()),
-    ]))
+    ];
+
+    if let Some(referrer) = referrer {
+        attributes.push(attr("referrer", referrer));
+    }
+
+    Ok(Response::new() //
+        .add_attributes(attributes))
 }

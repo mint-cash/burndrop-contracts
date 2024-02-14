@@ -17,7 +17,6 @@ pub struct InstantiateMsg {
     pub default_query_limit: u32,
 
     pub genesis_guild_name: String,
-    pub genesis_guild_slug: String,
 }
 
 #[cw_serde]
@@ -47,7 +46,6 @@ pub enum ExecuteMsg {
     },
     CreateGuild {
         name: String,
-        slug: String,
         referrer: Option<String>,
     },
     MigrateGuild {
