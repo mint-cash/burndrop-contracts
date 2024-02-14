@@ -56,10 +56,14 @@ async function main() {
           x: '200000000',
           y: '3000000000',
         },
+        oppamint_weight: 3,
+        ancs_weight: 2,
       },
     ],
     max_query_limit: 30,
     default_query_limit: 10,
+    genesis_guild_name: 'Genesis Guild',
+    genesis_guild_slug: 'genesis-guild',
   };
 
   const instantiateContractMsg = encodeInstantiateMsg({

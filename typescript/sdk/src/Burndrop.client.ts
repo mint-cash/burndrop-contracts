@@ -26,6 +26,7 @@ import {
   Decimal,
   PriceResponse,
   OutputTokenMapForDecimal,
+  GuildInfoResponse,
   RoundsResponse,
   SimulateBurnResponse,
   UserInfoResponse,
@@ -51,6 +52,7 @@ export interface BurndropReadOnlyInterface {
     amount: Uint128;
   }) => Promise<SimulateBurnResponse>;
   rounds: () => Promise<RoundsResponse>;
+  guildInfo: ({ guildId }: { guildId: number }) => Promise<GuildInfoResponse>;
 }
 export class BurndropQueryClient implements BurndropReadOnlyInterface {
   client: CosmWasmClient;
@@ -65,6 +67,7 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
     this.currentPrice = this.currentPrice.bind(this);
     this.simulateBurn = this.simulateBurn.bind(this);
     this.rounds = this.rounds.bind(this);
+    this.guildInfo = this.guildInfo.bind(this);
   }
 
   config = async (): Promise<Config> => {
@@ -121,6 +124,17 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
       rounds: {},
     });
   };
+  guildInfo = async ({
+    guildId,
+  }: {
+    guildId: number;
+  }): Promise<GuildInfoResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      guild_info: {
+        guild_id: guildId,
+      },
+    });
+  };
 }
 export interface BurndropInterface extends BurndropReadOnlyInterface {
   contractAddress: string;
@@ -144,16 +158,6 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
       user,
     }: {
       user: string;
-    },
-    fee?: number | StdFee | 'auto',
-    memo?: string,
-    _funds?: Coin[],
-  ) => Promise<ExecuteResult>;
-  register2ndReferrer: (
-    {
-      referrer,
-    }: {
-      referrer: string;
     },
     fee?: number | StdFee | 'auto',
     memo?: string,
@@ -199,6 +203,32 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
     memo?: string,
     _funds?: Coin[],
   ) => Promise<ExecuteResult>;
+  createGuild: (
+    {
+      name,
+      referrer,
+      slug,
+    }: {
+      name: string;
+      referrer?: string;
+      slug: string;
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>;
+  migrateGuild: (
+    {
+      guildId,
+      referrer,
+    }: {
+      guildId: number;
+      referrer?: string;
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>;
 }
 export class BurndropClient
   extends BurndropQueryClient
@@ -219,11 +249,12 @@ export class BurndropClient
     this.contractAddress = contractAddress;
     this.burnUusd = this.burnUusd.bind(this);
     this.registerStartingUser = this.registerStartingUser.bind(this);
-    this.register2ndReferrer = this.register2ndReferrer.bind(this);
     this.updateSlotSize = this.updateSlotSize.bind(this);
     this.createRound = this.createRound.bind(this);
     this.updateRound = this.updateRound.bind(this);
     this.deleteRound = this.deleteRound.bind(this);
+    this.createGuild = this.createGuild.bind(this);
+    this.migrateGuild = this.migrateGuild.bind(this);
   }
 
   burnUusd = async (
@@ -271,29 +302,6 @@ export class BurndropClient
       {
         register_starting_user: {
           user,
-        },
-      },
-      fee,
-      memo,
-      _funds,
-    );
-  };
-  register2ndReferrer = async (
-    {
-      referrer,
-    }: {
-      referrer: string;
-    },
-    fee: number | StdFee | 'auto' = 'auto',
-    memo?: string,
-    _funds?: Coin[],
-  ): Promise<ExecuteResult> => {
-    return await this.client.execute(
-      this.sender,
-      this.contractAddress,
-      {
-        register2nd_referrer: {
-          referrer,
         },
       },
       fee,
@@ -386,6 +394,61 @@ export class BurndropClient
       {
         delete_round: {
           id,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    );
+  };
+  createGuild = async (
+    {
+      name,
+      referrer,
+      slug,
+    }: {
+      name: string;
+      referrer?: string;
+      slug: string;
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        create_guild: {
+          name,
+          referrer,
+          slug,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    );
+  };
+  migrateGuild = async (
+    {
+      guildId,
+      referrer,
+    }: {
+      guildId: number;
+      referrer?: string;
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        migrate_guild: {
+          guild_id: guildId,
+          referrer,
         },
       },
       fee,

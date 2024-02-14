@@ -5,7 +5,7 @@
  */
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from '@cosmjs/cosmwasm-stargate';
 import { Coin, StdFee } from '@cosmjs/amino';
-import { Uint128, SwapRound, OutputTokenMapForUint128, UpdateRoundParams, OrderBy, Config, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse } from './Burndrop.types';
+import { Uint128, SwapRound, OutputTokenMapForUint128, UpdateRoundParams, OrderBy, Config, PriceResponse, GuildInfoResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse, UsersInfoResponse } from './Burndrop.types';
 export interface BurndropReadOnlyInterface {
     contractAddress: string;
     config: () => Promise<Config>;
@@ -22,6 +22,9 @@ export interface BurndropReadOnlyInterface {
         amount: Uint128;
     }) => Promise<SimulateBurnResponse>;
     rounds: () => Promise<RoundsResponse>;
+    guildInfo: ({ guildId }: {
+        guildId: number;
+    }) => Promise<GuildInfoResponse>;
 }
 export declare class BurndropQueryClient implements BurndropReadOnlyInterface {
     client: CosmWasmClient;
@@ -41,6 +44,9 @@ export declare class BurndropQueryClient implements BurndropReadOnlyInterface {
         amount: Uint128;
     }) => Promise<SimulateBurnResponse>;
     rounds: () => Promise<RoundsResponse>;
+    guildInfo: ({ guildId, }: {
+        guildId: number;
+    }) => Promise<GuildInfoResponse>;
 }
 export interface BurndropInterface extends BurndropReadOnlyInterface {
     contractAddress: string;
@@ -53,9 +59,6 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
     registerStartingUser: ({ user, }: {
         user: string;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-    register2ndReferrer: ({ referrer, }: {
-        referrer: string;
-    }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     updateSlotSize: ({ slotSize, }: {
         slotSize: Uint128;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
@@ -67,6 +70,15 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     deleteRound: ({ id, }: {
         id: number;
+    }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    createGuild: ({ name, referrer, slug, }: {
+        name: string;
+        referrer?: string;
+        slug: string;
+    }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    migrateGuild: ({ guildId, referrer, }: {
+        guildId: number;
+        referrer?: string;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
 export declare class BurndropClient extends BurndropQueryClient implements BurndropInterface {
@@ -82,9 +94,6 @@ export declare class BurndropClient extends BurndropQueryClient implements Burnd
     registerStartingUser: ({ user, }: {
         user: string;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-    register2ndReferrer: ({ referrer, }: {
-        referrer: string;
-    }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     updateSlotSize: ({ slotSize, }: {
         slotSize: Uint128;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
@@ -96,6 +105,15 @@ export declare class BurndropClient extends BurndropQueryClient implements Burnd
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     deleteRound: ({ id, }: {
         id: number;
+    }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    createGuild: ({ name, referrer, slug, }: {
+        name: string;
+        referrer?: string | undefined;
+        slug: string;
+    }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    migrateGuild: ({ guildId, referrer, }: {
+        guildId: number;
+        referrer?: string | undefined;
     }, fee?: number | StdFee | 'auto', memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
 //# sourceMappingURL=Burndrop.client.d.ts.map

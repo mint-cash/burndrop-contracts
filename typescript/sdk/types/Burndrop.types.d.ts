@@ -6,15 +6,19 @@
 export type Uint128 = string;
 export interface InstantiateMsg {
     default_query_limit: number;
+    genesis_guild_name: string;
+    genesis_guild_slug: string;
     initial_slot_size: Uint128;
     max_query_limit: number;
     rounds: SwapRound[];
 }
 export interface SwapRound {
     ancs_liquidity: LiquidityPair;
+    ancs_weight: number;
     end_time: number;
     id: number;
     oppamint_liquidity: LiquidityPair;
+    oppamint_weight: number;
     start_time: number;
     [k: string]: unknown;
 }
@@ -34,10 +38,6 @@ export type ExecuteMsg = {
         user: string;
     };
 } | {
-    register2nd_referrer: {
-        referrer: string;
-    };
-} | {
     update_slot_size: {
         slot_size: Uint128;
     };
@@ -52,6 +52,17 @@ export type ExecuteMsg = {
 } | {
     delete_round: {
         id: number;
+    };
+} | {
+    create_guild: {
+        name: string;
+        referrer?: string | null;
+        slug: string;
+    };
+} | {
+    migrate_guild: {
+        guild_id: number;
+        referrer?: string | null;
     };
 };
 export interface OutputTokenMapForUint128 {
@@ -87,6 +98,10 @@ export type QueryMsg = {
     };
 } | {
     rounds: {};
+} | {
+    guild_info: {
+        guild_id: number;
+    };
 };
 export type OrderBy = 'ascending' | 'descending';
 export interface MigrateMsg {
@@ -108,18 +123,22 @@ export interface OutputTokenMapForDecimal {
     oppamint: Decimal;
     [k: string]: unknown;
 }
+export interface GuildInfoResponse {
+    burned_uusd: Uint128;
+}
 export interface RoundsResponse {
     rounds: SwapRound[];
 }
 export interface SimulateBurnResponse {
     final_amount: Uint128;
     swapped_out: OutputTokenMapForUint128;
-    virtual_slippage: OutputTokenMapForUint128;
 }
 export interface UserInfoResponse {
     burnable: Uint128;
     burned: Uint128;
     cap: Uint128;
+    guild_contributed_uusd: Uint128;
+    guild_id: number;
     slot_size: Uint128;
     slots: Uint128;
     swapped_out: OutputTokenMapForUint128;

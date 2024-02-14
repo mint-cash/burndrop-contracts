@@ -24,6 +24,7 @@ import {
   Decimal,
   PriceResponse,
   OutputTokenMapForDecimal,
+  GuildInfoResponse,
   RoundsResponse,
   SimulateBurnResponse,
   UserInfoResponse,
@@ -49,14 +50,6 @@ export interface BurndropMsg {
       user,
     }: {
       user: string;
-    },
-    _funds?: Coin[],
-  ) => MsgExecuteContractEncodeObject;
-  register2ndReferrer: (
-    {
-      referrer,
-    }: {
-      referrer: string;
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject;
@@ -92,6 +85,28 @@ export interface BurndropMsg {
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject;
+  createGuild: (
+    {
+      name,
+      referrer,
+      slug,
+    }: {
+      name: string;
+      referrer?: string;
+      slug: string;
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject;
+  migrateGuild: (
+    {
+      guildId,
+      referrer,
+    }: {
+      guildId: number;
+      referrer?: string;
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject;
 }
 export class BurndropMsgComposer implements BurndropMsg {
   sender: string;
@@ -102,11 +117,12 @@ export class BurndropMsgComposer implements BurndropMsg {
     this.contractAddress = contractAddress;
     this.burnUusd = this.burnUusd.bind(this);
     this.registerStartingUser = this.registerStartingUser.bind(this);
-    this.register2ndReferrer = this.register2ndReferrer.bind(this);
     this.updateSlotSize = this.updateSlotSize.bind(this);
     this.createRound = this.createRound.bind(this);
     this.updateRound = this.updateRound.bind(this);
     this.deleteRound = this.deleteRound.bind(this);
+    this.createGuild = this.createGuild.bind(this);
+    this.migrateGuild = this.migrateGuild.bind(this);
   }
 
   burnUusd = (
@@ -156,30 +172,6 @@ export class BurndropMsgComposer implements BurndropMsg {
           JSON.stringify({
             register_starting_user: {
               user,
-            },
-          }),
-        ),
-        funds: _funds,
-      }),
-    };
-  };
-  register2ndReferrer = (
-    {
-      referrer,
-    }: {
-      referrer: string;
-    },
-    _funds?: Coin[],
-  ): MsgExecuteContractEncodeObject => {
-    return {
-      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
-      value: MsgExecuteContract.fromPartial({
-        sender: this.sender,
-        contract: this.contractAddress,
-        msg: toUtf8(
-          JSON.stringify({
-            register2nd_referrer: {
-              referrer,
             },
           }),
         ),
@@ -276,6 +268,63 @@ export class BurndropMsgComposer implements BurndropMsg {
           JSON.stringify({
             delete_round: {
               id,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    };
+  };
+  createGuild = (
+    {
+      name,
+      referrer,
+      slug,
+    }: {
+      name: string;
+      referrer?: string;
+      slug: string;
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            create_guild: {
+              name,
+              referrer,
+              slug,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    };
+  };
+  migrateGuild = (
+    {
+      guildId,
+      referrer,
+    }: {
+      guildId: number;
+      referrer?: string;
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            migrate_guild: {
+              guild_id: guildId,
+              referrer,
             },
           }),
         ),

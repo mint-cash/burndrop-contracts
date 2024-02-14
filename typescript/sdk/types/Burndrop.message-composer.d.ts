@@ -17,9 +17,6 @@ export interface BurndropMsg {
     registerStartingUser: ({ user, }: {
         user: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    register2ndReferrer: ({ referrer, }: {
-        referrer: string;
-    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     updateSlotSize: ({ slotSize, }: {
         slotSize: Uint128;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
@@ -31,6 +28,15 @@ export interface BurndropMsg {
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     deleteRound: ({ id, }: {
         id: number;
+    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    createGuild: ({ name, referrer, slug, }: {
+        name: string;
+        referrer?: string;
+        slug: string;
+    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    migrateGuild: ({ guildId, referrer, }: {
+        guildId: number;
+        referrer?: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
 }
 export declare class BurndropMsgComposer implements BurndropMsg {
@@ -45,9 +51,6 @@ export declare class BurndropMsgComposer implements BurndropMsg {
     registerStartingUser: ({ user, }: {
         user: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    register2ndReferrer: ({ referrer, }: {
-        referrer: string;
-    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     updateSlotSize: ({ slotSize, }: {
         slotSize: Uint128;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
@@ -59,6 +62,15 @@ export declare class BurndropMsgComposer implements BurndropMsg {
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     deleteRound: ({ id, }: {
         id: number;
+    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    createGuild: ({ name, referrer, slug, }: {
+        name: string;
+        referrer?: string | undefined;
+        slug: string;
+    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    migrateGuild: ({ guildId, referrer, }: {
+        guildId: number;
+        referrer?: string | undefined;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
 }
 //# sourceMappingURL=Burndrop.message-composer.d.ts.map
