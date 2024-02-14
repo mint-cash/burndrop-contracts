@@ -11,7 +11,6 @@ pub fn create_guild(
     mut deps: DepsMut<TerraQuery>,
     info: MessageInfo,
     name: String,
-    slug: String,
     referrer: Option<String>,
 ) -> Result<Response, ContractError> {
     ensure_user_initialized(&mut deps, &info.sender)?;
@@ -22,7 +21,6 @@ pub fn create_guild(
     STATE.save(deps.storage, &state)?;
 
     let new_guild = Guild {
-        slug,
         name,
         users: vec![],
         burned_uusd: Uint128::zero(),
@@ -43,7 +41,6 @@ pub fn create_guild(
         attr("old_guild_id", old_guild_id.to_string()),
         attr("new_guild_id", state.guild_count.to_string()),
         attr("new_guild_name", new_guild.name),
-        attr("new_guild_slug", new_guild.slug),
     ];
 
     if let Some(referrer) = referrer {

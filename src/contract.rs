@@ -67,7 +67,6 @@ pub fn instantiate(
     STATE.save(deps.storage, &state)?;
 
     let genesis_guild = Guild {
-        slug: msg.genesis_guild_slug.clone(),
         name: msg.genesis_guild_name.clone(),
         users: vec![],
         burned_uusd: Uint128::zero(),
@@ -136,11 +135,7 @@ pub fn execute(
         ExecuteMsg::CreateRound { round } => create_round(deps, info, round),
         ExecuteMsg::UpdateRound { params } => update_round(deps, env, info, params),
         ExecuteMsg::DeleteRound { id } => delete_round(deps, env, info, id),
-        ExecuteMsg::CreateGuild {
-            name,
-            slug,
-            referrer,
-        } => create_guild(deps, info, name, slug, referrer),
+        ExecuteMsg::CreateGuild { name, referrer } => create_guild(deps, info, name, referrer),
         ExecuteMsg::MigrateGuild { guild_id, referrer } => {
             migrate_guild(deps, info, guild_id, referrer)
         }

@@ -56,7 +56,6 @@ fn success_create_guild() {
         burn_contract.addr(),
         &crate::msg::ExecuteMsg::CreateGuild {
             name: "Test Guild".to_string(),
-            slug: "test".to_string(),
             referrer: None,
         },
         &[],
@@ -71,7 +70,6 @@ fn success_create_guild() {
             ("old_guild_id", "0"),
             ("new_guild_id", "1"),
             ("new_guild_name", "Test Guild"),
-            ("new_guild_slug", "test"),
             ("_contract_address", burn_contract.addr().as_str()),
         ],
     );
@@ -155,7 +153,6 @@ fn success_migrate_guild() {
         burn_contract.addr(),
         &crate::msg::ExecuteMsg::CreateGuild {
             name: "Test Guild".to_string(),
-            slug: "test".to_string(),
             referrer: Some(REFERRER.to_string()),
         },
         &[],
@@ -171,7 +168,6 @@ fn success_migrate_guild() {
             ("old_guild_id", "0"),
             ("new_guild_id", "1"),
             ("new_guild_name", "Test Guild"),
-            ("new_guild_slug", "test"),
             ("_contract_address", burn_contract.addr().as_str()),
         ],
     );
