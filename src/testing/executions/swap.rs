@@ -6,6 +6,7 @@ use crate::executions::round::UpdateRoundParams;
 use crate::helpers::BurnContract;
 use crate::msg::{ExecuteMsg, QueryMsg, UserInfoResponse};
 use crate::testing::terra_bindings::TerraApp;
+use crate::testing::utils::assert_strict_event_attributes;
 use crate::testing::{instantiate, ADMIN, NATIVE_DENOM, REFERRER, USER};
 use crate::types::output_token::OutputTokenMap;
 
@@ -62,9 +63,10 @@ fn success_during_period() {
         None,
     );
     assert!(execute_res.is_ok());
-    execute_res
-        .unwrap()
-        .assert_event(&Event::new("wasm").add_attributes(vec![
+    assert_strict_event_attributes(
+        execute_res.unwrap(),
+        "wasm",
+        vec![
             ("action", "burn_uusd"),
             ("sender", USER),
             ("sender_guild_id", "0"),
@@ -73,7 +75,9 @@ fn success_during_period() {
             ("swapped_in", "100"),
             ("swapped_out_oppamint", "120"),
             ("swapped_out_ancs", "120"),
-        ]));
+            ("_contract_address", burn_contract.addr().as_str()),
+        ],
+    );
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app
@@ -251,9 +255,10 @@ fn success_during_modified_period() {
         None,
     );
     assert!(burn_res.is_ok());
-    burn_res
-        .unwrap()
-        .assert_event(&Event::new("wasm").add_attributes(vec![
+    assert_strict_event_attributes(
+        burn_res.unwrap(),
+        "wasm",
+        vec![
             ("action", "burn_uusd"),
             ("sender", USER),
             ("sender_guild_id", "0"),
@@ -262,7 +267,9 @@ fn success_during_modified_period() {
             ("swapped_in", "100"),
             ("swapped_out_oppamint", "120"),
             ("swapped_out_ancs", "120"),
-        ]));
+            ("_contract_address", burn_contract.addr().as_str()),
+        ],
+    );
 
     // Query the burn info after burning tokens for the user.
     let query_res: crate::msg::UserInfoResponse = app
@@ -305,9 +312,10 @@ pub fn success_over_min_amount_out() {
         }),
     );
     assert!(execute_res.is_ok());
-    execute_res
-        .unwrap()
-        .assert_event(&Event::new("wasm").add_attributes(vec![
+    assert_strict_event_attributes(
+        execute_res.unwrap(),
+        "wasm",
+        vec![
             ("action", "burn_uusd"),
             ("sender", USER),
             ("sender_guild_id", "0"),
@@ -316,7 +324,9 @@ pub fn success_over_min_amount_out() {
             ("swapped_in", "100"),
             ("swapped_out_oppamint", "120"),
             ("swapped_out_ancs", "120"),
-        ]));
+            ("_contract_address", burn_contract.addr().as_str()),
+        ],
+    );
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app
