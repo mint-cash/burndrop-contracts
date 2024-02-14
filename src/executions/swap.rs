@@ -156,6 +156,7 @@ pub fn burn_uusd(
     Ok(Response::new().add_message(burn_msg).add_attributes(vec![
         attr("action", "burn_uusd"),
         attr("sender", info.sender),
+        attr("sender_guild_id", sender.guild_id.to_string()),
         attr("amount", amount.to_string()),
         attr("swapped_in", res.swapped_in.to_string()),
         attr("swapped_out_oppamint", res.swapped_out.oppamint.to_string()),

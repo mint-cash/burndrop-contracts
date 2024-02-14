@@ -1,5 +1,5 @@
 use cosmwasm_std::testing::mock_info;
-use cosmwasm_std::{Addr, Coin, Timestamp, Uint128};
+use cosmwasm_std::{Addr, Coin, Event, Timestamp, Uint128};
 use cw_multi_test::{AppResponse, Executor};
 
 use crate::executions::round::UpdateRoundParams;
@@ -62,6 +62,16 @@ fn success_during_period() {
         None,
     );
     assert!(execute_res.is_ok());
+    let execute_res: AppResponse = execute_res.unwrap();
+    execute_res.assert_event(&Event::new("wasm").add_attributes(vec![
+        ("action", "burn_uusd"),
+        ("sender", USER),
+        ("sender_guild_id", "0"),
+        ("amount", &burn_amount.to_string()),
+        ("swapped_in", "100"),
+        ("swapped_out_oppamint", "120"),
+        ("swapped_out_ancs", "120"),
+    ]));
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app
@@ -112,6 +122,16 @@ fn success_odd_amount() {
         None,
     );
     assert!(execute_res.is_ok());
+    let execute_res: AppResponse = execute_res.unwrap();
+    execute_res.assert_event(&Event::new("wasm").add_attributes(vec![
+        ("action", "burn_uusd"),
+        ("sender", USER),
+        ("sender_guild_id", "0"),
+        ("amount", &burn_amount.to_string()),
+        ("swapped_in", "98"),
+        ("swapped_out_oppamint", "118"),
+        ("swapped_out_ancs", "117"),
+    ]));
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app
@@ -227,6 +247,16 @@ fn success_during_modified_period() {
         None,
     );
     assert!(burn_res.is_ok());
+    let burn_res: AppResponse = burn_res.unwrap();
+    burn_res.assert_event(&Event::new("wasm").add_attributes(vec![
+        ("action", "burn_uusd"),
+        ("sender", USER),
+        ("sender_guild_id", "0"),
+        ("amount", &burn_amount.to_string()),
+        ("swapped_in", "100"),
+        ("swapped_out_oppamint", "120"),
+        ("swapped_out_ancs", "120"),
+    ]));
 
     // Query the burn info after burning tokens for the user.
     let query_res: crate::msg::UserInfoResponse = app
@@ -269,6 +299,16 @@ pub fn success_over_min_amount_out() {
         }),
     );
     assert!(execute_res.is_ok());
+    let execute_res: AppResponse = execute_res.unwrap();
+    execute_res.assert_event(&Event::new("wasm").add_attributes(vec![
+        ("action", "burn_uusd"),
+        ("sender", USER),
+        ("sender_guild_id", "0"),
+        ("amount", &burn_amount.to_string()),
+        ("swapped_in", "100"),
+        ("swapped_out_oppamint", "120"),
+        ("swapped_out_ancs", "120"),
+    ]));
 
     // Query the burn info after burning tokens for the user.
     let query_res: UserInfoResponse = app
