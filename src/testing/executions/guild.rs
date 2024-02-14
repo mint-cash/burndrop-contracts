@@ -2,7 +2,7 @@ use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::testing::executions::swap::execute_swap;
 use crate::testing::{instantiate, ADMIN, REFERRER, SECOND_REFERRER, USER};
 use cosmwasm_std::{Addr, Event, Uint128};
-use cw_multi_test::{AppResponse, Executor};
+use cw_multi_test::Executor;
 
 // `create_guild` test
 // 1. USER1 : burn 100 uusd then check `guild_contributed_uusd` of USER1 and `burned_uusd` of guild
@@ -61,15 +61,15 @@ fn success_create_guild() {
         &[],
     );
     assert!(create_guild_res.is_ok());
-    let create_guild_res: AppResponse = create_guild_res.unwrap();
-    create_guild_res.assert_event(
-        &Event::new("wasm")
-            .add_attribute("action", "create_guild")
-            .add_attribute("_contract_address", burn_contract.addr())
-            .add_attribute("sender", Addr::unchecked(USER))
-            .add_attribute("old_guild_id", "0")
-            .add_attribute("new_guild_id", "1"),
-    );
+    let expected_event = Event::new("wasm").add_attributes(vec![
+        ("action", "create_guild"),
+        ("sender", USER),
+        ("old_guild_id", "0"),
+        ("new_guild_id", "1"),
+        ("new_guild_name", "Test Guild"),
+        ("new_guild_slug", "test"),
+    ]);
+    create_guild_res.unwrap().assert_event(&expected_event);
 
     // Query the user's guild index
     let query_res: crate::msg::UserInfoResponse = app
@@ -156,15 +156,15 @@ fn success_migrate_guild() {
         &[],
     );
     assert!(create_guild_res.is_ok());
-    let create_guild_res: AppResponse = create_guild_res.unwrap();
-    create_guild_res.assert_event(
-        &Event::new("wasm")
-            .add_attribute("action", "create_guild")
-            .add_attribute("_contract_address", burn_contract.addr())
-            .add_attribute("sender", Addr::unchecked(USER))
-            .add_attribute("old_guild_id", "0")
-            .add_attribute("new_guild_id", "1"),
-    );
+    let expected_event = Event::new("wasm").add_attributes(vec![
+        ("action", "create_guild"),
+        ("sender", USER),
+        ("old_guild_id", "0"),
+        ("new_guild_id", "1"),
+        ("new_guild_name", "Test Guild"),
+        ("new_guild_slug", "test"),
+    ]);
+    create_guild_res.unwrap().assert_event(&expected_event);
 
     // Burn 100 uusd for the user
     let burn_amount = Uint128::new(100);
@@ -264,15 +264,13 @@ fn success_migrate_guild() {
         &[],
     );
     assert!(migrate_guild_res.is_ok());
-    let migrate_guild_res: AppResponse = migrate_guild_res.unwrap();
-    migrate_guild_res.assert_event(
-        &Event::new("wasm")
-            .add_attribute("action", "migrate_guild")
-            .add_attribute("_contract_address", burn_contract.addr())
-            .add_attribute("sender", Addr::unchecked(REFERRER))
-            .add_attribute("old_guild_id", "0")
-            .add_attribute("new_guild_id", "1"),
-    );
+    let expected_event = Event::new("wasm").add_attributes(vec![
+        ("action", "migrate_guild"),
+        ("sender", REFERRER),
+        ("old_guild_id", "0"),
+        ("new_guild_id", "1"),
+    ]);
+    migrate_guild_res.unwrap().assert_event(&expected_event);
 
     // Query the user's guild index
     let query_res: crate::msg::UserInfoResponse = app

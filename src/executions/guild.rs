@@ -43,6 +43,7 @@ pub fn create_guild(
         attr("old_guild_id", old_guild_id.to_string()),
         attr("new_guild_id", state.guild_count.to_string()),
         attr("new_guild_name", new_guild.name),
+        attr("new_guild_slug", new_guild.slug),
     ]))
 }
 
