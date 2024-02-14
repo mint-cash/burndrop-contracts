@@ -31,13 +31,17 @@ pub fn create_guild(
     GUILD.save(deps.storage, state.guild_count, &new_guild)?;
 
     let mut user = USER.load(deps.storage, info.sender.clone())?;
+    let old_guild_id = user.guild_id;
+
     user.guild_id = state.guild_count;
     user.guild_contributed_uusd = Uint128::zero();
-    USER.save(deps.storage, info.sender, &user)?;
+    USER.save(deps.storage, info.sender.clone(), &user)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "create_guild"),
-        attr("id", state.guild_count.to_string()),
+        attr("sender", info.sender),
+        attr("old_guild_id", old_guild_id.to_string()),
+        attr("new_guild_id", state.guild_count.to_string()),
     ]))
 }
 
@@ -52,13 +56,14 @@ pub fn migrate_guild(
 
     let mut user = USER.load(deps.storage, info.sender.clone())?;
 
-    let mut old_guild = GUILD.load(deps.storage, user.guild_id)?;
+    let old_guild_id = user.guild_id;
+    let mut old_guild = GUILD.load(deps.storage, old_guild_id)?;
     old_guild.users.retain(|u| u.address != info.sender);
-    GUILD.save(deps.storage, user.guild_id, &old_guild)?;
+    GUILD.save(deps.storage, old_guild_id, &old_guild)?;
 
     user.guild_id = guild_id;
     user.guild_contributed_uusd = Uint128::zero();
-    USER.save(deps.storage, info.sender, &user)?;
+    USER.save(deps.storage, info.sender.clone(), &user)?;
 
     let mut guild = GUILD.load(deps.storage, guild_id)?;
     guild.users.push(user);
@@ -66,6 +71,8 @@ pub fn migrate_guild(
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "migrate_guild"),
-        attr("id", guild_id.to_string()),
+        attr("sender", info.sender),
+        attr("old_guild_id", old_guild_id.to_string()),
+        attr("new_guild_id", guild_id.to_string()),
     ]))
 }
