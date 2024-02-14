@@ -2,6 +2,7 @@ mod executions;
 mod instantiate;
 mod queries;
 mod terra_bindings;
+mod utils;
 
 const USER: &str = "user1";
 const REFERRER: &str = "referrer1";
