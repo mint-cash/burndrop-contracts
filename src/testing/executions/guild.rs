@@ -60,14 +60,12 @@ fn success_create_guild() {
         },
         &[],
     );
-
     assert!(create_guild_res.is_ok());
-
     let create_guild_res: AppResponse = create_guild_res.unwrap();
     create_guild_res.assert_event(
         &Event::new("wasm")
             .add_attribute("action", "create_guild")
-            .add_attribute("_contract_address", "contract0")
+            .add_attribute("_contract_address", burn_contract.addr())
             .add_attribute("sender", Addr::unchecked(USER))
             .add_attribute("old_guild_id", "0")
             .add_attribute("new_guild_id", "1"),
@@ -157,13 +155,12 @@ fn success_migrate_guild() {
         },
         &[],
     );
-
     assert!(create_guild_res.is_ok());
     let create_guild_res: AppResponse = create_guild_res.unwrap();
     create_guild_res.assert_event(
         &Event::new("wasm")
             .add_attribute("action", "create_guild")
-            .add_attribute("_contract_address", "contract0")
+            .add_attribute("_contract_address", burn_contract.addr())
             .add_attribute("sender", Addr::unchecked(USER))
             .add_attribute("old_guild_id", "0")
             .add_attribute("new_guild_id", "1"),
@@ -266,13 +263,12 @@ fn success_migrate_guild() {
         },
         &[],
     );
-
     assert!(migrate_guild_res.is_ok());
     let migrate_guild_res: AppResponse = migrate_guild_res.unwrap();
     migrate_guild_res.assert_event(
         &Event::new("wasm")
             .add_attribute("action", "migrate_guild")
-            .add_attribute("_contract_address", "contract0")
+            .add_attribute("_contract_address", burn_contract.addr())
             .add_attribute("sender", Addr::unchecked(REFERRER))
             .add_attribute("old_guild_id", "0")
             .add_attribute("new_guild_id", "1"),
