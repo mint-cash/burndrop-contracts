@@ -153,7 +153,7 @@ pub fn burn_uusd(
         }
     }
 
-    Ok(Response::new().add_message(burn_msg).add_attributes(vec![
+    let mut attributes = vec![
         attr("action", "burn_uusd"),
         attr("sender", info.sender),
         attr("sender_guild_id", sender.guild_id.to_string()),
@@ -161,5 +161,13 @@ pub fn burn_uusd(
         attr("swapped_in", res.swapped_in.to_string()),
         attr("swapped_out_oppamint", res.swapped_out.oppamint.to_string()),
         attr("swapped_out_ancs", res.swapped_out.ancs.to_string()),
-    ]))
+    ];
+
+    if let Some(referrer) = referrer {
+        attributes.push(attr("referrer", referrer));
+    }
+
+    Ok(Response::new()
+        .add_message(burn_msg)
+        .add_attributes(attributes))
 }

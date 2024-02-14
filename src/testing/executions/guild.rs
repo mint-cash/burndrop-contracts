@@ -159,6 +159,7 @@ fn success_migrate_guild() {
     let expected_event = Event::new("wasm").add_attributes(vec![
         ("action", "create_guild"),
         ("sender", USER),
+        ("referrer", REFERRER),
         ("old_guild_id", "0"),
         ("new_guild_id", "1"),
         ("new_guild_name", "Test Guild"),

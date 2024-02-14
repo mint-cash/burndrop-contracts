@@ -37,14 +37,21 @@ pub fn create_guild(
     user.guild_contributed_uusd = Uint128::zero();
     USER.save(deps.storage, info.sender.clone(), &user)?;
 
-    Ok(Response::new().add_attributes(vec![
+    let mut attributes = vec![
         attr("action", "create_guild"),
         attr("sender", info.sender),
         attr("old_guild_id", old_guild_id.to_string()),
         attr("new_guild_id", state.guild_count.to_string()),
         attr("new_guild_name", new_guild.name),
         attr("new_guild_slug", new_guild.slug),
-    ]))
+    ];
+
+    if let Some(referrer) = referrer {
+        attributes.push(attr("referrer", referrer));
+    }
+
+    Ok(Response::new() //
+        .add_attributes(attributes))
 }
 
 pub fn migrate_guild(
@@ -71,10 +78,17 @@ pub fn migrate_guild(
     guild.users.push(user);
     GUILD.save(deps.storage, guild_id, &guild)?;
 
-    Ok(Response::new().add_attributes(vec![
+    let mut attributes = vec![
         attr("action", "migrate_guild"),
         attr("sender", info.sender),
         attr("old_guild_id", old_guild_id.to_string()),
         attr("new_guild_id", guild_id.to_string()),
-    ]))
+    ];
+
+    if let Some(referrer) = referrer {
+        attributes.push(attr("referrer", referrer));
+    }
+
+    Ok(Response::new() //
+        .add_attributes(attributes))
 }
