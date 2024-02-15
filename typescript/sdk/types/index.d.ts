@@ -6,10 +6,10 @@
 import * as _1 from './Burndrop.client';
 import * as _2 from './Burndrop.message-composer';
 export declare namespace contracts {
-    const Burndrop: {
-        BurndropMsgComposer: typeof _2.BurndropMsgComposer;
-        BurndropQueryClient: typeof _1.BurndropQueryClient;
-        BurndropClient: typeof _1.BurndropClient;
-    };
+  const Burndrop: {
+    BurndropMsgComposer: typeof _2.BurndropMsgComposer;
+    BurndropQueryClient: typeof _1.BurndropQueryClient;
+    BurndropClient: typeof _1.BurndropClient;
+  };
 }
 //# sourceMappingURL=index.d.ts.map

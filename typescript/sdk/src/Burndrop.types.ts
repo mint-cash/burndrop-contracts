@@ -8,7 +8,6 @@ export type Uint128 = string;
 export interface InstantiateMsg {
   default_query_limit: number;
   genesis_guild_name: string;
-  genesis_guild_slug: string;
   initial_slot_size: Uint128;
   max_query_limit: number;
   rounds: SwapRound[];
@@ -65,7 +64,6 @@ export type ExecuteMsg =
       create_guild: {
         name: string;
         referrer?: string | null;
-        slug: string;
       };
     }
   | {

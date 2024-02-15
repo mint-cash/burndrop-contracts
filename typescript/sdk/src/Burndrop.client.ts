@@ -207,11 +207,9 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
     {
       name,
       referrer,
-      slug,
     }: {
       name: string;
       referrer?: string;
-      slug: string;
     },
     fee?: number | StdFee | 'auto',
     memo?: string,
@@ -405,11 +403,9 @@ export class BurndropClient
     {
       name,
       referrer,
-      slug,
     }: {
       name: string;
       referrer?: string;
-      slug: string;
     },
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,
@@ -422,7 +418,6 @@ export class BurndropClient
         create_guild: {
           name,
           referrer,
-          slug,
         },
       },
       fee,

@@ -63,7 +63,6 @@ async function main() {
     max_query_limit: 30,
     default_query_limit: 10,
     genesis_guild_name: 'Genesis Guild',
-    genesis_guild_slug: 'genesis-guild',
   };
 
   const instantiateContractMsg = encodeInstantiateMsg({
