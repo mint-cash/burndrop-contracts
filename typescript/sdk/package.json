@@ -10,7 +10,7 @@
     "types"
   ],
   "scripts": {
-    "build": "rimraf ./dist && swc src --config-file .swcrc -d dist && tsc --emitDeclarationOnly",
+    "build": "rimraf ./dist && swc src --config-file .swcrc -d dist && tsc --emitDeclarationOnly && prettier --write .",
     "codegen": "node ./scripts/codegen.js"
   },
   "dependencies": {
