@@ -47,22 +47,22 @@ pub fn default() -> (TerraApp, BurnContract) {
     let mut app = mock_app(vec![
         UserBalance {
             address: Addr::unchecked(USER),
-            balance: Uint128::new(1_000_000),
+            balance: Uint128::new(1_000_000 * (10u128).pow(6)),
         },
         UserBalance {
             address: Addr::unchecked(REFERRER),
-            balance: Uint128::new(500_000),
+            balance: Uint128::new(500_000 * (10u128).pow(6)),
         },
         UserBalance {
             address: Addr::unchecked(SECOND_REFERRER),
-            balance: Uint128::new(500_000),
+            balance: Uint128::new(500_000 * (10u128).pow(6)),
         },
     ]);
 
     let contract_burn_id = app.store_code(contract_burndrop());
 
     let instantiate_msg: InstantiateMsg = InstantiateMsg {
-        initial_slot_size: Uint128::new(1_000),
+        initial_slot_size: Uint128::new(1_000 * (10u128).pow(6)),
 
         rounds: vec![SwapRound {
             id: 1,
@@ -71,12 +71,12 @@ pub fn default() -> (TerraApp, BurnContract) {
             end_time: 1706001650,
 
             oppamint_liquidity: LiquidityPair {
-                x: Uint128::new(500_000),
-                y: Uint128::new(1_000_000),
+                x: Uint128::new(500_000 * (10u128).pow(6)),
+                y: Uint128::new(1_000_000 * (10u128).pow(6)),
             },
             ancs_liquidity: LiquidityPair {
-                x: Uint128::new(250_000),
-                y: Uint128::new(750_000),
+                x: Uint128::new(250_000 * (10u128).pow(6)),
+                y: Uint128::new(750_000 * (10u128).pow(6)),
             },
 
             oppamint_weight: 3,
@@ -115,7 +115,7 @@ pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
         .iter()
         .map(|user| UserBalance {
             address: Addr::unchecked(user.clone()),
-            balance: Uint128::new(500_000),
+            balance: Uint128::new(500_000 * (10u128).pow(6)),
         })
         .collect();
 
@@ -124,7 +124,7 @@ pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
     let contract_burn_id = app.store_code(contract_burndrop());
 
     let instantiate_msg: InstantiateMsg = InstantiateMsg {
-        initial_slot_size: Uint128::new(1_000),
+        initial_slot_size: Uint128::new(1_000 * (10u128).pow(6)),
 
         rounds: vec![SwapRound {
             id: 1,
@@ -133,12 +133,12 @@ pub fn default_with_users(users: Vec<String>) -> (TerraApp, BurnContract) {
             end_time: 1706001650,
 
             oppamint_liquidity: LiquidityPair {
-                x: Uint128::new(500_000),
-                y: Uint128::new(1_000_000),
+                x: Uint128::new(500_000 * (10u128).pow(6)),
+                y: Uint128::new(1_000_000 * (10u128).pow(6)),
             },
             ancs_liquidity: LiquidityPair {
-                x: Uint128::new(250_000),
-                y: Uint128::new(750_000),
+                x: Uint128::new(250_000 * (10u128).pow(6)),
+                y: Uint128::new(750_000 * (10u128).pow(6)),
             },
 
             oppamint_weight: 3,

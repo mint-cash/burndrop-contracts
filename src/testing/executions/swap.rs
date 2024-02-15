@@ -50,8 +50,7 @@ pub fn execute_swap(
 #[test]
 fn success_during_period() {
     let (mut app, burn_contract) = instantiate::default();
-    // Try to burn some tokens for a user with a referrer.
-    let burn_amount = Uint128::new(100);
+    let burn_amount = Uint128::new(999 * (10u128).pow(6)); // 999 USTC
 
     let execute_res = execute_swap(
         &mut app,
@@ -72,9 +71,9 @@ fn success_during_period() {
             ("sender_guild_id", "0"),
             ("referrer", REFERRER),
             ("amount", &burn_amount.to_string()),
-            ("swapped_in", "100"),
-            ("swapped_out_oppamint", "120"),
-            ("swapped_out_ancs", "120"),
+            ("swapped_in", "999000000"),
+            ("swapped_out_oppamint", "1197364600"),
+            ("swapped_out_ancs", "1196886896"),
             ("_contract_address", burn_contract.addr().as_str()),
         ],
     );
@@ -91,14 +90,14 @@ fn success_during_period() {
         .unwrap();
 
     // Perform assertions based on the expected state after burning tokens.
-    assert_eq!(query_res.slot_size, Uint128::new(1000));
+    assert_eq!(query_res.slot_size, Uint128::new(1000 * (10u128).pow(6))); // 1000000000
     assert_eq!(query_res.slots, Uint128::new(1));
-    assert_eq!(query_res.cap, Uint128::new(1000));
+    assert_eq!(query_res.cap, Uint128::new(1000 * (10u128).pow(6)));
 
-    assert_eq!(query_res.burned, Uint128::new(100));
-    assert_eq!(query_res.burnable, Uint128::new(900));
-    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(120));
-    assert_eq!(query_res.swapped_out.ancs, Uint128::new(120));
+    assert_eq!(query_res.burned, Uint128::new(999 * (10u128).pow(6)));
+    assert_eq!(query_res.burnable, Uint128::new(1 * (10u128).pow(6)));
+    assert_eq!(query_res.swapped_out.oppamint, Uint128::new(1197364600));
+    assert_eq!(query_res.swapped_out.ancs, Uint128::new(1196886896));
 
     // balance of burn address terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu
     let balance = app
@@ -109,7 +108,7 @@ fn success_during_period() {
         )
         .unwrap();
     assert_eq!(balance.denom, "uusd");
-    assert_eq!(balance.amount, Uint128::new(95)); // 5% deducted tax
+    assert_eq!(balance.amount, Uint128::new(994029850)); // 994.02985 burned (deducted tax)
 }
 
 #[test]
@@ -153,12 +152,12 @@ fn success_odd_amount() {
         .unwrap();
 
     // Perform assertions based on the expected state after burning tokens.
-    assert_eq!(query_res.slot_size, Uint128::new(1000));
+    assert_eq!(query_res.slot_size, Uint128::new(1000 * (10u128).pow(6)));
     assert_eq!(query_res.slots, Uint128::new(1));
-    assert_eq!(query_res.cap, Uint128::new(1000));
+    assert_eq!(query_res.cap, Uint128::new(1000 * (10u128).pow(6)));
 
     assert_eq!(query_res.burned, Uint128::new(98));
-    assert_eq!(query_res.burnable, Uint128::new(902));
+    assert_eq!(query_res.burnable, Uint128::new(999999902));
     assert_eq!(query_res.swapped_out.oppamint, Uint128::new(118));
     assert_eq!(query_res.swapped_out.ancs, Uint128::new(117));
 }
@@ -283,12 +282,12 @@ fn success_during_modified_period() {
         .unwrap();
 
     // Perform assertions based on the expected state after burning tokens.
-    assert_eq!(query_res.slot_size, Uint128::new(1000));
+    assert_eq!(query_res.slot_size, Uint128::new(1000 * (10u128).pow(6)));
     assert_eq!(query_res.slots, Uint128::new(1));
-    assert_eq!(query_res.cap, Uint128::new(1000));
+    assert_eq!(query_res.cap, Uint128::new(1000 * (10u128).pow(6)));
 
     assert_eq!(query_res.burned, Uint128::new(100));
-    assert_eq!(query_res.burnable, Uint128::new(900));
+    assert_eq!(query_res.burnable, Uint128::new(999999900));
     assert_eq!(query_res.swapped_out.oppamint, Uint128::new(120));
     assert_eq!(query_res.swapped_out.ancs, Uint128::new(120));
 }
@@ -340,12 +339,12 @@ pub fn success_over_min_amount_out() {
         .unwrap();
 
     // Perform assertions based on the expected state after burning tokens.
-    assert_eq!(query_res.slot_size, Uint128::new(1000));
+    assert_eq!(query_res.slot_size, Uint128::new(1000 * (10u128).pow(6)));
     assert_eq!(query_res.slots, Uint128::new(1));
-    assert_eq!(query_res.cap, Uint128::new(1000));
+    assert_eq!(query_res.cap, Uint128::new(1000 * (10u128).pow(6)));
 
     assert_eq!(query_res.burned, Uint128::new(100));
-    assert_eq!(query_res.burnable, Uint128::new(900));
+    assert_eq!(query_res.burnable, Uint128::new(999999900));
     assert_eq!(query_res.swapped_out.oppamint, Uint128::new(120));
     assert_eq!(query_res.swapped_out.ancs, Uint128::new(120));
 }

@@ -14,5 +14,5 @@ fn test_query_config() {
         .unwrap();
 
     assert_eq!(query_res.owner, Addr::unchecked(ADMIN));
-    assert_eq!(query_res.slot_size, Uint128::new(1_000));
+    assert_eq!(query_res.slot_size, Uint128::new(1_000 * (10u128).pow(6)));
 }
