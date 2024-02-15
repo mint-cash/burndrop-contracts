@@ -10,7 +10,7 @@ const schemaDir = path.join(YARN_WORKSPACE_ROOT, 'schema');
 const outPath = path.join(YARN_WORKSPACE_ROOT, 'typescript', 'sdk', 'src');
 fs.rmSync(outPath, { recursive: true, force: true });
 
-const PRETTIER_CONFIG_PATH = path.join(YARN_WORKSPACE_ROOT, '.prettierrc');
+const PRETTIER_CONFIG_PATH = path.join(YARN_WORKSPACE_ROOT, '.prettierrc.js');
 
 const main = async () => {
   // Codegen
@@ -40,10 +40,7 @@ const main = async () => {
       const filePath = path.join(outPath, file);
       const formatted = await prettier.format(
         fs.readFileSync(filePath, 'utf8'),
-        {
-          parser: 'typescript',
-          ...config,
-        },
+        { parser: 'typescript', ...config },
       );
       return [filePath, formatted];
     }),
