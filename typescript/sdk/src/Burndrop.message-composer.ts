@@ -89,11 +89,9 @@ export interface BurndropMsg {
     {
       name,
       referrer,
-      slug,
     }: {
       name: string;
       referrer?: string;
-      slug: string;
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject;
@@ -279,11 +277,9 @@ export class BurndropMsgComposer implements BurndropMsg {
     {
       name,
       referrer,
-      slug,
     }: {
       name: string;
       referrer?: string;
-      slug: string;
     },
     _funds?: Coin[],
   ): MsgExecuteContractEncodeObject => {
@@ -297,7 +293,6 @@ export class BurndropMsgComposer implements BurndropMsg {
             create_guild: {
               name,
               referrer,
-              slug,
             },
           }),
         ),

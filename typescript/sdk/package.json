@@ -1,6 +1,6 @@
 {
   "name": "@mint-cash/burndrop-sdk",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "license": "Apache-2.0",
   "type": "commonjs",
   "main": "dist/index.js",
@@ -10,7 +10,7 @@
     "types"
   ],
   "scripts": {
-    "build": "rimraf ./dist && swc src --config-file .swcrc -d dist && tsc --emitDeclarationOnly",
+    "build": "rimraf ./dist && swc src --config-file .swcrc -d dist && tsc --emitDeclarationOnly && prettier --write .",
     "codegen": "node ./scripts/codegen.js"
   },
   "dependencies": {
