@@ -49,12 +49,12 @@ async function main() {
         start_time: Math.floor(Date.now() / 1000),
         end_time: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
         oppamint_liquidity: {
-          x: '50000000',
-          y: '100000000',
+          x: (225n * 1000000n * 10n ** 6n).toString(), // 225M
+          y: (150n * 1000000n * 10n ** 6n).toString(), // 150M
         },
         ancs_liquidity: {
-          x: '200000000',
-          y: '3000000000',
+          x: (75n * 1000000n * 10n ** 6n).toString(), // 75M
+          y: (75n * 1000000n * 10n ** 6n).toString(), // 75M
         },
         oppamint_weight: 3,
         ancs_weight: 2,
@@ -90,7 +90,9 @@ async function main() {
   const contractAddress = instantiateEvent?.attributes.find(
     (attr) => attr.key === '_contract_address',
   )?.value;
-  console.log(`Deployed at ${contractAddress}`);
+  console.log(
+    `Deployed to contract: ${contractAddress} in block height: ${instantiateResult.height}`,
+  );
 }
 
 main().catch(console.error);

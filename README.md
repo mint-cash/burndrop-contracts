@@ -69,7 +69,7 @@ docker-compose up -d
 ##### Deploy to local network
 
 ```bash
-cd typescript/sdk
+cd typescript/deployer
 
 # run deploy script
 # yarn start localterra/1-deploy.ts
@@ -89,7 +89,7 @@ MNEMONIC="typical hood basket desert stumble outside brisk blind total setup dis
 WIP
 
 ```bash
-cd typescript/sdk
+cd typescript/deployer
 
 # run deploy script
 # yarn start localterra/1-deploy.ts
