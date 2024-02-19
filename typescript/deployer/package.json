@@ -2,9 +2,8 @@
   "name": "@mint-cash/burndrop-deployer",
   "private": true,
   "version": "0.1.1",
-  "type": "module",
   "scripts": {
-    "start": "tsx"
+    "start": "ts-node"
   },
   "dependencies": {
     "@cosmjs/amino": "^0.32.2",
@@ -20,7 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.16.0",
-    "tsx": "^4.7.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.4"
   }
 }
