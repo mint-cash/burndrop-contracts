@@ -1,4 +1,4 @@
-import { InstantiateMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
+import { InstantiateMsg } from '@mint-cash/burndrop-sdk/dist/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice } from '@cosmjs/stargate';
 import fs from 'fs';
@@ -9,7 +9,7 @@ import {
   calculateFee,
   encodeInstantiateMsg,
   trySimulateExecuteMsg,
-} from '../cosmos/tx';
+} from '@mint-cash/burndrop-sdk/dist/utils';
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
 

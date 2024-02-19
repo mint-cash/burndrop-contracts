@@ -1,16 +1,29 @@
 {
   "name": "@mint-cash/burndrop-sdk",
-  "version": "0.9.0",
+  "version": "0.9.0-canary.1",
   "license": "Apache-2.0",
   "type": "commonjs",
-  "main": "dist/index.js",
-  "types": "types/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    },
+    "./dist/utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    }
+  },
   "scripts": {
-    "build": "rimraf ./dist && rimraf ./types && swc src --config-file .swcrc -d dist && tsc --emitDeclarationOnly && prettier --write .",
+    "build": "rimraf ./dist && swc src --config-file .swcrc -d dist && tsc --emitDeclarationOnly && prettier --write .",
     "codegen": "node ./scripts/codegen.js"
   },
   "dependencies": {

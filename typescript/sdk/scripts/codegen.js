@@ -6,7 +6,13 @@ const prettier = require('prettier');
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
 const schemaDir = path.join(YARN_WORKSPACE_ROOT, 'schema');
-const outPath = path.join(YARN_WORKSPACE_ROOT, 'typescript', 'sdk', 'src');
+const outPath = path.join(
+  YARN_WORKSPACE_ROOT,
+  'typescript',
+  'sdk',
+  'src',
+  'contracts',
+);
 
 const PRETTIER_CONFIG_PATH = path.join(YARN_WORKSPACE_ROOT, '.prettierrc.js');
 

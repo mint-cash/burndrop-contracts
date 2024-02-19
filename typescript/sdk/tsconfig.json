@@ -7,8 +7,6 @@
     "strict": true,
     "esModuleInterop": true,
     "declaration": true,
-    "declarationDir": "types",
-    "declarationMap": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
