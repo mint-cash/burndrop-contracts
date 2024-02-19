@@ -18,10 +18,12 @@ export const calculateFee = (
   const gasLimit = Math.round(gasUsed * gasAdjustment);
 
   return {
-    amount: coin(
-      gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
-      gasPrice.denom,
-    ),
+    amount: [
+      coin(
+        gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
+        gasPrice.denom,
+      ),
+    ],
     gas: gasLimit.toString(),
   };
 };
