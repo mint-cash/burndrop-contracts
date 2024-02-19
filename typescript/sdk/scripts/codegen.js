@@ -6,9 +6,13 @@ const prettier = require('prettier');
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
 const schemaDir = path.join(YARN_WORKSPACE_ROOT, 'schema');
-
-const outPath = path.join(YARN_WORKSPACE_ROOT, 'typescript', 'sdk', 'src');
-fs.rmSync(outPath, { recursive: true, force: true });
+const outPath = path.join(
+  YARN_WORKSPACE_ROOT,
+  'typescript',
+  'sdk',
+  'src',
+  'contracts',
+);
 
 const PRETTIER_CONFIG_PATH = path.join(YARN_WORKSPACE_ROOT, '.prettierrc.js');
 
@@ -38,6 +42,9 @@ const main = async () => {
   const promises = await Promise.all(
     files.map(async (file) => {
       const filePath = path.join(outPath, file);
+      if (fs.lstatSync(filePath).isDirectory()) {
+        return null;
+      }
       const formatted = await prettier.format(
         fs.readFileSync(filePath, 'utf8'),
         { parser: 'typescript', ...config },
@@ -45,7 +52,11 @@ const main = async () => {
       return [filePath, formatted];
     }),
   );
-  promises.forEach(([filePath, formatted]) => {
+  promises.forEach((out) => {
+    if (!out) {
+      return;
+    }
+    const [filePath, formatted] = out;
     fs.writeFileSync(filePath, formatted);
   });
   console.log('💅 Typescript code is formatted successfully!');

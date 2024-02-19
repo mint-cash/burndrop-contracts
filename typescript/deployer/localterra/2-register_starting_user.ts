@@ -1,13 +1,13 @@
-import { ExecuteMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice } from '@cosmjs/stargate';
-
-import { config } from '../utils/config';
 import {
+  type ExecuteMsg,
   calculateFee,
   encodeExecuteMsg,
-  trySimulateExecuteMsg,
-} from '../cosmos/tx';
+  trySimulateEncodedMsg,
+} from '@mint-cash/burndrop-sdk';
+
+import { config } from '../utils/config';
 
 async function main() {
   const signer = await config.getSigner();
@@ -30,11 +30,12 @@ async function main() {
     },
   };
   const executeMsg = encodeExecuteMsg({
+    contract: config.contractAddress,
     sender,
     msg,
     funds: [],
   });
-  const gasInfo = await trySimulateExecuteMsg({
+  const gasInfo = await trySimulateEncodedMsg({
     sender,
     encodedMsg: executeMsg,
     signingCosmwasmClient: client,

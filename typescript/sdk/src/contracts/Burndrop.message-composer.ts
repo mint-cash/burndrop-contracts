@@ -3,33 +3,34 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
  */
-
 import { Coin } from '@cosmjs/amino';
 import { MsgExecuteContractEncodeObject } from '@cosmjs/cosmwasm-stargate';
-import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { toUtf8 } from '@cosmjs/encoding';
+import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
+
 import {
-  Uint128,
-  InstantiateMsg,
-  SwapRound,
-  LiquidityPair,
-  ExecuteMsg,
-  OutputTokenMapForUint128,
-  UpdateRoundParams,
-  QueryMsg,
-  OrderBy,
-  MigrateMsg,
   Addr,
   Config,
   Decimal,
-  PriceResponse,
-  OutputTokenMapForDecimal,
+  ExecuteMsg,
   GuildInfoResponse,
+  InstantiateMsg,
+  LiquidityPair,
+  MigrateMsg,
+  OrderBy,
+  OutputTokenMapForDecimal,
+  OutputTokenMapForUint128,
+  PriceResponse,
+  QueryMsg,
   RoundsResponse,
   SimulateBurnResponse,
+  SwapRound,
+  Uint128,
+  UpdateRoundParams,
   UserInfoResponse,
   UsersInfoResponse,
 } from './Burndrop.types';
+
 export interface BurndropMsg {
   contractAddress: string;
   sender: string;

@@ -5,11 +5,8 @@
  */
 import * as _1 from './Burndrop.client';
 import * as _2 from './Burndrop.message-composer';
-export declare namespace contracts {
-  const Burndrop: {
-    BurndropMsgComposer: typeof _2.BurndropMsgComposer;
-    BurndropQueryClient: typeof _1.BurndropQueryClient;
-    BurndropClient: typeof _1.BurndropClient;
-  };
+import * as _0 from './Burndrop.types';
+
+export namespace contracts {
+  export const Burndrop = { ..._0, ..._1, ..._2 };
 }
-//# sourceMappingURL=index.d.ts.map

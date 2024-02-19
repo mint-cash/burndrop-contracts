@@ -7,15 +7,13 @@
     "strict": true,
     "esModuleInterop": true,
     "declaration": true,
-    "declarationDir": "types",
-    "declarationMap": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "baseUrl": "src",
-    "outDir": "dist",
+    "outDir": "dist"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }
