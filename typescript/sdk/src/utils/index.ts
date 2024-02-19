@@ -11,7 +11,7 @@ export {
 export {
   DEFAULT_GAS,
   DEFAULT_GAS_ADJUSTMENT,
-  DEFAULT_GAS_PRICES,
+  DEFAULT_GAS_PRICE,
   calculateFee,
   calculateBurnFee,
 } from './gas';
