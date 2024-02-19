@@ -4,7 +4,7 @@ import { GasPrice } from '@cosmjs/stargate';
 import { config } from '../utils/config';
 import sdk from '@mint-cash/burndrop-sdk';
 import {
-  calculateFee,
+  calculateBurnFee,
   encodeExecuteMsg,
   trySimulateExecuteMsg,
 } from '../cosmos/tx';
@@ -53,7 +53,10 @@ async function main() {
   });
   console.log(gasInfo);
 
-  const calculatedFee = calculateFee(gasInfo?.gasUsed);
+  const calculatedFee = calculateBurnFee(
+    gasInfo?.gasUsed,
+    msg.burn_uusd.amount,
+  );
   const executeResult = await client.signAndBroadcast(
     sender,
     [executeMsg],
