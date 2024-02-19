@@ -53,7 +53,10 @@ async function main() {
   });
   console.log(gasInfo);
 
-  const calculatedFee = calculateFee(gasInfo?.gasUsed);
+  // 0.0233 = 0.0035 / 0.15
+  const calculatedFee = calculateFee(
+    (BigInt(msg.burn_uusd.amount) * 233n) / 10000n,
+  );
   const executeResult = await client.signAndBroadcast(
     sender,
     [executeMsg],
