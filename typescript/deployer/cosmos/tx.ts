@@ -121,3 +121,30 @@ export const calculateFee = (
     gas: gasLimit.toString(),
   };
 };
+
+export const calculateBurnFee = (
+  estimatedGasUsed: bigint | undefined,
+  burnAmount: string,
+  gasAdjustment: number = DEFAULT_GAS_ADJUSTMENT,
+  gasPrices: GasPrice[] = DEFAULT_GAS_PRICES,
+) => {
+  const gasUsed = Uint53.fromString(
+    estimatedGasUsed?.toString() || DEFAULT_GAS,
+  ).toNumber();
+  const gasLimit = Math.round(gasUsed * gasAdjustment);
+  const gasLimitFromBurnAmount = Math.round(
+    Uint53.fromString(burnAmount).toNumber() * 0.0233 * gasAdjustment,
+  );
+
+  // 0.0233 = 0.0035 / 0.15
+  return {
+    amount: gasPrices.map(({ amount, denom }) => {
+      const fee = amount
+        .multiply(new Uint53(Math.max(gasLimit, gasLimitFromBurnAmount)))
+        .ceil()
+        .toString();
+      return coin(fee, denom);
+    }),
+    gas: gasLimit.toString(),
+  };
+};
