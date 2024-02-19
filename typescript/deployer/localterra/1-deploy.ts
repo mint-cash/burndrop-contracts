@@ -1,4 +1,3 @@
-import { InstantiateMsg } from '@mint-cash/burndrop-sdk/dist/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice } from '@cosmjs/stargate';
 import fs from 'fs';
@@ -6,10 +5,11 @@ import findWorkspaceRoot from 'find-yarn-workspace-root';
 import path from 'path';
 import { config } from '../utils/config';
 import {
+  type InstantiateMsg,
   calculateFee,
   encodeInstantiateMsg,
-  trySimulateExecuteMsg,
-} from '@mint-cash/burndrop-sdk/dist/utils';
+  trySimulateEncodedMsg,
+} from '@mint-cash/burndrop-sdk';
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
 
@@ -71,7 +71,7 @@ async function main() {
     label: 'burndrop',
     codeId: uploadResult.codeId,
   });
-  const gasInfo = await trySimulateExecuteMsg({
+  const gasInfo = await trySimulateEncodedMsg({
     sender,
     encodedMsg: instantiateContractMsg,
     signingCosmwasmClient: client,

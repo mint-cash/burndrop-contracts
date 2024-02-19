@@ -1,13 +1,13 @@
-import { ExecuteMsg } from '@mint-cash/burndrop-sdk/types/Burndrop.types';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice } from '@cosmjs/stargate';
 import { config } from '../utils/config';
-import sdk from '@mint-cash/burndrop-sdk';
 import {
+  type ExecuteMsg,
+  sdk,
   calculateBurnFee,
   encodeExecuteMsg,
-  trySimulateExecuteMsg,
-} from '../cosmos/tx';
+  trySimulateEncodedMsg,
+} from '@mint-cash/burndrop-sdk';
 
 async function main() {
   const signer = await config.getSigner();
@@ -23,7 +23,7 @@ async function main() {
   const block = await client.getBlock();
   console.log(block.header.height, block.header.chainId);
 
-  const burndropQueryClient = new sdk.contracts.Burndrop.BurndropQueryClient(
+  const burndropQueryClient = new sdk.Burndrop.BurndropQueryClient(
     client,
     config.contractAddress,
   );
@@ -42,11 +42,12 @@ async function main() {
     },
   };
   const executeMsg = encodeExecuteMsg({
+    contract: config.contractAddress,
     sender,
     msg,
     funds: [{ denom: 'uusd', amount: msg.burn_uusd.amount }],
   });
-  const gasInfo = await trySimulateExecuteMsg({
+  const gasInfo = await trySimulateEncodedMsg({
     sender,
     encodedMsg: executeMsg,
     signingCosmwasmClient: client,

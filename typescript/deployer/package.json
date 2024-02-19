@@ -14,7 +14,7 @@
     "@cosmjs/math": "^0.32.2",
     "@cosmjs/proto-signing": "^0.32.2",
     "@cosmjs/stargate": "^0.32.2",
-    "@mint-cash/burndrop-sdk": "0.9.0-canary.0",
+    "@mint-cash/burndrop-sdk": "workspace:^",
     "cosmjs-types": "^0.9.0",
     "find-yarn-workspace-root": "^2.0.0"
   },
