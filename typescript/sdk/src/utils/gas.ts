@@ -43,9 +43,10 @@ export const calculateBurnFee = (
     gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
   );
   const stability = BigInt(burnAmount) / 200n;
+  const fee = gas + stability;
 
   return {
-    amount: [coin((gas + stability).toString(), gasPrice.denom)],
-    gas: gasLimit.toString(),
+    amount: [coin(fee.toString(), gasPrice.denom)],
+    gas: (Number(fee) / Number(gasPrice.amount.toString())).toString(),
   };
 };
