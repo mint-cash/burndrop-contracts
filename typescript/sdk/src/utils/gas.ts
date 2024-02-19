@@ -5,15 +5,12 @@ export const DEFAULT_GAS = '300000'; // 300K
 export const DEFAULT_GAS_ADJUSTMENT = 1.4;
 
 // https://terra-classic-fcd.publicnode.com/v1/txs/gas_prices
-export const DEFAULT_GAS_PRICES = [
-  GasPrice.fromString('28.325uluna'),
-  GasPrice.fromString('0.75uusd'),
-];
+export const DEFAULT_GAS_PRICE = GasPrice.fromString('0.15uusd');
 
 export const calculateFee = (
   estimatedGasUsed: bigint | undefined,
   gasAdjustment: number = DEFAULT_GAS_ADJUSTMENT,
-  gasPrices: GasPrice[] = DEFAULT_GAS_PRICES,
+  gasPrice: GasPrice = DEFAULT_GAS_PRICE,
 ) => {
   const gasUsed = Uint53.fromString(
     estimatedGasUsed?.toString() || DEFAULT_GAS,
@@ -21,13 +18,10 @@ export const calculateFee = (
   const gasLimit = Math.round(gasUsed * gasAdjustment);
 
   return {
-    amount: gasPrices.map(({ amount: gasPriceAmount, denom }) => {
-      const fee = gasPriceAmount
-        .multiply(new Uint53(gasLimit))
-        .ceil()
-        .toString();
-      return coin(fee, denom);
-    }),
+    amount: coin(
+      gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
+      gasPrice.denom,
+    ),
     gas: gasLimit.toString(),
   };
 };
@@ -36,25 +30,20 @@ export const calculateBurnFee = (
   estimatedGasUsed: bigint | undefined,
   burnAmount: string,
   gasAdjustment: number = DEFAULT_GAS_ADJUSTMENT,
-  gasPrices: GasPrice[] = DEFAULT_GAS_PRICES,
+  gasPrice: GasPrice = DEFAULT_GAS_PRICE,
 ) => {
   const gasUsed = Uint53.fromString(
     estimatedGasUsed?.toString() || DEFAULT_GAS,
   ).toNumber();
   const gasLimit = Math.round(gasUsed * gasAdjustment);
-  const gasLimitFromBurnAmount = Math.round(
-    Uint53.fromString(burnAmount).toNumber() * 0.0233 * gasAdjustment,
-  );
 
-  // 0.0233 = 0.0035 / 0.15
+  const gas = BigInt(
+    gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
+  );
+  const stability = BigInt(burnAmount) / 200n;
+
   return {
-    amount: gasPrices.map(({ amount, denom }) => {
-      const fee = amount
-        .multiply(new Uint53(Math.max(gasLimit, gasLimitFromBurnAmount)))
-        .ceil()
-        .toString();
-      return coin(fee, denom);
-    }),
+    amount: [coin((gas + stability).toString(), gasPrice.denom)],
     gas: gasLimit.toString(),
   };
 };
