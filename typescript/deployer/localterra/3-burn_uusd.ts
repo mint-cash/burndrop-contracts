@@ -1,13 +1,14 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice } from '@cosmjs/stargate';
-import { config } from '../utils/config';
 import {
   type ExecuteMsg,
-  sdk,
   calculateBurnFee,
   encodeExecuteMsg,
+  sdk,
   trySimulateEncodedMsg,
 } from '@mint-cash/burndrop-sdk';
+
+import { config } from '../utils/config';
 
 async function main() {
   const signer = await config.getSigner();

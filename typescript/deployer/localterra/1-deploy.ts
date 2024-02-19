@@ -1,15 +1,16 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice } from '@cosmjs/stargate';
-import fs from 'fs';
-import findWorkspaceRoot from 'find-yarn-workspace-root';
-import path from 'path';
-import { config } from '../utils/config';
 import {
   type InstantiateMsg,
   calculateFee,
   encodeInstantiateMsg,
   trySimulateEncodedMsg,
 } from '@mint-cash/burndrop-sdk';
+import findWorkspaceRoot from 'find-yarn-workspace-root';
+import fs from 'fs';
+import path from 'path';
+
+import { config } from '../utils/config';
 
 const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
 

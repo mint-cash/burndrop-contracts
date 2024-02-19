@@ -3,10 +3,10 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
  */
-
-import * as _0 from './Burndrop.types';
 import * as _1 from './Burndrop.client';
 import * as _2 from './Burndrop.message-composer';
+import * as _0 from './Burndrop.types';
+
 export namespace contracts {
   export const Burndrop = { ..._0, ..._1, ..._2 };
 }

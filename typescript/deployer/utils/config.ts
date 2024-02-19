@@ -1,6 +1,6 @@
-import { OfflineSigner } from '@cosmjs/proto-signing';
 import { Secp256k1HdWallet, Secp256k1Wallet } from '@cosmjs/amino';
 import { stringToPath } from '@cosmjs/crypto';
+import { OfflineSigner } from '@cosmjs/proto-signing';
 
 const chainId = 'localterra' as const;
 

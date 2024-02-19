@@ -1,5 +1,5 @@
-import { GasPrice, coin } from '@cosmjs/stargate';
 import { Uint53 } from '@cosmjs/math';
+import { GasPrice, coin } from '@cosmjs/stargate';
 
 export const DEFAULT_GAS = '300000'; // 300K
 export const DEFAULT_GAS_ADJUSTMENT = 1.4;

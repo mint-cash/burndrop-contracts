@@ -1,13 +1,13 @@
 import { toUtf8 } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
-import { ExecuteMsg } from '../contracts/Burndrop.types';
+import { MsgSend } from 'cosmjs-types/cosmos/bank/v1beta1/tx';
 import {
   MsgExecuteContract,
   MsgInstantiateContract,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 
+import { ExecuteMsg } from '../contracts/Burndrop.types';
 import { InstantiateMsg } from '../contracts/Burndrop.types';
-import { MsgSend } from 'cosmjs-types/cosmos/bank/v1beta1/tx';
 
 export type Fund = { denom: string; amount: string };
 

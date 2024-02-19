@@ -1,11 +1,11 @@
+import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { GasPrice } from '@cosmjs/stargate';
 import {
   type ExecuteMsg,
   calculateFee,
   encodeExecuteMsg,
   trySimulateEncodedMsg,
 } from '@mint-cash/burndrop-sdk';
-import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { GasPrice } from '@cosmjs/stargate';
 
 import { config } from '../utils/config';
 

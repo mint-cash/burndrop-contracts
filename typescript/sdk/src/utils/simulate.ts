@@ -1,6 +1,6 @@
 import { encodeSecp256k1Pubkey } from '@cosmjs/amino';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { EncodeObject, type AccountData } from '@cosmjs/proto-signing';
+import { type AccountData, EncodeObject } from '@cosmjs/proto-signing';
 
 export type TrySimulateEncodedMsgProps = {
   sender: string;
