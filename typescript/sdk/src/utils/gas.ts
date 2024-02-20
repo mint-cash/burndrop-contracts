@@ -47,6 +47,8 @@ export const calculateBurnFee = (
 
   return {
     amount: [coin(fee.toString(), gasPrice.denom)],
-    gas: Math.round(Number(fee) / Number(gasPrice.amount.toString())).toString(),
+    gas: Math.round(
+      Number(fee) / Number(gasPrice.amount.toString()),
+    ).toString(),
   };
 };
