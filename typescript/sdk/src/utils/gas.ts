@@ -37,7 +37,7 @@ export const calculateBurnFee = (
   const gasUsed = Uint53.fromString(
     estimatedGasUsed?.toString() || DEFAULT_GAS,
   ).toNumber();
-  const gasLimit = Math.round(gasUsed * gasAdjustment);
+  const gasLimit = Math.ceil(gasUsed * gasAdjustment);
 
   const gasFee = BigInt(
     gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
