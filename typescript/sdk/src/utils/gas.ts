@@ -39,16 +39,16 @@ export const calculateBurnFee = (
   ).toNumber();
   const gasLimit = Math.round(gasUsed * gasAdjustment);
 
-  const gas = BigInt(
+  const gasFee = BigInt(
     gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
   );
-  const stability = BigInt(burnAmount) / 200n;
-  const fee = gas + stability;
+  const stabilityFee = BigInt(burnAmount) / 200n;
+  const fee = gasFee + stabilityFee;
 
   return {
     amount: [coin(fee.toString(), gasPrice.denom)],
     gas: Math.round(
-      Number(fee) / Number(gasPrice.amount.toString()),
+      Number(gasFee) / Number(gasPrice.amount.toString()),
     ).toString(),
   };
 };
