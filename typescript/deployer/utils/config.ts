@@ -2,8 +2,6 @@ import { Secp256k1HdWallet, Secp256k1Wallet } from '@cosmjs/amino';
 import { stringToPath } from '@cosmjs/crypto';
 import { OfflineSigner } from '@cosmjs/proto-signing';
 
-const chainId = 'localterra' as const;
-
 type ConfigArgs = {
   mnemonic?: string;
   privateKey?: string;
@@ -46,17 +44,11 @@ class Config {
 
     return signer;
   }
-
-  get command(): string {
-    return `terrad --node ${this.args.endpoint} --chain-id ${chainId}`;
-  }
 }
 
 export const config = new Config({
   endpoint: process.env.ENDPOINT || 'http://localhost:26657',
   mnemonic: process.env.MNEMONIC,
   privateKey: process.env.PRIVATE_KEY,
-  contractAddress:
-    process.env.BURNDROP_CONTRACT_ADDRESS ||
-    'terra1657pee2jhf4jk8pq6yq64e758ngvum45gl866knmjkd83w6jgn3syqe77g',
+  contractAddress: process.env.BURNDROP_CONTRACT_ADDRESS || '',
 });
