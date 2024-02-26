@@ -12,10 +12,10 @@ import path from 'path';
 
 import { config } from '../utils/config';
 
-const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
+const YARN_WORKSPACE_ROOT = findWorkspaceRoot() || '';
 
 let WASM_PATH = path.join(
-  YARN_WORKSPACE_ROOT!,
+  YARN_WORKSPACE_ROOT,
   'artifacts',
   'burndrop_contracts.wasm',
 );

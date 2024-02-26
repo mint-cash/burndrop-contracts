@@ -4,7 +4,7 @@ const fs = require('fs');
 const findWorkspaceRoot = require('find-yarn-workspace-root');
 const prettier = require('prettier');
 
-const YARN_WORKSPACE_ROOT = findWorkspaceRoot();
+const YARN_WORKSPACE_ROOT = findWorkspaceRoot() || '';
 const schemaDir = path.join(YARN_WORKSPACE_ROOT, 'schema');
 const outPath = path.join(
   YARN_WORKSPACE_ROOT,
