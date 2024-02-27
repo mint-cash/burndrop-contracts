@@ -26,6 +26,9 @@ pub enum ContractError {
     #[error("Referrer already first referrer")]
     ReferrerAlreadyFirstReferrer {},
 
+    #[error("Referrer is self")]
+    ReferrerIsSelf {},
+
     #[error("Overflow")]
     Overflow {},
 

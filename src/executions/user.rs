@@ -47,6 +47,10 @@ pub fn process_first_referral(
         None => return Err(ContractError::ReferrerNotProvided {}),
     };
 
+    if referrer == user_addr.to_string() {
+        return Err(ContractError::ReferrerIsSelf {});
+    }
+
     let referrer_addr = deps.api.addr_validate(referrer)?;
     let mut referrer_user = match USER.may_load(deps.storage, referrer_addr.clone())? {
         Some(state) => state,
