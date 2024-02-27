@@ -1,4 +1,4 @@
-import { Uint53 } from '@cosmjs/math';
+import { Decimal, Uint53 } from '@cosmjs/math';
 import { GasPrice, coin } from '@cosmjs/stargate';
 import axios from 'axios';
 
@@ -12,7 +12,7 @@ export const getGasPrice = async (_url?: string) => {
     const url =
       _url || 'https://terra-classic-fcd.publicnode.com/v1/txs/gas_prices';
     const { data } = await axios.get<Record<string, string>>(url);
-    return GasPrice.fromString(data['uusd']);
+    return new GasPrice(Decimal.fromUserInput(data['uusd'], 18), 'uusd');
   } catch (err) {
     console.error(err);
     return DEFAULT_GAS_PRICE;
@@ -38,7 +38,7 @@ export const getMinStabilitySpread = async (_url?: string) => {
   }
 };
 
-export const multiplyBigIntAndFloat = (a: bigint, b: number) => {
+const multiplyBigIntAndFloat = (a: bigint, b: number) => {
   // MAX_SAFE_INTEGER is about 9e15, so we can't use 1e18 here
   const floatScale = 10n ** 6n;
   const bAsBigInt = BigInt(Math.ceil(b * Number(floatScale)));

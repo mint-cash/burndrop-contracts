@@ -1,10 +1,9 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { GasPrice } from '@cosmjs/stargate';
 import {
   type ExecuteMsg,
-  calculateBurnFee,
+  calculateFee,
   encodeExecuteMsg,
-  sdk,
+  getGasPrice,
   trySimulateEncodedMsg,
 } from '@mint-cash/burndrop-sdk';
 
@@ -18,35 +17,23 @@ async function main() {
   const client = await SigningCosmWasmClient.connectWithSigner(
     config.args.endpoint,
     signer,
-    { gasPrice: GasPrice.fromString('0.02uluna') },
+    { gasPrice: await getGasPrice() },
   );
 
   const block = await client.getBlock();
   console.log(block.header.height, block.header.chainId);
 
-  const burndropQueryClient = new sdk.Burndrop.BurndropQueryClient(
-    client,
-    config.contractAddress,
-  );
-  const userInfo = await burndropQueryClient.userInfo({ address: sender });
-  console.log(userInfo);
-
-  const {
-    rounds: [round],
-  } = await burndropQueryClient.rounds();
-  console.log(round);
-
   const msg: ExecuteMsg = {
-    burn_uusd: {
-      amount: (1 * 10 ** 6).toString(), // 1 USTC
-      referrer: userInfo.burned === '0' ? sender : undefined, // self-ref if script 2 is run
+    register_starting_user: {
+      user: 'terra1euqghzv5vra2rdu2krmj8rj58xl7yd9g7eam0u',
+      // user: sender, // self
     },
   };
   const executeMsg = encodeExecuteMsg({
     contract: config.contractAddress,
     sender,
     msg,
-    funds: [{ denom: 'uusd', amount: msg.burn_uusd.amount }],
+    funds: [],
   });
   const gasInfo = await trySimulateEncodedMsg({
     sender,
@@ -55,10 +42,7 @@ async function main() {
   });
   console.log(gasInfo);
 
-  const calculatedFee = await calculateBurnFee(
-    gasInfo?.gasUsed,
-    msg.burn_uusd.amount,
-  );
+  const calculatedFee = await calculateFee(gasInfo?.gasUsed);
   const executeResult = await client.signAndBroadcast(
     sender,
     [executeMsg],
