@@ -47,7 +47,7 @@ pub fn process_first_referral(
         None => return Err(ContractError::ReferrerNotProvided {}),
     };
 
-    if referrer == user_addr.to_string() {
+    if *referrer == user_addr.to_string() {
         return Err(ContractError::ReferrerIsSelf {});
     }
 
