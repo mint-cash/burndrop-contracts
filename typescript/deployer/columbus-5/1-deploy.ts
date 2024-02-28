@@ -1,9 +1,9 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { GasPrice } from '@cosmjs/stargate';
 import {
   type InstantiateMsg,
   calculateFee,
   encodeInstantiateMsg,
+  getGasPrice,
   trySimulateEncodedMsg,
 } from '@mint-cash/burndrop-sdk';
 import findWorkspaceRoot from 'find-yarn-workspace-root';
@@ -19,14 +19,6 @@ let WASM_PATH = path.join(
   'artifacts',
   'burndrop_contracts.wasm',
 );
-// if WASM_PATH doesn't exist, try `burndrop_contracts-aarch64.wasm`
-if (!fs.existsSync(WASM_PATH)) {
-  WASM_PATH = path.join(
-    YARN_WORKSPACE_ROOT!,
-    'artifacts',
-    'burndrop_contracts-aarch64.wasm',
-  );
-}
 
 async function main() {
   const signer = await config.getSigner();
@@ -35,7 +27,7 @@ async function main() {
   const client = await SigningCosmWasmClient.connectWithSigner(
     config.args.endpoint,
     signer,
-    { gasPrice: GasPrice.fromString('0.02uluna') },
+    { gasPrice: await getGasPrice() },
   );
 
   const wasm = fs.readFileSync(WASM_PATH);
