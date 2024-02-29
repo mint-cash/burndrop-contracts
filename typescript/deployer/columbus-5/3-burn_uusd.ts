@@ -4,6 +4,7 @@ import {
   type ExecuteMsg,
   calculateBurnFee,
   encodeExecuteMsg,
+  getGasPrice,
   sdk,
   trySimulateEncodedMsg,
 } from '@mint-cash/burndrop-sdk';
@@ -18,7 +19,7 @@ async function main() {
   const client = await SigningCosmWasmClient.connectWithSigner(
     config.args.endpoint,
     signer,
-    { gasPrice: GasPrice.fromString('0.02uluna') },
+    { gasPrice: await getGasPrice() },
   );
 
   const block = await client.getBlock();
@@ -39,7 +40,7 @@ async function main() {
   const msg: ExecuteMsg = {
     burn_uusd: {
       amount: (1 * 10 ** 6).toString(), // 1 USTC
-      referrer: userInfo.burned === '0' ? sender : undefined, // self-ref if script 2 is run
+      referrer: 'terra13wm0x7mtal0nrx80vmckad50tagak3p4v7fv3z', // self-ref if script 2 is run
     },
   };
   const executeMsg = encodeExecuteMsg({

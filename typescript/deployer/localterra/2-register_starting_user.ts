@@ -42,7 +42,7 @@ async function main() {
   });
   console.log(gasInfo);
 
-  const calculatedFee = calculateFee(gasInfo?.gasUsed);
+  const calculatedFee = await calculateFee(gasInfo?.gasUsed);
   const executeResult = await client.signAndBroadcast(
     sender,
     [executeMsg],

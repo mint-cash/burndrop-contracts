@@ -6,6 +6,7 @@
       "syntax": "typescript",
       "tsx": false
     },
+    "target": "es2020",
     "minify": {
       "compress": {
         "unused": true
