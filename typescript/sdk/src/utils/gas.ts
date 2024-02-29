@@ -19,25 +19,6 @@ export const getGasPrice = async (_url?: string) => {
   }
 };
 
-export const getMinStabilitySpread = async (_url?: string) => {
-  try {
-    const url =
-      _url ||
-      'https://terra-classic-fcd.publicnode.com/terra/market/v1beta1/params';
-    const { data } = await axios.get<{
-      params: {
-        base_pool: string;
-        pool_recovery_period: string;
-        min_stability_spread: string;
-      };
-    }>(url);
-    return data.params.min_stability_spread;
-  } catch (err) {
-    console.error(err);
-    return '0.05';
-  }
-};
-
 const multiplyBigIntAndFloat = (a: bigint, b: number) => {
   // MAX_SAFE_INTEGER is about 9e15, so we can't use 1e18 here
   const floatScale = 10n ** 6n;
@@ -82,7 +63,7 @@ export const calculateBurnFee = async (
   );
   const stabilityFee = multiplyBigIntAndFloat(
     BigInt(burnAmount),
-    Number(await getMinStabilitySpread()),
+    Number('0.005000000000000000'), // constant anyway
   );
   const fee = gasFee + stabilityFee + 1n;
 

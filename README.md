@@ -88,7 +88,6 @@ docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
   cosmwasm/rust-optimizer-arm64:0.12.11
 ```
-It is recommended to use the `x64` version of `cosmwasm/rust-optimizer` whenever possible, even on `arm64` (e.g. Apple Silicon) systems.
 
 #### Local Network
 
