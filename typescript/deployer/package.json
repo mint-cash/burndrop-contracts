@@ -2,6 +2,7 @@
   "name": "@mint-cash/burndrop-deployer",
   "private": true,
   "version": "0.1.1",
+  "license": "Apache-2.0",
   "scripts": {
     "start": "ts-node"
   },
