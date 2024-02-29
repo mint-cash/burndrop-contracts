@@ -19,11 +19,32 @@ export const getGasPrice = async (_url?: string) => {
   }
 };
 
-const multiplyBigIntAndFloat = (a: bigint, b: number) => {
-  // MAX_SAFE_INTEGER is about 9e15, so we can't use 1e18 here
-  const floatScale = 10n ** 6n;
-  const bAsBigInt = BigInt(Math.ceil(b * Number(floatScale)));
-  return (a * bAsBigInt) / floatScale;
+export const getTaxRate = async (_url?: string) => {
+  try {
+    const url =
+      _url ||
+      'https://terra-classic-lcd.publicnode.com/terra/treasury/v1beta1/tax_rate';
+    const { data } = await axios.get<{ tax_rate: string }>(url);
+    return Number(data.tax_rate);
+  } catch (err) {
+    console.error(err);
+    return 0.005;
+  }
+};
+
+export const getTaxCaps = async (_url?: string) => {
+  try {
+    const url =
+      _url ||
+      'https://terra-classic-lcd.publicnode.com/terra/treasury/v1beta1/tax_caps';
+    const { data } = await axios.get<{
+      tax_caps: { denom: string; tax_cap: string }[];
+    }>(url);
+    return data.tax_caps.find((x) => x.denom === 'uusd')?.tax_cap || null;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
 };
 
 export const calculateFee = async (
@@ -47,6 +68,13 @@ export const calculateFee = async (
   };
 };
 
+const multiplyBigIntAndFloat = (a: bigint, b: number) => {
+  // MAX_SAFE_INTEGER is about 9e15, so we can't use 1e18 here
+  const floatScale = 10n ** 6n;
+  const bAsBigInt = BigInt(Math.ceil(b * Number(floatScale)));
+  return (a * bAsBigInt) / floatScale;
+};
+
 export const calculateBurnFee = async (
   estimatedGasUsed: bigint | undefined,
   burnAmount: string,
@@ -63,9 +91,10 @@ export const calculateBurnFee = async (
   );
   const stabilityFee = multiplyBigIntAndFloat(
     BigInt(burnAmount),
-    Number('0.005000000000000000'), // constant anyway
+    await getTaxRate(),
   );
-  const fee = gasFee + stabilityFee + 1n;
+  const taxCap = await getTaxCaps();
+  const fee = taxCap && BigInt(taxCap) < stabilityFee ? taxCap : stabilityFee;
 
   return {
     amount: [coin(fee.toString(), gasPrice.denom)],

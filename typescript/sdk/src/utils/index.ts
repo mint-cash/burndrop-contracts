@@ -14,6 +14,7 @@ export {
   DEFAULT_GAS_PRICE,
   calculateFee,
   calculateBurnFee,
+  getTaxRate,
   getGasPrice,
 } from './gas';
 
