@@ -3,7 +3,7 @@ use crate::states::config::CONFIG;
 use crate::states::state::STATE;
 use crate::types::swap_round::{LiquidityPair, SwapRound};
 use classic_bindings::{TerraMsg, TerraQuery};
-use cosmwasm_std::{DepsMut, Env, MessageInfo};
+use cosmwasm_std::{DepsMut, MessageInfo};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -63,11 +63,12 @@ pub struct UpdateRoundParams {
     pub end_time: Option<u64>,
     pub oppamint_liquidity: Option<LiquidityPair>,
     pub ancs_liquidity: Option<LiquidityPair>,
+    pub oppamint_weight: Option<u32>,
+    pub ancs_weight: Option<u32>,
 }
 
 pub fn update_round(
     deps: DepsMut<TerraQuery>,
-    env: Env,
     info: MessageInfo,
     UpdateRoundParams {
         id,
@@ -75,6 +76,8 @@ pub fn update_round(
         end_time,
         oppamint_liquidity,
         ancs_liquidity,
+        oppamint_weight,
+        ancs_weight,
     }: UpdateRoundParams,
 ) -> Result<Response, ContractError> {
     // Ensure only the owner can update a round.
@@ -99,22 +102,18 @@ pub fn update_round(
         round.end_time = end_time;
     }
 
-    let now = env.block.time.seconds();
     if let Some(oppamint_liquidity) = oppamint_liquidity {
-        // Cannot update oppamint_liquidity for active round
-        if round.start_time <= now && now <= round.end_time {
-            return Err(ContractError::CannotUpdateActiveRound {});
-        }
-
         round.oppamint_liquidity = oppamint_liquidity;
     }
     if let Some(ancs_liquidity) = ancs_liquidity {
-        // Cannot update ancs_liquidity for active round
-        if round.start_time <= now && now <= round.end_time {
-            return Err(ContractError::CannotUpdateActiveRound {});
-        }
-
         round.ancs_liquidity = ancs_liquidity;
+    }
+
+    if let Some(oppamint_weight) = oppamint_weight {
+        round.oppamint_weight = oppamint_weight;
+    }
+    if let Some(ancs_weight) = ancs_weight {
+        round.ancs_weight = ancs_weight;
     }
 
     // Ensure the round is valid
@@ -137,7 +136,6 @@ pub fn update_round(
 
 pub fn delete_round(
     deps: DepsMut<TerraQuery>,
-    env: Env,
     info: MessageInfo,
     id: u64,
 ) -> Result<Response, ContractError> {
@@ -153,12 +151,6 @@ pub fn delete_round(
         .iter()
         .position(|r| r.id == id)
         .ok_or(ContractError::RoundNotFound { round_id: id })?;
-
-    // Cannot delete active round
-    let now = env.block.time.seconds();
-    if rounds[round_index].start_time <= now && now <= rounds[round_index].end_time {
-        return Err(ContractError::CannotDeleteActiveRound {});
-    }
 
     // Delete the round.
     rounds.remove(round_index);

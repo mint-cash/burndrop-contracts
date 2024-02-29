@@ -4,19 +4,11 @@ use cw_multi_test::Executor;
 use crate::executions::round::UpdateRoundParams;
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::testing::{instantiate, ADMIN};
-use crate::types::swap_round::LiquidityPair;
+use crate::types::swap_round::{LiquidityPair, SwapRound};
 
 #[test]
-fn update_active_round() {
+fn success_update_active_round() {
     let (mut app, burn_contract) = instantiate::default();
-
-    // Query the rounds
-    let query_res: crate::msg::RoundsResponse = app
-        .wrap()
-        .query_wasm_smart(burn_contract.addr(), &QueryMsg::Rounds {})
-        .unwrap();
-
-    let prev_rounds = query_res.rounds;
 
     // Try to update active round
     let update_msg = ExecuteMsg::UpdateRound {
@@ -33,6 +25,9 @@ fn update_active_round() {
                 x: Uint128::new(1_000_000),
                 y: Uint128::new(100_000),
             }),
+
+            oppamint_weight: None,
+            ancs_weight: None,
         },
     };
     app.update_block(|block| {
@@ -45,7 +40,7 @@ fn update_active_round() {
         &[],
     );
 
-    assert!(update_res.is_err());
+    assert!(update_res.is_ok());
 
     // Query the rounds
     let query_res: crate::msg::RoundsResponse = app
@@ -55,5 +50,22 @@ fn update_active_round() {
 
     let rounds = query_res.rounds;
 
-    assert_eq!(prev_rounds, rounds);
+    assert_eq!(
+        rounds,
+        vec![SwapRound {
+            id: 1,
+            start_time: 1706001400,
+            end_time: 1706001650,
+            oppamint_liquidity: LiquidityPair {
+                x: Uint128::new(1_000_000),
+                y: Uint128::new(100_000),
+            },
+            ancs_liquidity: LiquidityPair {
+                x: Uint128::new(1_000_000),
+                y: Uint128::new(100_000),
+            },
+            oppamint_weight: 3,
+            ancs_weight: 2,
+        }]
+    );
 }
