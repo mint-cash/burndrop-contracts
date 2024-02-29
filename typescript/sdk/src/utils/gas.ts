@@ -96,7 +96,8 @@ export const calculateBurnFee = async (
   const taxCap = await getTaxCaps();
   const fee =
     gasFee +
-    (taxCap && BigInt(taxCap) < stabilityFee ? BigInt(taxCap) : stabilityFee);
+    (taxCap && BigInt(taxCap) < stabilityFee ? BigInt(taxCap) : stabilityFee) +
+    1n;
 
   return {
     amount: [coin(fee.toString(), gasPrice.denom)],
