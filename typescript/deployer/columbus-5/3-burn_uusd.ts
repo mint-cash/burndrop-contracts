@@ -40,7 +40,7 @@ async function main() {
   const msg: ExecuteMsg = {
     burn_uusd: {
       amount: (1 * 10 ** 6).toString(), // 1 USTC
-      referrer: 'terra13wm0x7mtal0nrx80vmckad50tagak3p4v7fv3z', // self-ref if script 2 is run
+      // referrer: 'terra1euqghzv5vra2rdu2krmj8rj58xl7yd9g7eam0u', // self-ref if script 2 is run
     },
   };
   const executeMsg = encodeExecuteMsg({

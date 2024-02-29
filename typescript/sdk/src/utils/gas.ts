@@ -77,19 +77,14 @@ export const calculateBurnFee = async (
   const gasLimit = Math.ceil(gasUsed * gasAdjustment);
   const gasPrice = await getGasPrice();
 
-  const gasFee = BigInt(
+  const fee = BigInt(
     gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
   );
-  const stabilityFee = multiplyBigIntAndFloat(
-    BigInt(burnAmount),
-    Number(await getMinStabilitySpread()),
-  );
-  const fee = gasFee + stabilityFee + 1n;
 
   return {
     amount: [coin(fee.toString(), gasPrice.denom)],
     gas: Math.round(
-      Number(gasFee) / Number(gasPrice.amount.toString()),
+      Number(fee) / Number(gasPrice.amount.toString()),
     ).toString(),
   };
 };
