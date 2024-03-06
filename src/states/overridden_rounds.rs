@@ -11,13 +11,13 @@ pub struct OverriddenRounds {
 }
 
 impl OverriddenRounds {
-    // pub fn current_round(&self, now: u64) -> Option<(&OverriddenRound, u64)> {
-    //     self.rounds
-    //         .iter()
-    //         .enumerate()
-    //         .find(|(_, r)| r.start_time <= now && now <= r.end_time)
-    //         .map(|(i, r)| (r, i as u64))
-    // }
+    pub fn current_round(&self, now: u64) -> Option<(&OverriddenRound, u64)> {
+        self.rounds
+            .iter()
+            .enumerate()
+            .find(|(_, r)| r.start_time <= now && now <= r.end_time)
+            .map(|(i, r)| (r, i as u64))
+    }
 
     pub fn recent_active_round(&self, now: u64) -> Option<(&OverriddenRound, u64)> {
         self.rounds

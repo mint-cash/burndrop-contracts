@@ -7,6 +7,7 @@ use crate::executions::user::{ensure_user_initialized, process_first_referral};
 use crate::query::{calculate_round_swap_result, split_swapped_in};
 use crate::states::config::CONFIG;
 use crate::states::guild::GUILD;
+use crate::states::overridden_rounds::{OVERRIDDEN_BURNED_UUSD, OVERRIDDEN_ROUNDS};
 use crate::states::state::STATE;
 use crate::states::user::USER;
 use crate::types::output_token::OutputTokenMap;
@@ -78,6 +79,19 @@ pub fn swap(
 
     round.ancs_liquidity.x += swapped_in.ancs;
     round.ancs_liquidity.y -= swapped_out.ancs;
+
+    let overridden_rounds = OVERRIDDEN_ROUNDS.load(deps.storage)?;
+    if let Some((_, current_round_index)) = overridden_rounds.current_round(now) {
+        let prev = OVERRIDDEN_BURNED_UUSD
+            .load(deps.storage, (current_round_index, user.address.clone()))?;
+        let burned_uusd = prev + total_swapped_in;
+
+        OVERRIDDEN_BURNED_UUSD.save(
+            deps.storage,
+            (current_round_index, user.address.clone()),
+            &burned_uusd,
+        )?;
+    }
 
     USER.save(deps.storage, info.sender.clone(), &user)?;
     STATE.save(deps.storage, &state)?;
