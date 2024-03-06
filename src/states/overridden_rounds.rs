@@ -1,4 +1,5 @@
-use cw_storage_plus::Item;
+use cosmwasm_std::Uint128;
+use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -16,3 +17,4 @@ impl OverriddenRounds {
 }
 
 pub const OVERRIDDEN_ROUNDS: Item<OverriddenRounds> = Item::new("overridden-rounds");
+pub const OVERRIDDEN_BURNED_UUSD: Map<u64, Uint128> = Map::new("overridden-burned-uusd");
