@@ -7,7 +7,7 @@ use crate::types::overridden_round::OverriddenRound;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct OverriddenRounds {
-    rounds: Vec<OverriddenRound>,
+    pub rounds: Vec<OverriddenRound>,
 }
 
 impl OverriddenRounds {

@@ -9,6 +9,7 @@ use semver::Version;
 
 use crate::error::ContractError;
 use crate::executions::guild::{create_guild, migrate_guild};
+use crate::executions::overridden_rounds::{create_overridden_round, update_overridden_round};
 use crate::executions::round::{
     create_round, delete_round, sort_and_validate_rounds, update_round,
 };
@@ -139,6 +140,8 @@ pub fn execute(
         ExecuteMsg::MigrateGuild { guild_id, referrer } => {
             migrate_guild(deps, info, guild_id, referrer)
         }
+        ExecuteMsg::UpdateOverriddenRound(params) => update_overridden_round(deps, info, params),
+        ExecuteMsg::CreateOverriddenRound(params) => create_overridden_round(deps, info, params),
     }
 }
 
