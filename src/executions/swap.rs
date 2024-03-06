@@ -139,9 +139,41 @@ pub fn burn_uusd(
     {
         let previously_burned = sender.burned_uusd;
 
-        // slots_by_user(address) * config.slot_size
-        let capped_uusd_by_user = config.slot_size * sender.slots();
+        let now = env.block.time.seconds();
+        let overridden_rounds = OVERRIDDEN_ROUNDS.load(deps.storage)?;
+        let (recent_overridden_round, recent_overridden_round_index) =
+            match overridden_rounds.recent_active_round(now) {
+                Some((round, index)) => (Some(round), Some(index)),
+                None => (None, None),
+            };
 
+        let slots = sender.slots();
+        let slot_size = if overridden_rounds.is_active(recent_overridden_round, now) {
+            recent_overridden_round.unwrap().slot_size
+        } else {
+            config.slot_size
+        };
+
+        let overridden_burned_uusd = if overridden_rounds.is_active(recent_overridden_round, now) {
+            // active: prev (i - 1)
+            match recent_overridden_round_index {
+                Some(0) => Uint128::zero(),
+                Some(index) => {
+                    OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index - 1, sender.address))?
+                }
+                None => Uint128::zero(),
+            }
+        } else {
+            // inactive: current (i)
+            match recent_overridden_round_index {
+                Some(index) => {
+                    OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index, sender.address))?
+                }
+                None => Uint128::zero(),
+            }
+        };
+
+        let capped_uusd_by_user = slot_size * slots + overridden_burned_uusd;
         if amount + previously_burned > capped_uusd_by_user {
             return Err(ContractError::CapExceeded {});
         }
