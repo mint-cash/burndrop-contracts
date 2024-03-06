@@ -51,7 +51,7 @@ pub fn update_overridden_round(
     };
     updated_round.validate()?;
 
-    let mut rounds = overridden_rounds.rounds.clone();
+    let mut rounds = overridden_rounds.rounds;
     rounds[index as usize] = updated_round;
     validate_rounds(&mut rounds)?;
 
@@ -91,7 +91,7 @@ pub fn create_overridden_round(
     };
     round.validate()?;
 
-    let mut rounds = overridden_rounds.rounds.clone();
+    let mut rounds = overridden_rounds.rounds;
     rounds.push(round);
     validate_rounds(&mut rounds)?;
 
