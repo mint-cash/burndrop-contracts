@@ -11,9 +11,11 @@ pub struct OverriddenRounds {
 }
 
 impl OverriddenRounds {
-    // pub fn recent_active_round(&self, now: u64) -> Option<&OverriddenRound> {
-    //     self.rounds.iter().rfind(|r| r.start_time <= now)
-    // }
+    pub fn current_round(&self, now: u64) -> Option<&OverriddenRound> {
+        self.rounds
+            .iter()
+            .rfind(|r| r.start_time <= now && now <= r.end_time)
+    }
 }
 
 pub const OVERRIDDEN_ROUNDS: Item<OverriddenRounds> = Item::new("overridden-rounds");
