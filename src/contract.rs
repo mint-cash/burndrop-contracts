@@ -146,7 +146,7 @@ pub fn execute(
 pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
-        QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),
+        QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, env, address)?),
         QueryMsg::UsersInfo {
             start,
             limit,
