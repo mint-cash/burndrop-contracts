@@ -21,6 +21,7 @@ use crate::query::{
     query_users,
 };
 use crate::states::guild::{Guild, GUILD};
+use crate::states::overridden_rounds::{OverriddenRounds, OVERRIDDEN_ROUNDS};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
 use classic_bindings::{TerraMsg, TerraQuery};
@@ -73,6 +74,9 @@ pub fn instantiate(
         burned_uusd: Uint128::zero(),
     };
     GUILD.save(deps.storage, 0, &genesis_guild)?;
+
+    let overridden_rounds = OverriddenRounds { rounds: vec![] };
+    OVERRIDDEN_ROUNDS.save(deps.storage, &overridden_rounds)?;
 
     Ok(Response::new().add_attributes(vec![
         attr("action", "instantiate"),
