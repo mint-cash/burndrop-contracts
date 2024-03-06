@@ -83,7 +83,9 @@ pub fn swap(
     let overridden_rounds = OVERRIDDEN_ROUNDS.load(deps.storage)?;
     if let Some((_, current_round_index)) = overridden_rounds.current_round(now) {
         let prev = OVERRIDDEN_BURNED_UUSD
-            .load(deps.storage, (current_round_index, user.address.clone()))?;
+            .may_load(deps.storage, (current_round_index, user.address.clone()))?
+            .unwrap_or(Uint128::zero());
+
         let burned_uusd = prev + total_swapped_in;
 
         OVERRIDDEN_BURNED_UUSD.save(
