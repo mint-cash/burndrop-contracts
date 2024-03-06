@@ -4,7 +4,7 @@ use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::testing::executions::swap::execute_swap;
 use crate::testing::terra_bindings::TerraApp;
 use crate::testing::{instantiate, ADMIN, REFERRER, SECOND_REFERRER, USER};
-use cosmwasm_std::{Addr, Uint128};
+use cosmwasm_std::{Addr, Timestamp, Uint128};
 use cw_multi_test::Executor;
 
 pub fn assert_current_user_info(
@@ -115,13 +115,47 @@ fn have_overridden_rounds() {
         Some(event_start_time + 100),
         None,
     );
-    println!("{:?}", user_execute_res.unwrap());
-    // assert!(user_execute_res.is_ok());
+    assert!(user_execute_res.is_ok());
     assert_current_user_info(
         &mut app,
         &burn_contract,
         Uint128::new(30000 * (10u128).pow(6)),
         Uint128::new(20001 * (10u128).pow(6)),
         Uint128::new(9999 * (10u128).pow(6)),
+    );
+
+    // 10x EVENT OVER!
+    // end event by natural time passing
+    // slots: 3, slot_size: 1000, cap: 3000, burnable: 2001 (이벤트 전에 999 태웠으니), total burned: 9999
+    app.update_block(|block| {
+        // event time is inclusive range
+        block.time = Timestamp::from_seconds(event_end_time + 1);
+    });
+    assert_current_user_info(
+        &mut app,
+        &burn_contract,
+        Uint128::new(3000 * (10u128).pow(6)),
+        Uint128::new(2001 * (10u128).pow(6)),
+        Uint128::new(9999 * (10u128).pow(6)),
+    );
+
+    // modify - burn 2001
+    // [post burn] slots: 3, slot_size: 1000, cap: 3000, burnable: 0, total burned: 12000
+    let user_execute_res = execute_swap(
+        &mut app,
+        &burn_contract,
+        USER,
+        Uint128::new(2001 * (10u128).pow(6)),
+        None,
+        Some(event_end_time + 2),
+        None,
+    );
+    assert!(user_execute_res.is_ok());
+    assert_current_user_info(
+        &mut app,
+        &burn_contract,
+        Uint128::new(3000 * (10u128).pow(6)),
+        Uint128::zero(),
+        Uint128::new(12000 * (10u128).pow(6)),
     );
 }

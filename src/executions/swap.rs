@@ -156,6 +156,18 @@ pub fn burn_uusd(
             config.slot_size
         };
 
+        println!("[burn] slot_size {:?}", slot_size);
+        println!("previously_burned {:?}", previously_burned);
+        println!("recent_overridden_round {:?}", recent_overridden_round);
+        println!(
+            "recent_overridden_round_index {:?}",
+            recent_overridden_round_index
+        );
+        println!(
+            "overridden_rounds.is_active {:?}",
+            overridden_rounds.is_active(recent_overridden_round, now)
+        );
+
         let overridden_burned_uusd = if overridden_rounds.is_active(recent_overridden_round, now) {
             // active: prev (i - 1)
             match recent_overridden_round_index {
@@ -174,8 +186,12 @@ pub fn burn_uusd(
                 None => Uint128::zero(),
             }
         };
+        println!("overridden_burned_uusd {:?}", overridden_burned_uusd);
 
         let capped_uusd_by_user = slot_size * slots + overridden_burned_uusd;
+        println!("\ncapped_uusd_by_user {:?}", capped_uusd_by_user);
+        println!("amount {:?}", amount);
+        println!("previously_burned {:?}", previously_burned);
         if amount + previously_burned > capped_uusd_by_user {
             return Err(ContractError::CapExceeded {});
         }
