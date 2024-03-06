@@ -48,7 +48,6 @@ pub fn update_overridden_round(
         start_time: start_time.unwrap_or(round.start_time),
         end_time: end_time.unwrap_or(round.end_time),
         slot_size,
-        ..round.clone()
     };
     updated_round.validate()?;
 
