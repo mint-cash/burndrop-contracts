@@ -61,20 +61,6 @@ pub fn query_user(
         }
     };
 
-    println!(
-        "\n\n\nrecent_overridden_round_index: {:?}",
-        recent_overridden_round_index
-    );
-    println!(
-        "overridden_rounds.is_active(recent_overridden_round, now): {:?}",
-        overridden_rounds.is_active(recent_overridden_round, now),
-    );
-    println!(
-        "previously_burned (user.burned_uusd): {:?}",
-        previously_burned
-    );
-    println!("cap: {:?}", cap);
-    println!("overridden_burned_uusd: {:?}\n\n", overridden_burned_uusd);
     let burnable = cap + overridden_burned_uusd - previously_burned;
 
     Ok(UserInfoResponse {
