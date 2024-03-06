@@ -4,6 +4,7 @@ use crate::msg::{
     UsersInfoResponse,
 };
 use crate::states::guild::GUILD;
+use crate::states::overridden_rounds::{OVERRIDDEN_BURNED_UUSD, OVERRIDDEN_ROUNDS};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE, user::USER};
 use crate::types::output_token::OutputTokenMap;
 use crate::types::swap_round::{LiquidityPair, SwapRound};
@@ -17,20 +18,57 @@ pub fn query_config(deps: Deps<TerraQuery>) -> StdResult<Config> {
     Ok(config)
 }
 
-pub fn query_user(deps: Deps<TerraQuery>, address: String) -> StdResult<UserInfoResponse> {
+pub fn query_user(
+    deps: Deps<TerraQuery>,
+    env: &Env,
+    address: String,
+) -> StdResult<UserInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
     let address = deps.api.addr_validate(&address)?;
     let user = USER.load(deps.storage, address)?;
 
     let previously_burned = user.burned_uusd;
-    let cap = config.slot_size * user.slots();
+
+    let now = env.block.time.seconds();
+    let overridden_rounds = OVERRIDDEN_ROUNDS.load(deps.storage)?;
+    let (recent_overridden_round, recent_overridden_round_index) =
+        match overridden_rounds.recent_active_round(now) {
+            Some((round, index)) => (Some(round), Some(index)),
+            None => (None, None),
+        };
+
+    let slots = user.slots();
+    let slot_size = if overridden_rounds.is_active(recent_overridden_round, now) {
+        recent_overridden_round.unwrap().slot_size
+    } else {
+        config.slot_size
+    };
+
+    let cap = slot_size * slots;
+
+    let overridden_burned_uusd = if overridden_rounds.is_active(recent_overridden_round, now) {
+        // active: prev (i - 1)
+        match recent_overridden_round_index {
+            Some(0) => Uint128::zero(),
+            Some(index) => OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index - 1, user.address))?,
+            None => Uint128::zero(),
+        }
+    } else {
+        // inactive: current (i)
+        match recent_overridden_round_index {
+            Some(index) => OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index, user.address))?,
+            None => Uint128::zero(),
+        }
+    };
+
+    let burnable = cap + overridden_burned_uusd - previously_burned;
 
     Ok(UserInfoResponse {
         burned: previously_burned,
-        burnable: cap - previously_burned,
+        burnable,
         cap,
-        slots: user.slots(),
-        slot_size: config.slot_size,
+        slots,
+        slot_size,
         swapped_out: user.swapped_out,
         guild_id: user.guild_id,
         guild_contributed_uusd: user.guild_contributed_uusd,
@@ -39,6 +77,7 @@ pub fn query_user(deps: Deps<TerraQuery>, address: String) -> StdResult<UserInfo
 
 pub fn query_users(
     deps: Deps<TerraQuery>,
+    env: Env,
     start: Option<String>,
     limit: Option<u32>,
     order: Option<Order>,
@@ -60,22 +99,10 @@ pub fn query_users(
         .range(deps.storage, min, max, order)
         .take(limit)
         .map(|item| {
-            let (address, user) = item.unwrap();
-            let previously_burned = user.burned_uusd;
-            let cap = config.slot_size * user.slots();
-
+            let (address, _user) = item.unwrap();
             (
                 address.to_string(),
-                UserInfoResponse {
-                    burned: previously_burned,
-                    burnable: cap - previously_burned,
-                    cap,
-                    slots: user.slots(),
-                    slot_size: config.slot_size,
-                    swapped_out: user.swapped_out,
-                    guild_id: user.guild_id,
-                    guild_contributed_uusd: user.guild_contributed_uusd,
-                },
+                query_user(deps, &env, address.to_string()).unwrap(),
             )
         })
         .collect();

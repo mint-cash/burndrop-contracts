@@ -7,6 +7,7 @@ use crate::executions::user::{ensure_user_initialized, process_first_referral};
 use crate::query::{calculate_round_swap_result, split_swapped_in};
 use crate::states::config::CONFIG;
 use crate::states::guild::GUILD;
+use crate::states::overridden_rounds::{OVERRIDDEN_BURNED_UUSD, OVERRIDDEN_ROUNDS};
 use crate::states::state::STATE;
 use crate::states::user::USER;
 use crate::types::output_token::OutputTokenMap;
@@ -79,6 +80,21 @@ pub fn swap(
     round.ancs_liquidity.x += swapped_in.ancs;
     round.ancs_liquidity.y -= swapped_out.ancs;
 
+    let overridden_rounds = OVERRIDDEN_ROUNDS.load(deps.storage)?;
+    if let Some((_, current_round_index)) = overridden_rounds.current_round(now) {
+        let prev = OVERRIDDEN_BURNED_UUSD
+            .may_load(deps.storage, (current_round_index, user.address.clone()))?
+            .unwrap_or(Uint128::zero());
+
+        let burned_uusd = prev + total_swapped_in;
+
+        OVERRIDDEN_BURNED_UUSD.save(
+            deps.storage,
+            (current_round_index, user.address.clone()),
+            &burned_uusd,
+        )?;
+    }
+
     USER.save(deps.storage, info.sender.clone(), &user)?;
     STATE.save(deps.storage, &state)?;
     GUILD.save(deps.storage, user.guild_id, &guild)?;
@@ -125,9 +141,41 @@ pub fn burn_uusd(
     {
         let previously_burned = sender.burned_uusd;
 
-        // slots_by_user(address) * config.slot_size
-        let capped_uusd_by_user = config.slot_size * sender.slots();
+        let now = env.block.time.seconds();
+        let overridden_rounds = OVERRIDDEN_ROUNDS.load(deps.storage)?;
+        let (recent_overridden_round, recent_overridden_round_index) =
+            match overridden_rounds.recent_active_round(now) {
+                Some((round, index)) => (Some(round), Some(index)),
+                None => (None, None),
+            };
 
+        let slots = sender.slots();
+        let slot_size = if overridden_rounds.is_active(recent_overridden_round, now) {
+            recent_overridden_round.unwrap().slot_size
+        } else {
+            config.slot_size
+        };
+
+        let overridden_burned_uusd = if overridden_rounds.is_active(recent_overridden_round, now) {
+            // active: prev (i - 1)
+            match recent_overridden_round_index {
+                Some(0) => Uint128::zero(),
+                Some(index) => {
+                    OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index - 1, sender.address))?
+                }
+                None => Uint128::zero(),
+            }
+        } else {
+            // inactive: current (i)
+            match recent_overridden_round_index {
+                Some(index) => {
+                    OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index, sender.address))?
+                }
+                None => Uint128::zero(),
+            }
+        };
+
+        let capped_uusd_by_user = slot_size * slots + overridden_burned_uusd;
         if amount + previously_burned > capped_uusd_by_user {
             return Err(ContractError::CapExceeded {});
         }
