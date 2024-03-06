@@ -146,12 +146,18 @@ pub fn execute(
 pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
-        QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, env, address)?),
+        QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, &env, address)?),
         QueryMsg::UsersInfo {
             start,
             limit,
             order,
-        } => to_json_binary(&query_users(deps, start, limit, order.map(From::from))?),
+        } => to_json_binary(&query_users(
+            deps,
+            env,
+            start,
+            limit,
+            order.map(From::from),
+        )?),
         QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps, env)?),
         QueryMsg::SimulateBurn { amount } => {
             to_json_binary(&query_simulate_burn(deps, env, amount)?)

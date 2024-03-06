@@ -20,7 +20,7 @@ pub fn query_config(deps: Deps<TerraQuery>) -> StdResult<Config> {
 
 pub fn query_user(
     deps: Deps<TerraQuery>,
-    env: Env,
+    env: &Env,
     address: String,
 ) -> StdResult<UserInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
@@ -77,6 +77,7 @@ pub fn query_user(
 
 pub fn query_users(
     deps: Deps<TerraQuery>,
+    env: Env,
     start: Option<String>,
     limit: Option<u32>,
     order: Option<Order>,
@@ -98,22 +99,10 @@ pub fn query_users(
         .range(deps.storage, min, max, order)
         .take(limit)
         .map(|item| {
-            let (address, user) = item.unwrap();
-            let previously_burned = user.burned_uusd;
-            let cap = config.slot_size * user.slots();
-
+            let (address, _user) = item.unwrap();
             (
                 address.to_string(),
-                UserInfoResponse {
-                    burned: previously_burned,
-                    burnable: cap - previously_burned,
-                    cap,
-                    slots: user.slots(),
-                    slot_size: config.slot_size,
-                    swapped_out: user.swapped_out,
-                    guild_id: user.guild_id,
-                    guild_contributed_uusd: user.guild_contributed_uusd,
-                },
+                query_user(deps, &env, address.to_string()).unwrap(),
             )
         })
         .collect();
