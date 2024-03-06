@@ -31,7 +31,7 @@ pub fn assert_current_user_info(
 #[test]
 fn have_overridden_rounds() {
     let event_start_time = 1706001506;
-    let event_end_time = event_start_time + 100_000_000; // some time in the future
+    let event_end_time = 1706001550; // some time in the future
 
     let (mut app, burn_contract) = instantiate::default();
 
@@ -112,7 +112,7 @@ fn have_overridden_rounds() {
         USER,
         Uint128::new(9000 * (10u128).pow(6)),
         None,
-        Some(event_start_time + 100),
+        Some(event_start_time + 10),
         None,
     );
     assert!(user_execute_res.is_ok());
