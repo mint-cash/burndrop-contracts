@@ -64,9 +64,7 @@ pub fn query_user(
 
     let burnable = cap + overridden_burned_uusd - previously_burned;
 
-    let compensation = COMPENSATION
-        .get(address.as_ref())
-        .unwrap_or(&(0u128, 0u128));
+    let compensation = COMPENSATION.get(address.as_ref()).unwrap_or(&0u128);
 
     Ok(UserInfoResponse {
         burned: previously_burned,
@@ -76,8 +74,8 @@ pub fn query_user(
         slot_size,
         swapped_out: user.swapped_out,
         compensation: OutputTokenMap {
-            oppamint: Uint128::from(compensation.0),
-            ancs: Uint128::from(compensation.1),
+            oppamint: Uint128::new(compensation.clone()),
+            ancs: Uint128::new(compensation.clone()),
         },
         guild_id: user.guild_id,
         guild_contributed_uusd: user.guild_contributed_uusd,
