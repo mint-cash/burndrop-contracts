@@ -1,3 +1,4 @@
+use crate::data::compensation::COMPENSATION;
 use crate::error::ContractError;
 use crate::msg::{
     GuildInfoResponse, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse,
@@ -25,7 +26,7 @@ pub fn query_user(
 ) -> StdResult<UserInfoResponse> {
     let config = CONFIG.load(deps.storage)?;
     let address = deps.api.addr_validate(&address)?;
-    let user = USER.load(deps.storage, address)?;
+    let user = USER.load(deps.storage, address.clone())?;
 
     let previously_burned = user.burned_uusd;
 
@@ -63,6 +64,8 @@ pub fn query_user(
 
     let burnable = cap + overridden_burned_uusd - previously_burned;
 
+    let compensation = COMPENSATION.get(&address.to_string()).unwrap_or(&(0u128, 0u128));
+
     Ok(UserInfoResponse {
         burned: previously_burned,
         burnable,
@@ -70,6 +73,10 @@ pub fn query_user(
         slots,
         slot_size,
         swapped_out: user.swapped_out,
+        compensation: OutputTokenMap {
+            oppamint: Uint128::from(compensation.0),
+            ancs: Uint128::from(compensation.1),
+        },
         guild_id: user.guild_id,
         guild_contributed_uusd: user.guild_contributed_uusd,
     })
