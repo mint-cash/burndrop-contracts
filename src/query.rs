@@ -64,7 +64,9 @@ pub fn query_user(
 
     let burnable = cap + overridden_burned_uusd - previously_burned;
 
-    let compensation = COMPENSATION.get(&address.to_string()).unwrap_or(&(0u128, 0u128));
+    let compensation = COMPENSATION
+        .get(address.as_ref())
+        .unwrap_or(&(0u128, 0u128));
 
     Ok(UserInfoResponse {
         burned: previously_burned,
