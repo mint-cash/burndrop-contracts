@@ -74,8 +74,8 @@ pub fn query_user(
         slot_size,
         swapped_out: user.swapped_out,
         compensation: OutputTokenMap {
-            oppamint: Uint128::new(compensation.clone()),
-            ancs: Uint128::new(compensation.clone()),
+            oppamint: Uint128::new(*compensation),
+            ancs: Uint128::new(*compensation),
         },
         guild_id: user.guild_id,
         guild_contributed_uusd: user.guild_contributed_uusd,
