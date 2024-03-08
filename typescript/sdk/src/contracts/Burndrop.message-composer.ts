@@ -11,6 +11,7 @@ import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import {
   Addr,
   Config,
+  CreateOverriddenRoundParams,
   Decimal,
   ExecuteMsg,
   GuildInfoResponse,
@@ -26,6 +27,7 @@ import {
   SimulateBurnResponse,
   SwapRound,
   Uint128,
+  UpdateOverriddenRoundParams,
   UpdateRoundParams,
   UserInfoResponse,
   UsersInfoResponse,
@@ -106,6 +108,32 @@ export interface BurndropMsg {
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject;
+  updateOverriddenRound: (
+    {
+      endTime,
+      index,
+      slotSize,
+      startTime,
+    }: {
+      endTime?: number;
+      index: number;
+      slotSize: Uint128;
+      startTime?: number;
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject;
+  createOverriddenRound: (
+    {
+      endTime,
+      slotSize,
+      startTime,
+    }: {
+      endTime: number;
+      slotSize: Uint128;
+      startTime: number;
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject;
 }
 export class BurndropMsgComposer implements BurndropMsg {
   sender: string;
@@ -122,6 +150,8 @@ export class BurndropMsgComposer implements BurndropMsg {
     this.deleteRound = this.deleteRound.bind(this);
     this.createGuild = this.createGuild.bind(this);
     this.migrateGuild = this.migrateGuild.bind(this);
+    this.updateOverriddenRound = this.updateOverriddenRound.bind(this);
+    this.createOverriddenRound = this.createOverriddenRound.bind(this);
   }
 
   burnUusd = (
@@ -321,6 +351,69 @@ export class BurndropMsgComposer implements BurndropMsg {
             migrate_guild: {
               guild_id: guildId,
               referrer,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    };
+  };
+  updateOverriddenRound = (
+    {
+      endTime,
+      index,
+      slotSize,
+      startTime,
+    }: {
+      endTime?: number;
+      index: number;
+      slotSize: Uint128;
+      startTime?: number;
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            update_overridden_round: {
+              end_time: endTime,
+              index,
+              slot_size: slotSize,
+              start_time: startTime,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    };
+  };
+  createOverriddenRound = (
+    {
+      endTime,
+      slotSize,
+      startTime,
+    }: {
+      endTime: number;
+      slotSize: Uint128;
+      startTime: number;
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            create_overridden_round: {
+              end_time: endTime,
+              slot_size: slotSize,
+              start_time: startTime,
             },
           }),
         ),

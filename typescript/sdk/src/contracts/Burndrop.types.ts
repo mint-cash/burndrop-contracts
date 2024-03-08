@@ -71,6 +71,12 @@ export type ExecuteMsg =
         guild_id: number;
         referrer?: string | null;
       };
+    }
+  | {
+      update_overridden_round: UpdateOverriddenRoundParams;
+    }
+  | {
+      create_overridden_round: CreateOverriddenRoundParams;
     };
 export interface OutputTokenMapForUint128 {
   ancs: Uint128;
@@ -83,6 +89,19 @@ export interface UpdateRoundParams {
   id: number;
   oppamint_liquidity?: LiquidityPair | null;
   start_time?: number | null;
+  [k: string]: unknown;
+}
+export interface UpdateOverriddenRoundParams {
+  end_time?: number | null;
+  index: number;
+  slot_size: Uint128;
+  start_time?: number | null;
+  [k: string]: unknown;
+}
+export interface CreateOverriddenRoundParams {
+  end_time: number;
+  slot_size: Uint128;
+  start_time: number;
   [k: string]: unknown;
 }
 export type QueryMsg =
