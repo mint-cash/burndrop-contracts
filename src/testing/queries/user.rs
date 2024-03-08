@@ -91,7 +91,6 @@ fn test_query_compensation() {
     app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
         .unwrap();
 
-
     let query_res: UserInfoResponse = app
         .wrap()
         .query_wasm_smart(
