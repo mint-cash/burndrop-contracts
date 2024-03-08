@@ -13,6 +13,7 @@ import {
 import {
   Addr,
   Config,
+  CreateOverriddenRoundParams,
   Decimal,
   ExecuteMsg,
   GuildInfoResponse,
@@ -28,6 +29,7 @@ import {
   SimulateBurnResponse,
   SwapRound,
   Uint128,
+  UpdateOverriddenRoundParams,
   UpdateRoundParams,
   UserInfoResponse,
   UsersInfoResponse,
@@ -228,6 +230,36 @@ export interface BurndropInterface extends BurndropReadOnlyInterface {
     memo?: string,
     _funds?: Coin[],
   ) => Promise<ExecuteResult>;
+  updateOverriddenRound: (
+    {
+      endTime,
+      index,
+      slotSize,
+      startTime,
+    }: {
+      endTime?: number;
+      index: number;
+      slotSize: Uint128;
+      startTime?: number;
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>;
+  createOverriddenRound: (
+    {
+      endTime,
+      slotSize,
+      startTime,
+    }: {
+      endTime: number;
+      slotSize: Uint128;
+      startTime: number;
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>;
 }
 export class BurndropClient
   extends BurndropQueryClient
@@ -254,6 +286,8 @@ export class BurndropClient
     this.deleteRound = this.deleteRound.bind(this);
     this.createGuild = this.createGuild.bind(this);
     this.migrateGuild = this.migrateGuild.bind(this);
+    this.updateOverriddenRound = this.updateOverriddenRound.bind(this);
+    this.createOverriddenRound = this.createOverriddenRound.bind(this);
   }
 
   burnUusd = async (
@@ -445,6 +479,67 @@ export class BurndropClient
         migrate_guild: {
           guild_id: guildId,
           referrer,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    );
+  };
+  updateOverriddenRound = async (
+    {
+      endTime,
+      index,
+      slotSize,
+      startTime,
+    }: {
+      endTime?: number;
+      index: number;
+      slotSize: Uint128;
+      startTime?: number;
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        update_overridden_round: {
+          end_time: endTime,
+          index,
+          slot_size: slotSize,
+          start_time: startTime,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    );
+  };
+  createOverriddenRound = async (
+    {
+      endTime,
+      slotSize,
+      startTime,
+    }: {
+      endTime: number;
+      slotSize: Uint128;
+      startTime: number;
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        create_overridden_round: {
+          end_time: endTime,
+          slot_size: slotSize,
+          start_time: startTime,
         },
       },
       fee,

@@ -5,8 +5,9 @@ import {
   MsgExecuteContract,
   MsgInstantiateContract,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
+import { MsgMigrateContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 
-import { ExecuteMsg } from '../contracts/Burndrop.types';
+import { ExecuteMsg, MigrateMsg } from '../contracts/Burndrop.types';
 import { InstantiateMsg } from '../contracts/Burndrop.types';
 
 export type Fund = { denom: string; amount: string };
@@ -66,5 +67,27 @@ export const encodeExecuteMsg = ({
     contract,
     msg: toUtf8(JSON.stringify(msg)),
     funds,
+  }),
+});
+
+export type EncodeMigrateMsgProps = {
+  sender: string;
+  codeId: number;
+  contract: string;
+  msg: MigrateMsg;
+};
+
+export const encodeMigrateMsg = ({
+  sender,
+  codeId,
+  contract,
+  msg,
+}: EncodeMigrateMsgProps) => ({
+  typeUrl: '/cosmwasm.wasm.v1.MsgMigrateContract',
+  value: MsgMigrateContract.fromPartial({
+    sender,
+    contract,
+    codeId: BigInt(new Uint53(codeId).toString()),
+    msg: toUtf8(JSON.stringify(msg)),
   }),
 });

@@ -6,6 +6,8 @@ export {
   encodeInstantiateMsg,
   type EncodeExecuteMsgProps,
   encodeExecuteMsg,
+  type EncodeMigrateMsgProps,
+  encodeMigrateMsg,
 } from './encode';
 
 export {
