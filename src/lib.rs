@@ -7,6 +7,7 @@ pub mod msg;
 pub mod query;
 pub mod states;
 
+pub mod data;
 pub mod executions;
 pub mod types;
 

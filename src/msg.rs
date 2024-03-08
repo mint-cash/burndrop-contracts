@@ -97,6 +97,7 @@ pub struct UserInfoResponse {
     pub slots: Uint128,
     pub slot_size: Uint128,
     pub swapped_out: OutputTokenMap<Uint128>,
+    pub compensation: OutputTokenMap<Uint128>,
     pub guild_id: u64,
     pub guild_contributed_uusd: Uint128,
 }
