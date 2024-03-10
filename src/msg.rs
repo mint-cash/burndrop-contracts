@@ -1,6 +1,9 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Decimal, Uint128};
 
+use crate::executions::overridden_rounds::{
+    CreateOverriddenRoundParams, UpdateOverriddenRoundParams,
+};
 use crate::executions::round::UpdateRoundParams;
 use crate::states::config::Config;
 use crate::types::common::OrderBy;
@@ -52,6 +55,9 @@ pub enum ExecuteMsg {
         guild_id: u64,
         referrer: Option<String>,
     },
+    // v0.2.0
+    UpdateOverriddenRound(UpdateOverriddenRoundParams),
+    CreateOverriddenRound(CreateOverriddenRoundParams),
 }
 
 #[cw_serde]
@@ -91,6 +97,7 @@ pub struct UserInfoResponse {
     pub slots: Uint128,
     pub slot_size: Uint128,
     pub swapped_out: OutputTokenMap<Uint128>,
+    pub compensation: OutputTokenMap<Uint128>,
     pub guild_id: u64,
     pub guild_contributed_uusd: Uint128,
 }

@@ -6,6 +6,8 @@ export {
   encodeInstantiateMsg,
   type EncodeExecuteMsgProps,
   encodeExecuteMsg,
+  type EncodeMigrateMsgProps,
+  encodeMigrateMsg,
 } from './encode';
 
 export {
@@ -14,6 +16,7 @@ export {
   DEFAULT_GAS_PRICE,
   calculateFee,
   calculateBurnFee,
+  getTaxRate,
   getGasPrice,
 } from './gas';
 

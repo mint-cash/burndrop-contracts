@@ -19,11 +19,32 @@ export const getGasPrice = async (_url?: string) => {
   }
 };
 
-const multiplyBigIntAndFloat = (a: bigint, b: number) => {
-  // MAX_SAFE_INTEGER is about 9e15, so we can't use 1e18 here
-  const floatScale = 10n ** 6n;
-  const bAsBigInt = BigInt(Math.ceil(b * Number(floatScale)));
-  return (a * bAsBigInt) / floatScale;
+export const getTaxRate = async (_url?: string) => {
+  try {
+    const url =
+      _url ||
+      'https://terra-classic-lcd.publicnode.com/terra/treasury/v1beta1/tax_rate';
+    const { data } = await axios.get<{ tax_rate: string }>(url);
+    return Number(data.tax_rate);
+  } catch (err) {
+    console.error(err);
+    return 0.005;
+  }
+};
+
+export const getTaxCaps = async (_url?: string) => {
+  try {
+    const url =
+      _url ||
+      'https://terra-classic-lcd.publicnode.com/terra/treasury/v1beta1/tax_caps';
+    const { data } = await axios.get<{
+      tax_caps: { denom: string; tax_cap: string }[];
+    }>(url);
+    return data.tax_caps.find((x) => x.denom === 'uusd')?.tax_cap || null;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
 };
 
 export const calculateFee = async (
@@ -47,6 +68,13 @@ export const calculateFee = async (
   };
 };
 
+const multiplyBigIntAndFloat = (a: bigint, b: number) => {
+  // MAX_SAFE_INTEGER is about 9e15, so we can't use 1e18 here
+  const floatScale = 10n ** 6n;
+  const bAsBigInt = BigInt(Math.ceil(b * Number(floatScale)));
+  return (a * bAsBigInt) / floatScale;
+};
+
 export const calculateBurnFee = async (
   estimatedGasUsed: bigint | undefined,
   burnAmount: string,
@@ -58,14 +86,23 @@ export const calculateBurnFee = async (
   const gasLimit = Math.ceil(gasUsed * gasAdjustment);
   const gasPrice = await getGasPrice();
 
-  const fee = BigInt(
+  const gasFee = BigInt(
     gasPrice.amount.multiply(new Uint53(gasLimit)).ceil().toString(),
   );
+  const stabilityFee = multiplyBigIntAndFloat(
+    BigInt(burnAmount),
+    await getTaxRate(),
+  );
+  const taxCap = await getTaxCaps();
+  const fee =
+    gasFee +
+    (taxCap && BigInt(taxCap) < stabilityFee ? BigInt(taxCap) : stabilityFee) +
+    1n;
 
   return {
     amount: [coin(fee.toString(), gasPrice.denom)],
     gas: Math.round(
-      Number(fee) / Number(gasPrice.amount.toString()),
+      Number(gasFee) / Number(gasPrice.amount.toString()),
     ).toString(),
   };
 };

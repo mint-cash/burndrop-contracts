@@ -21,7 +21,9 @@ Currently, this is set to **30 days**.
 ## Contract Specifications
 
 ### `QueryMsg`
+
 - `UserInfo`: accepts an `address` of the User as a `String`. Returns the following:
+
   - `burned` (`uint128`): the amount of USTC burnt for this User.
   - `burnable` (`uint128`): remaining USTC burn cap for this User.
   - `cap` (`uint128`): total USTC that can be burnt by this User.
@@ -30,17 +32,20 @@ Currently, this is set to **30 days**.
   - `swapped_out` (`OutputTokenMap<uint128>`): returns oppaMINT and ANCS tokens earned for this User as a `Map` data structure.
   - `guild_id` (`u64`): the Guild ID for this user.
   - `guild_contributed_uusd` (`uint128`): the amount of USTC burnt by this User that counts for total Guild Statistics.
- 
+
 - `UsersInfo`: a lookup message with `start`, `limit`, and `order` parameters. Returns a `Vector` of `UserInfoResponse`s, as documented above.
 
 - `CurrentPrice`: returns a `PriceResponse`
+
   - `price` (`OutputTokenMap<uint128>`): returns oppaMINT and ANCS token values denominated in USTC.
- 
+
 - `SimulateBurn`: accepts an `amount` of USTC tokens to be burnt. Returns the following:
+
   - `swapped_out` (`OutputTokenMap<uint128>`): returns oppaMINT and ANCS tokens to be earned as a result of burnt USTC.
   - `final_amount`: returns USTC tokens to be finally burnt.
- 
+
 - `Rounds`: returns all current and past Rounds.
+
   - `rounds`(`Vec<SwapRound>`)
 
 - `GuildInfo`: returns information about a Guild with ID `guild_id`.

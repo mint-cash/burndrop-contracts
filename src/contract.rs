@@ -9,6 +9,7 @@ use semver::Version;
 
 use crate::error::ContractError;
 use crate::executions::guild::{create_guild, migrate_guild};
+use crate::executions::overridden_rounds::{create_overridden_round, update_overridden_round};
 use crate::executions::round::{
     create_round, delete_round, sort_and_validate_rounds, update_round,
 };
@@ -20,6 +21,7 @@ use crate::query::{
     query_users,
 };
 use crate::states::guild::{Guild, GUILD};
+use crate::states::overridden_rounds::{OverriddenRounds, OVERRIDDEN_ROUNDS};
 use crate::states::{config::Config, config::CONFIG, state::State, state::STATE};
 use crate::types::output_token::OutputTokenMap;
 use classic_bindings::{TerraMsg, TerraQuery};
@@ -73,6 +75,9 @@ pub fn instantiate(
     };
     GUILD.save(deps.storage, 0, &genesis_guild)?;
 
+    let overridden_rounds = OverriddenRounds { rounds: vec![] };
+    OVERRIDDEN_ROUNDS.save(deps.storage, &overridden_rounds)?;
+
     Ok(Response::new().add_attributes(vec![
         attr("action", "instantiate"),
         attr("owner", info.sender),
@@ -100,6 +105,10 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, Contra
     }
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+    let overridden_rounds = OverriddenRounds { rounds: vec![] };
+    OVERRIDDEN_ROUNDS.save(deps.storage, &overridden_rounds)?;
+
     Ok(Response::new())
 }
 
@@ -139,6 +148,8 @@ pub fn execute(
         ExecuteMsg::MigrateGuild { guild_id, referrer } => {
             migrate_guild(deps, info, guild_id, referrer)
         }
+        ExecuteMsg::UpdateOverriddenRound(params) => update_overridden_round(deps, info, params),
+        ExecuteMsg::CreateOverriddenRound(params) => create_overridden_round(deps, info, params),
     }
 }
 
@@ -146,12 +157,18 @@ pub fn execute(
 pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
-        QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, address)?),
+        QueryMsg::UserInfo { address } => to_json_binary(&query_user(deps, &env, address)?),
         QueryMsg::UsersInfo {
             start,
             limit,
             order,
-        } => to_json_binary(&query_users(deps, start, limit, order.map(From::from))?),
+        } => to_json_binary(&query_users(
+            deps,
+            env,
+            start,
+            limit,
+            order.map(From::from),
+        )?),
         QueryMsg::CurrentPrice {} => to_json_binary(&query_current_price(deps, env)?),
         QueryMsg::SimulateBurn { amount } => {
             to_json_binary(&query_simulate_burn(deps, env, amount)?)
