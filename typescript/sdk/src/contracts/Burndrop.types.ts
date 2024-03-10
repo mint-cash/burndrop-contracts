@@ -169,6 +169,7 @@ export interface UserInfoResponse {
   burnable: Uint128;
   burned: Uint128;
   cap: Uint128;
+  compensation: OutputTokenMapForUint128;
   guild_contributed_uusd: Uint128;
   guild_id: number;
   slot_size: Uint128;
