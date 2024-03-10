@@ -194,6 +194,9 @@ fn fail_not_modified_period() {
 
             oppamint_liquidity: None,
             ancs_liquidity: None,
+
+            oppamint_weight: None,
+            ancs_weight: None,
         },
     };
     let modify_res = app.execute_contract(
@@ -232,6 +235,9 @@ fn success_during_modified_period() {
 
             oppamint_liquidity: None,
             ancs_liquidity: None,
+
+            oppamint_weight: None,
+            ancs_weight: None,
         },
     };
     let modify_res = app.execute_contract(

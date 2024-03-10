@@ -34,13 +34,13 @@ async function main() {
   const uploadResult = await client.upload(sender, wasm, 'auto');
   console.log(uploadResult);
 
-  // 2024.02.29 23:59:00 GMT+9 (KST) = 2024.02.29 14:59:00 UTC
+  // 2024.02.29 22:45:00 GMT+9 (KST) = 2024.02.29 13:45:00 UTC
   const startTime = Math.floor(
-    new Date('2024-02-29T14:59:00Z').getTime() / 1000,
+    new Date('2024-02-29T13:45:00Z').getTime() / 1000,
   );
 
-  // endTime = startTime + 30 days
-  const endTime = startTime + 60 * 60 * 24 * 30;
+  // endTime = startTime + 30 minutes
+  const endTime = startTime + 60 * 30;
 
   const instantiateMsg: InstantiateMsg = {
     initial_slot_size: (1000 * 10 ** 6).toString(), // 1000 USTC

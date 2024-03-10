@@ -59,12 +59,6 @@ pub enum ContractError {
     #[error("Swap: round id already exists")]
     RoundIdAlreadyExists { round_id: u64 },
 
-    #[error("Swap: cannot update active executions round (except start_time and end_time)")]
-    CannotUpdateActiveRound {},
-
-    #[error("Swap: cannot delete active executions round")]
-    CannotDeleteActiveRound {},
-
     #[error("Swap: no active executions round")]
     NoActiveSwapRound {},
 

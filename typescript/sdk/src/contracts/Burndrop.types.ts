@@ -85,9 +85,11 @@ export interface OutputTokenMapForUint128 {
 }
 export interface UpdateRoundParams {
   ancs_liquidity?: LiquidityPair | null;
+  ancs_weight?: number | null;
   end_time?: number | null;
   id: number;
   oppamint_liquidity?: LiquidityPair | null;
+  oppamint_weight?: number | null;
   start_time?: number | null;
   [k: string]: unknown;
 }

@@ -142,8 +142,8 @@ pub fn execute(
             Ok(Response::new().add_attribute("action", "update_slot_size"))
         }
         ExecuteMsg::CreateRound { round } => create_round(deps, info, round),
-        ExecuteMsg::UpdateRound { params } => update_round(deps, env, info, params),
-        ExecuteMsg::DeleteRound { id } => delete_round(deps, env, info, id),
+        ExecuteMsg::UpdateRound { params } => update_round(deps, info, params),
+        ExecuteMsg::DeleteRound { id } => delete_round(deps, info, id),
         ExecuteMsg::CreateGuild { name, referrer } => create_guild(deps, info, name, referrer),
         ExecuteMsg::MigrateGuild { guild_id, referrer } => {
             migrate_guild(deps, info, guild_id, referrer)

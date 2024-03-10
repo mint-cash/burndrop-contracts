@@ -24,8 +24,16 @@ async function main() {
   console.log(block.header.height, block.header.chainId);
 
   const msg: ExecuteMsg = {
-    register_starting_user: {
-      user: sender, // self
+    update_round: {
+      params: {
+        id: 1,
+        ancs_liquidity: null,
+        ancs_weight: null,
+        end_time: 1709220076,
+        oppamint_liquidity: null,
+        oppamint_weight: null,
+        start_time: null,
+      },
     },
   };
   const executeMsg = encodeExecuteMsg({
