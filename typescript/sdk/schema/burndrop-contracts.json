@@ -1,6 +1,6 @@
 {
   "contract_name": "burndrop-contracts",
-  "contract_version": "0.1.0",
+  "contract_version": "0.2.0",
   "idl_version": "1.0.0",
   "instantiate": {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -8,6 +8,7 @@
     "type": "object",
     "required": [
       "default_query_limit",
+      "genesis_guild_name",
       "initial_slot_size",
       "max_query_limit",
       "rounds"
@@ -17,6 +18,9 @@
         "type": "integer",
         "format": "uint32",
         "minimum": 0.0
+      },
+      "genesis_guild_name": {
+        "type": "string"
       },
       "initial_slot_size": {
         "$ref": "#/definitions/Uint128"
@@ -51,14 +55,21 @@
         "type": "object",
         "required": [
           "ancs_liquidity",
+          "ancs_weight",
           "end_time",
           "id",
           "oppamint_liquidity",
+          "oppamint_weight",
           "start_time"
         ],
         "properties": {
           "ancs_liquidity": {
             "$ref": "#/definitions/LiquidityPair"
+          },
+          "ancs_weight": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
           },
           "end_time": {
             "type": "integer",
@@ -72,6 +83,11 @@
           },
           "oppamint_liquidity": {
             "$ref": "#/definitions/LiquidityPair"
+          },
+          "oppamint_weight": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
           },
           "start_time": {
             "type": "integer",
@@ -101,6 +117,16 @@
               "amount": {
                 "$ref": "#/definitions/Uint128"
               },
+              "min_amount_out": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/OutputTokenMap_for_Uint128"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "referrer": {
                 "type": ["string", "null"]
               }
@@ -119,23 +145,6 @@
             "required": ["user"],
             "properties": {
               "user": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": ["register2nd_referrer"],
-        "properties": {
-          "register2nd_referrer": {
-            "type": "object",
-            "required": ["referrer"],
-            "properties": {
-              "referrer": {
                 "type": "string"
               }
             },
@@ -213,9 +222,90 @@
           }
         },
         "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": ["create_guild"],
+        "properties": {
+          "create_guild": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "referrer": {
+                "type": ["string", "null"]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": ["migrate_guild"],
+        "properties": {
+          "migrate_guild": {
+            "type": "object",
+            "required": ["guild_id"],
+            "properties": {
+              "guild_id": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "referrer": {
+                "type": ["string", "null"]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": ["update_overridden_round"],
+        "properties": {
+          "update_overridden_round": {
+            "$ref": "#/definitions/UpdateOverriddenRoundParams"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": ["create_overridden_round"],
+        "properties": {
+          "create_overridden_round": {
+            "$ref": "#/definitions/CreateOverriddenRoundParams"
+          }
+        },
+        "additionalProperties": false
       }
     ],
     "definitions": {
+      "CreateOverriddenRoundParams": {
+        "type": "object",
+        "required": ["end_time", "slot_size", "start_time"],
+        "properties": {
+          "end_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "slot_size": {
+            "$ref": "#/definitions/Uint128"
+          },
+          "start_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          }
+        }
+      },
       "LiquidityPair": {
         "type": "object",
         "required": ["x", "y"],
@@ -228,18 +318,37 @@
           }
         }
       },
+      "OutputTokenMap_for_Uint128": {
+        "type": "object",
+        "required": ["ancs", "oppamint"],
+        "properties": {
+          "ancs": {
+            "$ref": "#/definitions/Uint128"
+          },
+          "oppamint": {
+            "$ref": "#/definitions/Uint128"
+          }
+        }
+      },
       "SwapRound": {
         "type": "object",
         "required": [
           "ancs_liquidity",
+          "ancs_weight",
           "end_time",
           "id",
           "oppamint_liquidity",
+          "oppamint_weight",
           "start_time"
         ],
         "properties": {
           "ancs_liquidity": {
             "$ref": "#/definitions/LiquidityPair"
+          },
+          "ancs_weight": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
           },
           "end_time": {
             "type": "integer",
@@ -254,6 +363,11 @@
           "oppamint_liquidity": {
             "$ref": "#/definitions/LiquidityPair"
           },
+          "oppamint_weight": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
           "start_time": {
             "type": "integer",
             "format": "uint64",
@@ -264,6 +378,30 @@
       "Uint128": {
         "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
         "type": "string"
+      },
+      "UpdateOverriddenRoundParams": {
+        "type": "object",
+        "required": ["index", "slot_size"],
+        "properties": {
+          "end_time": {
+            "type": ["integer", "null"],
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "index": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "slot_size": {
+            "$ref": "#/definitions/Uint128"
+          },
+          "start_time": {
+            "type": ["integer", "null"],
+            "format": "uint64",
+            "minimum": 0.0
+          }
+        }
       },
       "UpdateRoundParams": {
         "type": "object",
@@ -278,6 +416,11 @@
                 "type": "null"
               }
             ]
+          },
+          "ancs_weight": {
+            "type": ["integer", "null"],
+            "format": "uint32",
+            "minimum": 0.0
           },
           "end_time": {
             "type": ["integer", "null"],
@@ -298,6 +441,11 @@
                 "type": "null"
               }
             ]
+          },
+          "oppamint_weight": {
+            "type": ["integer", "null"],
+            "format": "uint32",
+            "minimum": 0.0
           },
           "start_time": {
             "type": ["integer", "null"],
@@ -409,6 +557,42 @@
           }
         },
         "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": ["guild_info"],
+        "properties": {
+          "guild_info": {
+            "type": "object",
+            "required": ["guild_id"],
+            "properties": {
+              "guild_id": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": ["user_balance"],
+        "properties": {
+          "user_balance": {
+            "type": "object",
+            "required": ["address"],
+            "properties": {
+              "address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
       }
     ],
     "definitions": {
@@ -499,6 +683,24 @@
         }
       }
     },
+    "guild_info": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GuildInfoResponse",
+      "type": "object",
+      "required": ["burned_uusd"],
+      "properties": {
+        "burned_uusd": {
+          "$ref": "#/definitions/Uint128"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
     "rounds": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "RoundsResponse",
@@ -530,14 +732,21 @@
           "type": "object",
           "required": [
             "ancs_liquidity",
+            "ancs_weight",
             "end_time",
             "id",
             "oppamint_liquidity",
+            "oppamint_weight",
             "start_time"
           ],
           "properties": {
             "ancs_liquidity": {
               "$ref": "#/definitions/LiquidityPair"
+            },
+            "ancs_weight": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
             },
             "end_time": {
               "type": "integer",
@@ -551,6 +760,11 @@
             },
             "oppamint_liquidity": {
               "$ref": "#/definitions/LiquidityPair"
+            },
+            "oppamint_weight": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
             },
             "start_time": {
               "type": "integer",
@@ -569,15 +783,45 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "SimulateBurnResponse",
       "type": "object",
-      "required": ["final_amount", "swapped_out", "virtual_slippage"],
+      "required": ["final_amount", "swapped_out"],
       "properties": {
         "final_amount": {
           "$ref": "#/definitions/Uint128"
         },
         "swapped_out": {
           "$ref": "#/definitions/OutputTokenMap_for_Uint128"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "OutputTokenMap_for_Uint128": {
+          "type": "object",
+          "required": ["ancs", "oppamint"],
+          "properties": {
+            "ancs": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "oppamint": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
         },
-        "virtual_slippage": {
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "user_balance": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserBalanceResponse",
+      "type": "object",
+      "required": ["compensation", "swapped_out"],
+      "properties": {
+        "compensation": {
+          "$ref": "#/definitions/OutputTokenMap_for_Uint128"
+        },
+        "swapped_out": {
           "$ref": "#/definitions/OutputTokenMap_for_Uint128"
         }
       },
@@ -609,6 +853,9 @@
         "burnable",
         "burned",
         "cap",
+        "compensation",
+        "guild_contributed_uusd",
+        "guild_id",
         "slot_size",
         "slots",
         "swapped_out"
@@ -622,6 +869,17 @@
         },
         "cap": {
           "$ref": "#/definitions/Uint128"
+        },
+        "compensation": {
+          "$ref": "#/definitions/OutputTokenMap_for_Uint128"
+        },
+        "guild_contributed_uusd": {
+          "$ref": "#/definitions/Uint128"
+        },
+        "guild_id": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
         },
         "slot_size": {
           "$ref": "#/definitions/Uint128"
@@ -700,6 +958,9 @@
             "burnable",
             "burned",
             "cap",
+            "compensation",
+            "guild_contributed_uusd",
+            "guild_id",
             "slot_size",
             "slots",
             "swapped_out"
@@ -713,6 +974,17 @@
             },
             "cap": {
               "$ref": "#/definitions/Uint128"
+            },
+            "compensation": {
+              "$ref": "#/definitions/OutputTokenMap_for_Uint128"
+            },
+            "guild_contributed_uusd": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "guild_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
             },
             "slot_size": {
               "$ref": "#/definitions/Uint128"
