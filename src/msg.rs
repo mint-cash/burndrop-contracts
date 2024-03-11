@@ -87,6 +87,15 @@ pub enum QueryMsg {
 
     #[returns(GuildInfoResponse)]
     GuildInfo { guild_id: u64 },
+
+    #[returns(UserBalanceResponse)]
+    QueryUserBalance { address: String },
+}
+
+#[cw_serde]
+pub struct UserBalanceResponse {
+    pub swapped_out: OutputTokenMap<Uint128>,
+    pub compensation: OutputTokenMap<Uint128>,
 }
 
 #[cw_serde]
