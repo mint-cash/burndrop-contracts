@@ -89,7 +89,7 @@ pub enum QueryMsg {
     GuildInfo { guild_id: u64 },
 
     #[returns(UserBalanceResponse)]
-    QueryUserBalance { address: String },
+    UserBalance { address: String },
 }
 
 #[cw_serde]

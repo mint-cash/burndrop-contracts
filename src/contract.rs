@@ -175,8 +175,6 @@ pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binar
         }
         QueryMsg::Rounds {} => to_json_binary(&query_rounds(deps)?),
         QueryMsg::GuildInfo { guild_id } => to_json_binary(&query_guild(deps, guild_id)?),
-        QueryMsg::QueryUserBalance { address } => {
-            to_json_binary(&query_user_balance(deps, address)?)
-        }
+        QueryMsg::UserBalance { address } => to_json_binary(&query_user_balance(deps, address)?),
     }
 }
