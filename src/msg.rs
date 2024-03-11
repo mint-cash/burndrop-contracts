@@ -90,6 +90,12 @@ pub enum QueryMsg {
 }
 
 #[cw_serde]
+pub struct UserBalanceResponse {
+    pub swapped_out: OutputTokenMap<Uint128>,
+    pub compensation: OutputTokenMap<Uint128>,
+}
+
+#[cw_serde]
 pub struct UserInfoResponse {
     pub burned: Uint128,
     pub burnable: Uint128,
