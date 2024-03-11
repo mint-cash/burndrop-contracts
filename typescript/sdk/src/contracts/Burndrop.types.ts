@@ -137,6 +137,11 @@ export type QueryMsg =
       guild_info: {
         guild_id: number;
       };
+    }
+  | {
+      user_balance: {
+        address: string;
+      };
     };
 export type OrderBy = 'ascending' | 'descending';
 export interface MigrateMsg {}
@@ -165,6 +170,10 @@ export interface RoundsResponse {
 }
 export interface SimulateBurnResponse {
   final_amount: Uint128;
+  swapped_out: OutputTokenMapForUint128;
+}
+export interface UserBalanceResponse {
+  compensation: OutputTokenMapForUint128;
   swapped_out: OutputTokenMapForUint128;
 }
 export interface UserInfoResponse {

@@ -86,7 +86,6 @@ pub fn query_user(
 
 pub fn query_user_balance(
     deps: Deps<TerraQuery>,
-    _env: &Env,
     address: String,
 ) -> StdResult<UserBalanceResponse> {
     let address = deps.api.addr_validate(&address)?;

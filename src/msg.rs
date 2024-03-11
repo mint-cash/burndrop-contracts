@@ -87,6 +87,9 @@ pub enum QueryMsg {
 
     #[returns(GuildInfoResponse)]
     GuildInfo { guild_id: u64 },
+
+    #[returns(UserBalanceResponse)]
+    UserBalance { address: String },
 }
 
 #[cw_serde]
