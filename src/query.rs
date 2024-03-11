@@ -1,8 +1,8 @@
 use crate::data::compensation::COMPENSATION;
 use crate::error::ContractError;
 use crate::msg::{
-    GuildInfoResponse, PriceResponse, RoundsResponse, SimulateBurnResponse, UserInfoResponse,
-    UsersInfoResponse,
+    GuildInfoResponse, PriceResponse, RoundsResponse, SimulateBurnResponse, UserBalanceResponse,
+    UserInfoResponse, UsersInfoResponse,
 };
 use crate::states::guild::GUILD;
 use crate::states::overridden_rounds::{OVERRIDDEN_BURNED_UUSD, OVERRIDDEN_ROUNDS};
@@ -82,6 +82,41 @@ pub fn query_user(
         guild_id: user.guild_id,
         guild_contributed_uusd: user.guild_contributed_uusd,
     })
+}
+
+pub fn query_user_balance(
+    deps: Deps<TerraQuery>,
+    _env: &Env,
+    address: String,
+) -> StdResult<UserBalanceResponse> {
+    let address = deps.api.addr_validate(&address)?;
+    let has_user = USER.has(deps.storage, address.clone());
+
+    let compensation = COMPENSATION
+        .get(address.as_ref())
+        .unwrap_or(&(0u128, 0u128));
+
+    if !has_user {
+        Ok(UserBalanceResponse {
+            swapped_out: OutputTokenMap {
+                oppamint: Uint128::zero(),
+                ancs: Uint128::zero(),
+            },
+            compensation: OutputTokenMap {
+                oppamint: Uint128::new(compensation.0),
+                ancs: Uint128::new(compensation.1),
+            },
+        })
+    } else {
+        let user = USER.load(deps.storage, address.clone())?;
+        Ok(UserBalanceResponse {
+            swapped_out: user.swapped_out,
+            compensation: OutputTokenMap {
+                oppamint: Uint128::new(compensation.0),
+                ancs: Uint128::new(compensation.1),
+            },
+        })
+    }
 }
 
 pub fn query_users(
