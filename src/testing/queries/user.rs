@@ -1,8 +1,8 @@
 use cosmwasm_std::{Addr, Uint128};
 use cw_multi_test::Executor;
 
-use crate::msg::QueryMsg::{UserInfo, UsersInfo};
-use crate::msg::{ExecuteMsg, UserInfoResponse, UsersInfoResponse};
+use crate::msg::QueryMsg::{UserBalance, UserInfo, UsersInfo};
+use crate::msg::{ExecuteMsg, UserBalanceResponse, UserInfoResponse, UsersInfoResponse};
 use crate::testing::{instantiate, ADMIN, SECOND_REFERRER, USER};
 use crate::types::common::OrderBy;
 
@@ -96,6 +96,19 @@ fn test_query_compensation() {
         .query_wasm_smart(
             burn_contract.addr(),
             &UserInfo {
+                address: address.clone(),
+            },
+        )
+        .unwrap();
+
+    assert_eq!(query_res.compensation.oppamint, Uint128::new(365093610));
+    assert_eq!(query_res.compensation.ancs, Uint128::new(365093610));
+
+    let query_res: UserBalanceResponse = app
+        .wrap()
+        .query_wasm_smart(
+            burn_contract.addr(),
+            &UserBalance {
                 address: address.clone(),
             },
         )

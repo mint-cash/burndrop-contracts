@@ -31,6 +31,7 @@ import {
   Uint128,
   UpdateOverriddenRoundParams,
   UpdateRoundParams,
+  UserBalanceResponse,
   UserInfoResponse,
   UsersInfoResponse,
 } from './Burndrop.types';
@@ -56,6 +57,11 @@ export interface BurndropReadOnlyInterface {
   }) => Promise<SimulateBurnResponse>;
   rounds: () => Promise<RoundsResponse>;
   guildInfo: ({ guildId }: { guildId: number }) => Promise<GuildInfoResponse>;
+  userBalance: ({
+    address,
+  }: {
+    address: string;
+  }) => Promise<UserBalanceResponse>;
 }
 export class BurndropQueryClient implements BurndropReadOnlyInterface {
   client: CosmWasmClient;
@@ -71,6 +77,7 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
     this.simulateBurn = this.simulateBurn.bind(this);
     this.rounds = this.rounds.bind(this);
     this.guildInfo = this.guildInfo.bind(this);
+    this.userBalance = this.userBalance.bind(this);
   }
 
   config = async (): Promise<Config> => {
@@ -135,6 +142,17 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
     return this.client.queryContractSmart(this.contractAddress, {
       guild_info: {
         guild_id: guildId,
+      },
+    });
+  };
+  userBalance = async ({
+    address,
+  }: {
+    address: string;
+  }): Promise<UserBalanceResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      user_balance: {
+        address,
       },
     });
   };

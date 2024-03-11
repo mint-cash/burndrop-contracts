@@ -29,6 +29,7 @@ import {
   Uint128,
   UpdateOverriddenRoundParams,
   UpdateRoundParams,
+  UserBalanceResponse,
   UserInfoResponse,
   UsersInfoResponse,
 } from './Burndrop.types';
