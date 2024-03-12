@@ -545,9 +545,8 @@ fn check_k_consistency() {
         None,
     );
     assert!(execute_res.is_ok());
-    let response = execute_res.unwrap();
     assert_strict_event_attributes(
-        response,
+        execute_res.unwrap(),
         "wasm",
         vec![
             ("action", "burn_uusd"),
