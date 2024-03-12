@@ -467,7 +467,7 @@ fn check_k_consistency() {
     let post_k = post_x_liquidity * post_y_liquidity;
 
     let wrong_y_output = y_liquidity - post_y_liquidity;
-    assert_eq!(wrong_y_output, Uint128::new(399952201)); // correct: 399952200 (+1)
+    assert_eq!(wrong_y_output, Uint128::new(399952201)); // wrong <> correct: 399952200 (diff: +1)
 
     // k !== post_k because of rounding errors.
     assert_ne!(k, post_k);
@@ -535,8 +535,6 @@ fn check_k_consistency() {
     app.execute_contract(Addr::unchecked(ADMIN), burn_contract.addr(), &msg, &[])
         .unwrap();
 
-    // (app, burn_contract)
-
     let execute_res = execute_swap(
         &mut app,
         &burn_contract,
@@ -558,7 +556,7 @@ fn check_k_consistency() {
             ("referrer", REFERRER),
             ("amount", &x_input.to_string()),
             ("swapped_in", "1000000000"),
-            ("swapped_out_oppamint", "399952200"), // wrong: 399952201 (-1)
+            ("swapped_out_oppamint", "399952200"), // correct <> wrong: 399952201 (diff: -1)
             ("swapped_out_ancs", "1198083067"),
             ("_contract_address", burn_contract.addr().as_str()),
         ],
