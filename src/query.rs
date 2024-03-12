@@ -184,7 +184,16 @@ pub fn calculate_swap_result(amount: Uint128, pair: &LiquidityPair) -> StdResult
         return Err(ContractError::DivisionByZeroError {}.into());
     }
 
-    let swapped_out = pair.y - (k / (pair.x + amount));
+    let mut swapped_out = pair.y - (k / (pair.x + amount));
+
+    let post_pair = LiquidityPair {
+        x: pair.x + amount,
+        y: pair.y - swapped_out,
+    };
+
+    if post_pair.x * post_pair.y < k && swapped_out > Uint128::zero() {
+        swapped_out -= 1;
+    }
 
     Ok(swapped_out)
 }
