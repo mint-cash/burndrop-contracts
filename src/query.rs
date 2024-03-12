@@ -191,8 +191,10 @@ pub fn calculate_swap_result(amount: Uint128, pair: &LiquidityPair) -> StdResult
         y: pair.y - swapped_out,
     };
 
-    if post_pair.x * post_pair.y < k && swapped_out > Uint128::zero() {
-        swapped_out -= 1;
+    if post_pair.x * post_pair.y < k {
+        swapped_out = swapped_out
+            .checked_sub(Uint128::one())
+            .unwrap_or(Uint128::zero());
     }
 
     Ok(swapped_out)
