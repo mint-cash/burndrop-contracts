@@ -7,7 +7,7 @@ use classic_bindings::{TerraMsg, TerraQuery};
 use cosmwasm_std::{Addr, Coin, Uint128};
 use cw_multi_test::{Contract, ContractWrapper, Executor};
 
-fn contract_burndrop() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
+pub fn contract_burndrop() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
     let contract = ContractWrapper::new(
         crate::contract::execute,
         crate::contract::instantiate,
@@ -16,12 +16,12 @@ fn contract_burndrop() -> Box<dyn Contract<TerraMsg, TerraQuery>> {
     Box::new(contract)
 }
 
-struct UserBalance {
-    address: Addr,
-    balance: Uint128,
+pub struct UserBalance {
+    pub address: Addr,
+    pub balance: Uint128,
 }
 
-fn mock_app(user_balances: Vec<UserBalance>) -> TerraApp {
+pub fn mock_app(user_balances: Vec<UserBalance>) -> TerraApp {
     let mut app = TerraApp::new(Addr::unchecked(ADMIN).as_str());
 
     app.init_modules(|router, _, storage| {
