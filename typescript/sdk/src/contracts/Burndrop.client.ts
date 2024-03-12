@@ -23,6 +23,8 @@ import {
   OrderBy,
   OutputTokenMapForDecimal,
   OutputTokenMapForUint128,
+  OverriddenRound,
+  OverriddenRoundsResponse,
   PriceResponse,
   QueryMsg,
   RoundsResponse,
@@ -62,6 +64,7 @@ export interface BurndropReadOnlyInterface {
   }: {
     address: string;
   }) => Promise<UserBalanceResponse>;
+  overriddenRounds: () => Promise<OverriddenRoundsResponse>;
 }
 export class BurndropQueryClient implements BurndropReadOnlyInterface {
   client: CosmWasmClient;
@@ -78,6 +81,7 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
     this.rounds = this.rounds.bind(this);
     this.guildInfo = this.guildInfo.bind(this);
     this.userBalance = this.userBalance.bind(this);
+    this.overriddenRounds = this.overriddenRounds.bind(this);
   }
 
   config = async (): Promise<Config> => {
@@ -154,6 +158,11 @@ export class BurndropQueryClient implements BurndropReadOnlyInterface {
       user_balance: {
         address,
       },
+    });
+  };
+  overriddenRounds = async (): Promise<OverriddenRoundsResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      overridden_rounds: {},
     });
   };
 }
