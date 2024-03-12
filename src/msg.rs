@@ -8,6 +8,7 @@ use crate::executions::round::UpdateRoundParams;
 use crate::states::config::Config;
 use crate::types::common::OrderBy;
 use crate::types::output_token::OutputTokenMap;
+use crate::types::overridden_round::OverriddenRound;
 use crate::types::swap_round::SwapRound;
 
 #[cw_serde]
@@ -88,8 +89,13 @@ pub enum QueryMsg {
     #[returns(GuildInfoResponse)]
     GuildInfo { guild_id: u64 },
 
+    // v0.3.0
     #[returns(UserBalanceResponse)]
     UserBalance { address: String },
+
+    // v0.4.0
+    #[returns(OverriddenRoundsResponse)]
+    OverriddenRounds {},
 }
 
 #[cw_serde]
@@ -135,4 +141,9 @@ pub struct RoundsResponse {
 #[cw_serde]
 pub struct GuildInfoResponse {
     pub burned_uusd: Uint128,
+}
+
+#[cw_serde]
+pub struct OverriddenRoundsResponse {
+    pub rounds: Vec<OverriddenRound>,
 }
