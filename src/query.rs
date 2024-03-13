@@ -1,8 +1,8 @@
 use crate::data::compensation::COMPENSATION;
 use crate::error::ContractError;
 use crate::msg::{
-    GuildInfoResponse, PriceResponse, RoundsResponse, SimulateBurnResponse, UserBalanceResponse,
-    UserInfoResponse, UsersInfoResponse,
+    GuildInfoResponse, OverriddenRoundsResponse, PriceResponse, RoundsResponse,
+    SimulateBurnResponse, UserBalanceResponse, UserInfoResponse, UsersInfoResponse,
 };
 use crate::states::guild::GUILD;
 use crate::states::overridden_rounds::{OVERRIDDEN_BURNED_UUSD, OVERRIDDEN_ROUNDS};
@@ -184,7 +184,18 @@ pub fn calculate_swap_result(amount: Uint128, pair: &LiquidityPair) -> StdResult
         return Err(ContractError::DivisionByZeroError {}.into());
     }
 
-    let swapped_out = pair.y - (k / (pair.x + amount));
+    let mut swapped_out = pair.y - (k / (pair.x + amount));
+
+    let post_pair = LiquidityPair {
+        x: pair.x + amount,
+        y: pair.y - swapped_out,
+    };
+
+    if post_pair.x * post_pair.y < k {
+        swapped_out = swapped_out
+            .checked_sub(Uint128::one())
+            .unwrap_or(Uint128::zero());
+    }
 
     Ok(swapped_out)
 }
@@ -238,6 +249,14 @@ pub fn query_rounds(deps: Deps<TerraQuery>) -> StdResult<RoundsResponse> {
 
     Ok(RoundsResponse {
         rounds: state.rounds,
+    })
+}
+
+pub fn query_overridden_rounds(deps: Deps<TerraQuery>) -> StdResult<OverriddenRoundsResponse> {
+    let overridden_rounds = OVERRIDDEN_ROUNDS.load(deps.storage)?;
+
+    Ok(OverriddenRoundsResponse {
+        rounds: overridden_rounds.rounds,
     })
 }
 

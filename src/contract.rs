@@ -17,8 +17,8 @@ use crate::executions::swap::burn_uusd;
 use crate::executions::user::register_starting_user;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{
-    query_config, query_current_price, query_guild, query_rounds, query_simulate_burn, query_user,
-    query_user_balance, query_users,
+    query_config, query_current_price, query_guild, query_overridden_rounds, query_rounds,
+    query_simulate_burn, query_user, query_user_balance, query_users,
 };
 use crate::states::guild::{Guild, GUILD};
 use crate::states::overridden_rounds::{OverriddenRounds, OVERRIDDEN_ROUNDS};
@@ -176,5 +176,6 @@ pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binar
         QueryMsg::Rounds {} => to_json_binary(&query_rounds(deps)?),
         QueryMsg::GuildInfo { guild_id } => to_json_binary(&query_guild(deps, guild_id)?),
         QueryMsg::UserBalance { address } => to_json_binary(&query_user_balance(deps, address)?),
+        QueryMsg::OverriddenRounds {} => to_json_binary(&query_overridden_rounds(deps)?),
     }
 }

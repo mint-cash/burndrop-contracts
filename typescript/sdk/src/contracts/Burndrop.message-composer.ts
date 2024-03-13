@@ -21,6 +21,8 @@ import {
   OrderBy,
   OutputTokenMapForDecimal,
   OutputTokenMapForUint128,
+  OverriddenRound,
+  OverriddenRoundsResponse,
   PriceResponse,
   QueryMsg,
   RoundsResponse,
