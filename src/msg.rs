@@ -96,6 +96,10 @@ pub enum QueryMsg {
     // v0.4.0
     #[returns(OverriddenRoundsResponse)]
     OverriddenRounds {},
+
+    // v0.5.0
+    #[returns(OverriddenBurnedUusdResponse)]
+    OverriddenBurnedUusd { round_index: u64, address: String },
 }
 
 #[cw_serde]
@@ -146,4 +150,9 @@ pub struct GuildInfoResponse {
 #[cw_serde]
 pub struct OverriddenRoundsResponse {
     pub rounds: Vec<OverriddenRound>,
+}
+
+#[cw_serde]
+pub struct OverriddenBurnedUusdResponse {
+    pub overridden_burned_uusd: Uint128,
 }
