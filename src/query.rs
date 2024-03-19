@@ -62,7 +62,9 @@ pub fn query_user(
         }
     };
 
-    let burnable = cap + overridden_burned_uusd - previously_burned;
+    let burnable = (cap + overridden_burned_uusd)
+        .checked_sub(previously_burned)
+        .unwrap_or(Uint128::zero());
 
     let compensation = COMPENSATION
         .get(address.as_ref())

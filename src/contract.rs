@@ -106,9 +106,6 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, Contra
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let overridden_rounds = OverriddenRounds { rounds: vec![] };
-    OVERRIDDEN_ROUNDS.save(deps.storage, &overridden_rounds)?;
-
     Ok(Response::new())
 }
 
