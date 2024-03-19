@@ -51,13 +51,17 @@ pub fn query_user(
         // active: prev (i - 1)
         match recent_overridden_round_index {
             Some(0) => Uint128::zero(),
-            Some(index) => OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index - 1, user.address))?,
+            Some(index) => OVERRIDDEN_BURNED_UUSD
+                .may_load(deps.storage, (index - 1, user.address))?
+                .unwrap_or(Uint128::zero()),
             None => Uint128::zero(),
         }
     } else {
         // inactive: current (i)
         match recent_overridden_round_index {
-            Some(index) => OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index, user.address))?,
+            Some(index) => OVERRIDDEN_BURNED_UUSD
+                .may_load(deps.storage, (index, user.address))?
+                .unwrap_or(Uint128::zero()),
             None => Uint128::zero(),
         }
     };
@@ -276,7 +280,9 @@ pub fn query_overridden_burned_uusd(
     address: String,
 ) -> StdResult<OverriddenBurnedUusdResponse> {
     let address = deps.api.addr_validate(&address)?;
-    let burned_uusd = OVERRIDDEN_BURNED_UUSD.load(deps.storage, (round_index, address))?;
+    let burned_uusd = OVERRIDDEN_BURNED_UUSD
+        .may_load(deps.storage, (round_index, address))?
+        .unwrap_or(Uint128::zero());
 
     Ok(OverriddenBurnedUusdResponse {
         overridden_burned_uusd: burned_uusd,
