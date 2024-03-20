@@ -1,8 +1,8 @@
 use crate::data::compensation::COMPENSATION;
 use crate::error::ContractError;
 use crate::msg::{
-    GuildInfoResponse, OverriddenRoundsResponse, PriceResponse, RoundsResponse,
-    SimulateBurnResponse, UserBalanceResponse, UserInfoResponse, UsersInfoResponse,
+    GuildInfoResponse, OverriddenBurnedUusdResponse, OverriddenRoundsResponse, PriceResponse,
+    RoundsResponse, SimulateBurnResponse, UserBalanceResponse, UserInfoResponse, UsersInfoResponse,
 };
 use crate::states::guild::GUILD;
 use crate::states::overridden_rounds::{OVERRIDDEN_BURNED_UUSD, OVERRIDDEN_ROUNDS};
@@ -51,18 +51,24 @@ pub fn query_user(
         // active: prev (i - 1)
         match recent_overridden_round_index {
             Some(0) => Uint128::zero(),
-            Some(index) => OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index - 1, user.address))?,
+            Some(index) => OVERRIDDEN_BURNED_UUSD
+                .may_load(deps.storage, (index - 1, user.address))?
+                .unwrap_or(Uint128::zero()),
             None => Uint128::zero(),
         }
     } else {
         // inactive: current (i)
         match recent_overridden_round_index {
-            Some(index) => OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index, user.address))?,
+            Some(index) => OVERRIDDEN_BURNED_UUSD
+                .may_load(deps.storage, (index, user.address))?
+                .unwrap_or(Uint128::zero()),
             None => Uint128::zero(),
         }
     };
 
-    let burnable = cap + overridden_burned_uusd - previously_burned;
+    let burnable = (cap + overridden_burned_uusd)
+        .checked_sub(previously_burned)
+        .unwrap_or(Uint128::zero());
 
     let compensation = COMPENSATION
         .get(address.as_ref())
@@ -265,5 +271,20 @@ pub fn query_guild(deps: Deps<TerraQuery>, guild_id: u64) -> StdResult<GuildInfo
 
     Ok(GuildInfoResponse {
         burned_uusd: guild.burned_uusd,
+    })
+}
+
+pub fn query_overridden_burned_uusd(
+    deps: Deps<TerraQuery>,
+    round_index: u64,
+    address: String,
+) -> StdResult<OverriddenBurnedUusdResponse> {
+    let address = deps.api.addr_validate(&address)?;
+    let burned_uusd = OVERRIDDEN_BURNED_UUSD
+        .may_load(deps.storage, (round_index, address))?
+        .unwrap_or(Uint128::zero());
+
+    Ok(OverriddenBurnedUusdResponse {
+        overridden_burned_uusd: burned_uusd,
     })
 }

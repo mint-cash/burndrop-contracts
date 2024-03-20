@@ -145,6 +145,12 @@ export type QueryMsg =
     }
   | {
       overridden_rounds: {};
+    }
+  | {
+      overridden_burned_uusd: {
+        address: string;
+        round_index: number;
+      };
     };
 export type OrderBy = 'ascending' | 'descending';
 export interface MigrateMsg {}
@@ -167,6 +173,9 @@ export interface OutputTokenMapForDecimal {
 }
 export interface GuildInfoResponse {
   burned_uusd: Uint128;
+}
+export interface OverriddenBurnedUusdResponse {
+  overridden_burned_uusd: Uint128;
 }
 export interface OverriddenRoundsResponse {
   rounds: OverriddenRound[];

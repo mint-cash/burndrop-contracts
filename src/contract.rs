@@ -17,8 +17,9 @@ use crate::executions::swap::burn_uusd;
 use crate::executions::user::register_starting_user;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query::{
-    query_config, query_current_price, query_guild, query_overridden_rounds, query_rounds,
-    query_simulate_burn, query_user, query_user_balance, query_users,
+    query_config, query_current_price, query_guild, query_overridden_burned_uusd,
+    query_overridden_rounds, query_rounds, query_simulate_burn, query_user, query_user_balance,
+    query_users,
 };
 use crate::states::guild::{Guild, GUILD};
 use crate::states::overridden_rounds::{OverriddenRounds, OVERRIDDEN_ROUNDS};
@@ -106,9 +107,6 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, Contra
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let overridden_rounds = OverriddenRounds { rounds: vec![] };
-    OVERRIDDEN_ROUNDS.save(deps.storage, &overridden_rounds)?;
-
     Ok(Response::new())
 }
 
@@ -177,5 +175,9 @@ pub fn query(deps: Deps<TerraQuery>, env: Env, msg: QueryMsg) -> StdResult<Binar
         QueryMsg::GuildInfo { guild_id } => to_json_binary(&query_guild(deps, guild_id)?),
         QueryMsg::UserBalance { address } => to_json_binary(&query_user_balance(deps, address)?),
         QueryMsg::OverriddenRounds {} => to_json_binary(&query_overridden_rounds(deps)?),
+        QueryMsg::OverriddenBurnedUusd {
+            round_index,
+            address,
+        } => to_json_binary(&query_overridden_burned_uusd(deps, round_index, address)?),
     }
 }

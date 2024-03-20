@@ -160,17 +160,17 @@ pub fn burn_uusd(
             // active: prev (i - 1)
             match recent_overridden_round_index {
                 Some(0) => Uint128::zero(),
-                Some(index) => {
-                    OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index - 1, sender.address))?
-                }
+                Some(index) => OVERRIDDEN_BURNED_UUSD
+                    .may_load(deps.storage, (index - 1, sender.address))?
+                    .unwrap_or(Uint128::zero()),
                 None => Uint128::zero(),
             }
         } else {
             // inactive: current (i)
             match recent_overridden_round_index {
-                Some(index) => {
-                    OVERRIDDEN_BURNED_UUSD.load(deps.storage, (index, sender.address))?
-                }
+                Some(index) => OVERRIDDEN_BURNED_UUSD
+                    .may_load(deps.storage, (index, sender.address))?
+                    .unwrap_or(Uint128::zero()),
                 None => Uint128::zero(),
             }
         };
